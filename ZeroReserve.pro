@@ -3,11 +3,16 @@
 
 CONFIG += qt uic qrc resources
 
-SOURCES = ZeroReserveDialog.cpp ZeroReservePlugin.cpp
-HEADERS = ZeroReserveDialog.h ZeroReservePlugin.h
-FORMS   = ZeroReserveDialog.ui
+SOURCES = ZeroReserveDialog.cpp ZeroReservePlugin.cpp \
+    frienddetailsdialog.cpp \
+    paymentdialog.cpp
+HEADERS = ZeroReserveDialog.h ZeroReservePlugin.h \
+    frienddetailsdialog.h \
+    paymentdialog.h
+FORMS   = ZeroReserveDialog.ui \
+    frienddetailsdialog.ui \
+    paymentdialog.ui
 
 TARGET = ZeroReserve
 
 RESOURCES = ZeroReserve_images.qrc 
-

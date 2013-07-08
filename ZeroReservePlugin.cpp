@@ -79,7 +79,7 @@ QIcon *ZeroReservePlugin::qt_icon() const
 
 std::string ZeroReservePlugin::getShortPluginDescription() const
 {
-	return QApplication::translate("ZeroReservePlugin", "This plugin provides a set of cached links, and a voting system to promote them.").toUtf8().constData();
+        return QApplication::translate("ZeroReservePlugin", "This plugin implements a distributed Bitcoin exchange.").toUtf8().constData();
 }
 
 std::string ZeroReservePlugin::getPluginName() const
