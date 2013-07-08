@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>732</width>
+    <width>773</width>
     <height>533</height>
    </rect>
   </property>
@@ -85,7 +85,7 @@ p, li { white-space: pre-wrap; }
       <widget class="QTableView" name="asksTableView">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>370</x>
          <y>210</y>
          <width>291</width>
          <height>221</height>
@@ -95,7 +95,7 @@ p, li { white-space: pre-wrap; }
       <widget class="QTableView" name="bidsTableView">
        <property name="geometry">
         <rect>
-         <x>370</x>
+         <x>20</x>
          <y>210</y>
          <width>301</width>
          <height>221</height>
@@ -283,7 +283,7 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>590</x>
          <y>0</y>
-         <width>121</width>
+         <width>151</width>
          <height>22</height>
         </rect>
        </property>

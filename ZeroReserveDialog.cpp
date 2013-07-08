@@ -18,9 +18,12 @@
 #include "ZeroReserveDialog.h"
 #include "frienddetailsdialog.h"
 #include "paymentdialog.h"
+#include "OrderBook.h"
+
 #include "retroshare/rspeers.h"
 
 #include <QMenu>
+#include <QStandardItem>
 #include <list>
 
 
@@ -33,6 +36,11 @@ ZeroReserveDialog::ZeroReserveDialog(QWidget *parent)
     ui.setupUi(this);
 
     connect(ui.friendSelectionWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuFriendList(QPoint)));
+
+    OrderBook * asks = new OrderBook();
+    OrderBook * bids = new OrderBook();
+    ui.asksTableView->setModel( asks );
+    ui.bidsTableView->setModel( bids );
 
     /* initialize friends list */
     ui.friendSelectionWidget->setHeaderText(tr("Friend List:"));
