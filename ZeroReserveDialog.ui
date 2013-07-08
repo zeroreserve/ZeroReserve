@@ -76,7 +76,7 @@ p, li { white-space: pre-wrap; }
    <item>
     <widget class="QTabWidget" name="ZeroReserveTabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="BitcoinTab">
       <attribute name="title">
@@ -87,8 +87,8 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>10</x>
          <y>210</y>
-         <width>256</width>
-         <height>192</height>
+         <width>291</width>
+         <height>221</height>
         </rect>
        </property>
       </widget>
@@ -97,8 +97,8 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>370</x>
          <y>210</y>
-         <width>256</width>
-         <height>192</height>
+         <width>301</width>
+         <height>221</height>
         </rect>
        </property>
       </widget>
@@ -252,12 +252,53 @@ p, li { white-space: pre-wrap; }
         <string>Sell Bitcoins</string>
        </property>
       </widget>
+      <widget class="QPushButton" name="pushButton">
+       <property name="geometry">
+        <rect>
+         <x>150</x>
+         <y>150</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Sell</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="geometry">
+        <rect>
+         <x>500</x>
+         <y>150</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Buy</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox">
+       <property name="geometry">
+        <rect>
+         <x>590</x>
+         <y>0</y>
+         <width>121</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Zimbabwe Dollar</string>
+        </property>
+       </item>
+      </widget>
      </widget>
      <widget class="QWidget" name="PaymentTab">
       <attribute name="title">
        <string>Payment</string>
       </attribute>
-      <widget class="FriendSelectionWidget" name="widget" native="true">
+      <widget class="FriendSelectionWidget" name="friendSelectionWidget" native="true">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -294,7 +335,7 @@ p, li { white-space: pre-wrap; }
        <property name="geometry">
         <rect>
          <x>540</x>
-         <y>30</y>
+         <y>140</y>
          <width>101</width>
          <height>16</height>
         </rect>
@@ -307,8 +348,8 @@ p, li { white-space: pre-wrap; }
        <property name="geometry">
         <rect>
          <x>540</x>
-         <y>60</y>
-         <width>91</width>
+         <y>160</y>
+         <width>131</width>
          <height>23</height>
         </rect>
        </property>
@@ -320,7 +361,7 @@ p, li { white-space: pre-wrap; }
        <property name="geometry">
         <rect>
          <x>540</x>
-         <y>150</y>
+         <y>210</y>
          <width>111</width>
          <height>16</height>
         </rect>
@@ -333,8 +374,8 @@ p, li { white-space: pre-wrap; }
        <property name="geometry">
         <rect>
          <x>540</x>
-         <y>180</y>
-         <width>91</width>
+         <y>230</y>
+         <width>131</width>
          <height>23</height>
         </rect>
        </property>
@@ -346,7 +387,7 @@ p, li { white-space: pre-wrap; }
        <property name="geometry">
         <rect>
          <x>540</x>
-         <y>260</y>
+         <y>290</y>
          <width>131</width>
          <height>16</height>
         </rect>
@@ -359,8 +400,8 @@ p, li { white-space: pre-wrap; }
        <property name="geometry">
         <rect>
          <x>540</x>
-         <y>290</y>
-         <width>91</width>
+         <y>310</y>
+         <width>131</width>
          <height>23</height>
         </rect>
        </property>
@@ -372,7 +413,7 @@ p, li { white-space: pre-wrap; }
        <property name="geometry">
         <rect>
          <x>540</x>
-         <y>350</y>
+         <y>360</y>
          <width>101</width>
          <height>16</height>
         </rect>
@@ -386,13 +427,33 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>540</x>
          <y>380</y>
-         <width>91</width>
+         <width>131</width>
          <height>23</height>
         </rect>
        </property>
        <property name="toolTip">
         <string>Outstanding claims minus debt</string>
        </property>
+      </widget>
+      <widget class="QComboBox" name="CurrencySelector">
+       <property name="geometry">
+        <rect>
+         <x>540</x>
+         <y>50</y>
+         <width>131</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Zimbabwe Dollar</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Testnet Bitcoin</string>
+        </property>
+       </item>
       </widget>
      </widget>
     </widget>
