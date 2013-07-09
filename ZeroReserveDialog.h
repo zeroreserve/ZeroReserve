@@ -32,6 +32,11 @@ class ZeroReserveDialog : public MainPage
 public:
     ZeroReserveDialog( QWidget *parent = 0 );
 
+
+public slots:
+    void addBid();
+    void addAsk();
+
 private slots:
     void contextMenuFriendList(QPoint);
     void friendDetails();

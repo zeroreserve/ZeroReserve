@@ -36,6 +36,9 @@ ZeroReserveDialog::ZeroReserveDialog(QWidget *parent)
     ui.setupUi(this);
 
     connect(ui.friendSelectionWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuFriendList(QPoint)));
+    connect(ui.friendSelectionWidget, SIGNAL(doubleClicked(int,QString)), this, SLOT(friendDetails()));
+    connect(ui.askButton, SIGNAL(clicked()), this, SLOT(addAsk()));
+    connect(ui.bidButton, SIGNAL(clicked()), this, SLOT(addBid()));
 
     OrderBook * asks = new OrderBook();
     OrderBook * bids = new OrderBook();
@@ -88,4 +91,19 @@ void ZeroReserveDialog::payTo()
 
     PaymentDialog d( this, peername );
     d.exec();
+}
+
+void ZeroReserveDialog::addBid()
+{
+    OrderBook * bids = dynamic_cast<OrderBook*>(ui.bidsTableView->model());
+    OrderBook::Order * bid = new OrderBook::Order();
+    bid->setPrice(ui.)
+    bids->addOrder( bid );
+}
+
+void ZeroReserveDialog::addAsk()
+{
+    OrderBook * asks = dynamic_cast<OrderBook*>(ui.asksTableView->model());
+    OrderBook::Order * ask = new OrderBook::Order();
+    asks->addOrder( ask );
 }

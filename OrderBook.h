@@ -19,6 +19,10 @@
 #define ORDERBOOK_H
 
 #include <QAbstractItemModel>
+#include <QDateTime>
+#include <QLinkedList>
+
+#include "Currency.h"
 
 
 class OrderBook : public QAbstractItemModel
@@ -29,16 +33,22 @@ public:
     class Order
     {
     public:
-        enum  { BID = 0, ASK } OderType;
+        enum OrderType { BID = 0, ASK };
 
         std::string m_trader_id;
-        unsigned char orderType;
-        std::string m_amount; // a string of the form "77.123" - any length
+        OrderType orderType;
+        QString m_amount;
+        QString m_price;      // a string of the form "77.123" - any length. For printing
+        double m_price_d;     // the amount as a double for sorting
+        Currency::CurrencySympols m_currency;
+        QDateTime m_timeStamp;
 
+        bool setPrice( QString & price );
     };
 
 public:
     explicit OrderBook(QObject *parent = 0);
+    virtual ~OrderBook();
 
     virtual QModelIndex index(int, int, const QModelIndex&) const;
     virtual QModelIndex parent(const QModelIndex&) const;
@@ -46,6 +56,11 @@ public:
     virtual int columnCount(const QModelIndex&) const;
     virtual QVariant data(const QModelIndex&, int) const;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+
+    void addOrder( Order* order );
+
+protected:
+    QLinkedList < Order* > orders;
 
 signals:
 

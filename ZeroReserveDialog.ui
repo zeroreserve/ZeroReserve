@@ -115,7 +115,7 @@ p, li { white-space: pre-wrap; }
         <string>Bids</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit">
+      <widget class="QLineEdit" name="bid_amount">
        <property name="geometry">
         <rect>
          <x>500</x>
@@ -124,8 +124,11 @@ p, li { white-space: pre-wrap; }
          <height>25</height>
         </rect>
        </property>
+       <property name="maxLength">
+        <number>32</number>
+       </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_2">
+      <widget class="QLineEdit" name="bid_price">
        <property name="geometry">
         <rect>
          <x>500</x>
@@ -164,7 +167,7 @@ p, li { white-space: pre-wrap; }
         <string>Amount:</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_3">
+      <widget class="QLineEdit" name="ask_amount">
        <property name="geometry">
         <rect>
          <x>150</x>
@@ -174,7 +177,7 @@ p, li { white-space: pre-wrap; }
         </rect>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_4">
+      <widget class="QLineEdit" name="ask_price">
        <property name="geometry">
         <rect>
          <x>150</x>
@@ -252,7 +255,7 @@ p, li { white-space: pre-wrap; }
         <string>Sell Bitcoins</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="askButton">
        <property name="geometry">
         <rect>
          <x>150</x>
@@ -265,7 +268,7 @@ p, li { white-space: pre-wrap; }
         <string>Sell</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="bidButton">
        <property name="geometry">
         <rect>
          <x>500</x>

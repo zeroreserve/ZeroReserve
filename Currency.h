@@ -18,7 +18,8 @@
 class Currency
 {
 public:
-    enum{
+    enum CurrencySympols
+    {
         AED = 0,
         AFN,
         ALL,
@@ -187,7 +188,7 @@ public:
         ZAR,
         ZMW,
         ZWD
-    } CurrencySympols;
+    };
 
     static const char * const currencyNames[];
     static const char * const currencySymbols[];

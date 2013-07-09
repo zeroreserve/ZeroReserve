@@ -22,6 +22,11 @@ OrderBook::OrderBook(QObject *parent) :
 {
 }
 
+OrderBook::~OrderBook()
+{
+    for( QLinkedList<OrderBook::Order*>::iterator it = orders.begin(); it != orders.end(); it++) delete *it;
+}
+
 QModelIndex OrderBook::index(int, int, const QModelIndex&) const
 {
     return QModelIndex();
@@ -62,4 +67,17 @@ QVariant OrderBook::headerData(int section, Qt::Orientation orientation, int rol
         }
     }
     return QVariant();
+}
+
+void OrderBook::addOrder( Order* order )
+{
+    emit dataChanged();
+}
+
+bool OrderBook::Order::setPrice(QString &price)
+{
+    bool ok;
+    m_price = price;
+    m_price_d = price.toDouble( &ok );
+    return ok;
 }
