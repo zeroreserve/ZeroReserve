@@ -6,11 +6,13 @@ CONFIG += qt uic qrc resources
 SOURCES = ZeroReserveDialog.cpp ZeroReservePlugin.cpp \
     frienddetailsdialog.cpp \
     paymentdialog.cpp \
-    OrderBook.cpp
+    OrderBook.cpp \
+    Currency.cpp
 HEADERS = ZeroReserveDialog.h ZeroReservePlugin.h \
     frienddetailsdialog.h \
     paymentdialog.h \
-    OrderBook.h
+    OrderBook.h \
+    Currency.h
 FORMS   = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
     paymentdialog.ui

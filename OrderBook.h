@@ -24,6 +24,19 @@
 class OrderBook : public QAbstractItemModel
 {
     Q_OBJECT
+
+public:
+    class Order
+    {
+    public:
+        enum  { BID = 0, ASK } OderType;
+
+        std::string m_trader_id;
+        unsigned char orderType;
+        std::string m_amount; // a string of the form "77.123" - any length
+
+    };
+
 public:
     explicit OrderBook(QObject *parent = 0);
 
