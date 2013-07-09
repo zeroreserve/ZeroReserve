@@ -1,18 +1,18 @@
 /*
     This file is part of the Zero Reserve Plugin for Retroshare.
 
-    Foobar is free software: you can redistribute it and/or modify
+    Zero Reserve is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    Foobar is distributed in the hope that it will be useful,
+    Zero Reserve is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+    along with Zero Reserve.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef ZERORESERVEPLUGIN_H
@@ -29,7 +29,6 @@ class ZeroReservePlugin: public RsPlugin
 
 		virtual MainPage       *qt_page()       			const	;
 		virtual QIcon          *qt_icon()       			const	;
-//		virtual uint16_t        rs_service_id()         const { return RS_SERVICE_TYPE_RANK ; }
 		virtual QTranslator    *qt_translator(QApplication *app, const QString& languageCode, const QString& externalDir) const;
 
 		virtual void getPluginVersion(int& major,int& minor,int& svn_rev) const ;
