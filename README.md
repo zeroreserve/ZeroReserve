@@ -3,6 +3,8 @@ ZeroReserve
 
 Friend 2 Friend Payment and Bitcoin exchange
 
+Prerequisite for building is a successful RetroShare build.
+
 To build, checkout the sources to the plugins directory of Retroshare and build with
 
 $ qmake && make clean && make
