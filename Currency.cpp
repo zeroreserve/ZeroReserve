@@ -186,7 +186,8 @@ const char * const Currency::currencyNames[] =
         "Yemen Rial",
         "South Africa Rand",
         "Zambia Kwacha",
-        "Zimbabwe Dollar"
+        "Zimbabwe Dollar",
+        0
     };
     
 const char * const Currency::currencySymbols[] =
@@ -358,8 +359,9 @@ const char * const Currency::currencySymbols[] =
         "YER",
         "ZAR",
         "ZMW",
-        "ZWD"
-        };
+        "ZWD",
+        0
+    };
 
 
 
