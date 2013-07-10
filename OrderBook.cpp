@@ -17,19 +17,24 @@
 
 #include "OrderBook.h"
 
-OrderBook::OrderBook(QObject *parent) :
-    QAbstractItemModel(parent)
+OrderBook::OrderBook()
 {
+    OrderBook::Order * ask = new OrderBook::Order();
+    ask->setPrice( "888.99" );
+    ask->setCurrencyFromName( "Euro" );
+    ask->m_amount = "77.77";
+    ask->m_orderType = OrderBook::Order::ASK;
+    orders.append(ask);
 }
 
 OrderBook::~OrderBook()
 {
-    for( QLinkedList<OrderBook::Order*>::iterator it = orders.begin(); it != orders.end(); it++) delete *it;
+    for( QList<OrderBook::Order*>::iterator it = orders.begin(); it != orders.end(); it++) delete *it;
 }
 
-QModelIndex OrderBook::index(int, int, const QModelIndex&) const
+QModelIndex OrderBook::index(int x, int y, const QModelIndex&) const
 {
-    return QModelIndex();
+    return createIndex(x, y);
 }
 
 QModelIndex OrderBook::parent(const QModelIndex&) const
@@ -39,7 +44,7 @@ QModelIndex OrderBook::parent(const QModelIndex&) const
 
 int OrderBook::rowCount(const QModelIndex&) const
 {
-    return 0;
+    return orders.size();
 }
 
 int OrderBook::columnCount(const QModelIndex&) const
@@ -47,9 +52,24 @@ int OrderBook::columnCount(const QModelIndex&) const
     return 2;
 }
 
-QVariant OrderBook::data(const QModelIndex&, int) const
+
+QVariant OrderBook::data( const QModelIndex& index, int role ) const
 {
-    return 0;
+    if (role == Qt::DisplayRole && index.row() < orders.size()){
+        Order * order = orders[index.row()];
+        switch(index.column()){
+            case 0:
+                return QVariant(order->m_amount);
+                break;
+            case 1:
+                return QVariant(order->m_price);
+                break;
+            default:
+                return QVariant();
+        }
+
+    }
+    return QVariant();
 }
 
 QVariant OrderBook::headerData(int section, Qt::Orientation orientation, int role) const
@@ -71,13 +91,28 @@ QVariant OrderBook::headerData(int section, Qt::Orientation orientation, int rol
 
 void OrderBook::addOrder( Order* order )
 {
-    emit dataChanged();
+    beginInsertRows( QModelIndex(), orders.size(), orders.size());
+    orders.append(order);
+    endInsertRows();
 }
 
-bool OrderBook::Order::setPrice(QString &price)
+bool OrderBook::Order::setPrice(QString price)
 {
     bool ok;
     m_price = price;
     m_price_d = price.toDouble( &ok );
     return ok;
+}
+
+void OrderBook::Order::setCurrencyFromName( QString currency )
+{
+    int index = 0;
+    while(Currency::currencyNames[ index ]){
+        if( currency == Currency::currencyNames[ index ]){
+            this->m_currency = (Currency::CurrencySympols)index;
+            return;
+        }
+        index++;
+    }
+// TODO: throw
 }

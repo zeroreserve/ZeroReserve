@@ -281,7 +281,7 @@ p, li { white-space: pre-wrap; }
         <string>Buy</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="comboBox">
+      <widget class="QComboBox" name="currencySelector">
        <property name="geometry">
         <rect>
          <x>590</x>

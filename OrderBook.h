@@ -20,7 +20,7 @@
 
 #include <QAbstractItemModel>
 #include <QDateTime>
-#include <QLinkedList>
+#include <QList>
 
 #include "Currency.h"
 
@@ -36,31 +36,32 @@ public:
         enum OrderType { BID = 0, ASK };
 
         std::string m_trader_id;
-        OrderType orderType;
+        OrderType m_orderType;
         QString m_amount;
         QString m_price;      // a string of the form "77.123" - any length. For printing
         double m_price_d;     // the amount as a double for sorting
         Currency::CurrencySympols m_currency;
         QDateTime m_timeStamp;
 
-        bool setPrice( QString & price );
+        bool setPrice( QString price );
+        void setCurrencyFromName( QString currency );
     };
 
 public:
-    explicit OrderBook(QObject *parent = 0);
+    explicit OrderBook();
     virtual ~OrderBook();
 
     virtual QModelIndex index(int, int, const QModelIndex&) const;
     virtual QModelIndex parent(const QModelIndex&) const;
     virtual int rowCount(const QModelIndex&) const;
     virtual int columnCount(const QModelIndex&) const;
-    virtual QVariant data(const QModelIndex&, int) const;
+    virtual QVariant data(const QModelIndex&, int role = Qt::DisplayRole) const;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
     void addOrder( Order* order );
 
 protected:
-    QLinkedList < Order* > orders;
+    QList < Order* > orders;
 
 signals:
 

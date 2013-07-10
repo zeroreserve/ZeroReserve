@@ -35,6 +35,11 @@ ZeroReserveDialog::ZeroReserveDialog(QWidget *parent)
 {
     ui.setupUi(this);
 
+    ui.ask_price->setValidator( new QDoubleValidator(0) );
+    ui.ask_amount->setValidator( new QDoubleValidator(0) );
+    ui.bid_price->setValidator( new QDoubleValidator(0) );
+    ui.bid_amount->setValidator( new QDoubleValidator(0) );
+
     connect(ui.friendSelectionWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuFriendList(QPoint)));
     connect(ui.friendSelectionWidget, SIGNAL(doubleClicked(int,QString)), this, SLOT(friendDetails()));
     connect(ui.askButton, SIGNAL(clicked()), this, SLOT(addAsk()));
@@ -42,6 +47,7 @@ ZeroReserveDialog::ZeroReserveDialog(QWidget *parent)
 
     OrderBook * asks = new OrderBook();
     OrderBook * bids = new OrderBook();
+
     ui.asksTableView->setModel( asks );
     ui.bidsTableView->setModel( bids );
 
@@ -97,7 +103,11 @@ void ZeroReserveDialog::addBid()
 {
     OrderBook * bids = dynamic_cast<OrderBook*>(ui.bidsTableView->model());
     OrderBook::Order * bid = new OrderBook::Order();
-    bid->setPrice(ui.)
+    bid->setPrice( ui.bid_price->text() );
+    bid->setCurrencyFromName( ui.CurrencySelector->currentText() );
+    bid->m_amount = ui.bid_amount->text();
+    bid->m_orderType = OrderBook::Order::BID;
+    // TODO: Add remaining fields, dito ask
     bids->addOrder( bid );
 }
 
@@ -105,5 +115,9 @@ void ZeroReserveDialog::addAsk()
 {
     OrderBook * asks = dynamic_cast<OrderBook*>(ui.asksTableView->model());
     OrderBook::Order * ask = new OrderBook::Order();
+    ask->setPrice( ui.ask_price->text() );
+    ask->setCurrencyFromName( ui.CurrencySelector->currentText() );
+    ask->m_amount = ui.ask_amount->text();
+    ask->m_orderType = OrderBook::Order::ASK;
     asks->addOrder( ask );
 }
