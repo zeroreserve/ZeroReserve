@@ -17,14 +17,27 @@
 
 #include "OrderBook.h"
 
+bool OrderBook::compareOrder( const Order * left, const Order * right ){
+    if(left->m_orderType == Order::ASK){
+        if( left->m_price_d < right->m_price_d){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        if( left->m_price_d < right->m_price_d){
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+}
+
 OrderBook::OrderBook()
 {
-    OrderBook::Order * ask = new OrderBook::Order();
-    ask->setPrice( "888.99" );
-    ask->setCurrencyFromName( "Euro" );
-    ask->m_amount = "77.77";
-    ask->m_orderType = OrderBook::Order::ASK;
-    orders.append(ask);
 }
 
 OrderBook::~OrderBook()
@@ -93,6 +106,7 @@ void OrderBook::addOrder( Order* order )
 {
     beginInsertRows( QModelIndex(), orders.size(), orders.size());
     orders.append(order);
+    qSort(orders.begin(), orders.end(), compareOrder);
     endInsertRows();
 }
 

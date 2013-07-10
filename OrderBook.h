@@ -67,6 +67,9 @@ signals:
 
 public slots:
 
+private:
+    static bool compareOrder( const Order * left, const Order * right );
+
 };
 
 #endif // ORDERBOOK_H
