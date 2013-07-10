@@ -22,8 +22,10 @@
 
 #include "ZeroReservePlugin.h"
 #include "ZeroReserveDialog.h"
+#include "OrderBook.h"
+#include "p3ZeroReserverRS.h"
 
-static void *inited = new ZeroReservePlugin() ;
+
 
 extern "C" {
 	void *RETROSHARE_PLUGIN_provide()
@@ -59,28 +61,33 @@ ZeroReservePlugin::ZeroReservePlugin()
 	mainpage = NULL ;
         mIcon = NULL ;
         mPlugInHandler = NULL;
-        mPeers = NULL;
-        mFiles = NULL;
+        m_ZeroReserve = NULL;
+//        mPeers = NULL;
+//        mFiles = NULL;
+
+        m_asks = new OrderBook();
+        m_bids = new OrderBook();
 }
 
-void ZeroReservePlugin::setInterfaces(RsPlugInInterfaces &interfaces){
-
-    mPeers = interfaces.mPeers;
-    mFiles = interfaces.mFiles;
+void ZeroReservePlugin::setInterfaces(RsPlugInInterfaces &interfaces)
+{
+//    mPeers = interfaces.mPeers;
+//    mFiles = interfaces.mFiles;
 }
 
 MainPage *ZeroReservePlugin::qt_page() const
 {
-	if(mainpage == NULL)
-                mainpage = new ZeroReserveDialog() ;
+    if(mainpage == NULL){
+        mainpage = new ZeroReserveDialog(m_bids, m_asks);
+    }
 
-	return mainpage ;
+    return mainpage ;
 }
 
 
-void ZeroReservePlugin::setPlugInHandler(RsPluginHandler *pgHandler){
+void ZeroReservePlugin::setPlugInHandler(RsPluginHandler *pgHandler)
+{
     mPlugInHandler = pgHandler;
-
 }
 
 QIcon *ZeroReservePlugin::qt_icon() const
@@ -93,6 +100,15 @@ QIcon *ZeroReservePlugin::qt_icon() const
 	}
 
 	return mIcon ;
+}
+
+RsPQIService * ZeroReservePlugin::rs_pqi_service() const
+{
+        if(m_ZeroReserve == NULL){
+                m_ZeroReserve = new p3ZeroReserveRS(mPlugInHandler) ;
+        }
+
+        return m_ZeroReserve ;
 }
 
 std::string ZeroReservePlugin::getShortPluginDescription() const

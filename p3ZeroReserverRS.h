@@ -15,36 +15,26 @@
     along with Zero Reserve.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef P3ZERORESERVERRS_H
+#define P3ZERORESERVERRS_H
 
-#ifndef ZERORESERVEDIALOG_H
-#define ZERORESERVEDIALOG_H
+#include "plugins/rspqiservice.h"
 
-#include <QPoint>
+const uint16_t RS_SERVICE_TYPE_ZERORESERVE_PLUGIN = 0xBEEF;
+static const uint32_t CONFIG_TYPE_ZERORESERVE_PLUGIN     = 0xDEADBEEF;
 
-#include "retroshare-gui/mainpage.h"
-#include "ui_ZeroReserveDialog.h"
 
-class OrderBook;
+class RsPluginHandler;
 
-class ZeroReserveDialog : public MainPage
+class p3ZeroReserveRS : public RsPQIService
 {
-    Q_OBJECT
-
 public:
-    ZeroReserveDialog( OrderBook * asks, OrderBook * bids, QWidget *parent = 0 );
+    p3ZeroReserveRS(RsPluginHandler *pgHandler);
 
-
-public slots:
-    void addBid();
-    void addAsk();
-
-private slots:
-    void contextMenuFriendList(QPoint);
-    void friendDetails();
-    void payTo();
+    virtual int tick();
 
 private:
-    Ui::ZeroReserveDialog ui;
+
 };
 
-#endif // ZERORESERVEDIALOG_H
+#endif // P3ZERORESERVERRS_H

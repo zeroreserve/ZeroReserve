@@ -21,6 +21,9 @@
 #include <retroshare/rsplugin.h>
 #include <retroshare-gui/mainpage.h>
 
+class OrderBook;
+class p3ZeroReserveRS;
+
 class ZeroReservePlugin: public RsPlugin
 {
 	public:
@@ -38,13 +41,15 @@ class ZeroReservePlugin: public RsPlugin
 
 		virtual std::string getShortPluginDescription() const ;
 		virtual std::string getPluginName() const;
+                virtual RsPQIService * rs_pqi_service() const;
 		virtual void setInterfaces(RsPlugInInterfaces& interfaces);
 	private:
 		mutable RsPluginHandler *mPlugInHandler;
-		mutable RsFiles* mFiles;
-		mutable RsPeers* mPeers;
 		mutable MainPage* mainpage ;
 		mutable QIcon* mIcon ;
+                OrderBook * m_asks;
+                OrderBook * m_bids;
+                mutable p3ZeroReserveRS * m_ZeroReserve;
 };
 
 #endif

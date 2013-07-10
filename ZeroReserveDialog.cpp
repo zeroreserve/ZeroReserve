@@ -30,7 +30,7 @@
 #define IMAGE_FRIENDINFO ":/images/peerdetails_16x16.png"
 
 
-ZeroReserveDialog::ZeroReserveDialog(QWidget *parent)
+ZeroReserveDialog::ZeroReserveDialog(OrderBook * asks, OrderBook * bids, QWidget *parent)
 : MainPage(parent)
 {
     ui.setupUi(this);
@@ -44,9 +44,6 @@ ZeroReserveDialog::ZeroReserveDialog(QWidget *parent)
     connect(ui.friendSelectionWidget, SIGNAL(doubleClicked(int,QString)), this, SLOT(friendDetails()));
     connect(ui.askButton, SIGNAL(clicked()), this, SLOT(addAsk()));
     connect(ui.bidButton, SIGNAL(clicked()), this, SLOT(addBid()));
-
-    OrderBook * asks = new OrderBook();
-    OrderBook * bids = new OrderBook();
 
     ui.asksTableView->setModel( asks );
     ui.bidsTableView->setModel( bids );
