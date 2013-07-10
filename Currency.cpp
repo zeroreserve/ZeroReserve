@@ -63,7 +63,7 @@ const char * const Currency::currencyNames[] =
         "Egypt Pound",
         "Eritrea Nakfa",
         "Ethiopia Birr",
-        "Euro Member Countries",
+        "Euro",
         "Fiji Dollar",
         "Falkland/Malvinas Pound",
         "United Kingdom Pound",
