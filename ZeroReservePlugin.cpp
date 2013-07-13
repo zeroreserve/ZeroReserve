@@ -16,15 +16,14 @@
 */
 
 
-#include <retroshare/rsplugin.h>
-#include <util/rsversion.h>
-#include <QTranslator>
-
 #include "ZeroReservePlugin.h"
 #include "ZeroReserveDialog.h"
 #include "OrderBook.h"
 #include "p3ZeroReserverRS.h"
 
+#include <retroshare/rsplugin.h>
+#include <util/rsversion.h>
+#include <QTranslator>
 
 
 extern "C" {
@@ -51,7 +50,7 @@ extern "C" {
 
 void ZeroReservePlugin::getPluginVersion(int& major,int& minor,int& svn_rev) const
 {
-	major = 5 ;
+        major = 5 ;
 	minor = 4 ;
 	svn_rev = SVN_REVISION_NUMBER ;
 }
@@ -62,7 +61,7 @@ ZeroReservePlugin::ZeroReservePlugin()
         mIcon = NULL ;
         mPlugInHandler = NULL;
         m_ZeroReserve = NULL;
-//        mPeers = NULL;
+        mPeers = NULL;
 //        mFiles = NULL;
 
         m_asks = new OrderBook();
@@ -71,14 +70,18 @@ ZeroReservePlugin::ZeroReservePlugin()
 
 void ZeroReservePlugin::setInterfaces(RsPlugInInterfaces &interfaces)
 {
-//    mPeers = interfaces.mPeers;
+    std::cerr << "ZeroReservePlugin::setInterfaces()" << std::endl;
+    mPeers = interfaces.mPeers;
+//    OrderBook::own_id = mPeers->getOwnId();
 //    mFiles = interfaces.mFiles;
 }
 
 MainPage *ZeroReservePlugin::qt_page() const
 {
+   std::cerr << "ZeroReservePlugin::qt_page()" << std::endl;
+
     if(mainpage == NULL){
-        mainpage = new ZeroReserveDialog(m_bids, m_asks);
+        mainpage = new ZeroReserveDialog( m_bids, m_asks, mPeers, m_ZeroReserve );
     }
 
     return mainpage ;
@@ -92,23 +95,25 @@ void ZeroReservePlugin::setPlugInHandler(RsPluginHandler *pgHandler)
 
 QIcon *ZeroReservePlugin::qt_icon() const
 {
-	if(mIcon == NULL)
-	{
-		Q_INIT_RESOURCE(ZeroReserve_images) ;
+    if(mIcon == NULL)
+    {
+        Q_INIT_RESOURCE(ZeroReserve_images) ;
 
-		mIcon = new QIcon(IMAGE_LINKS) ;
-	}
+        mIcon = new QIcon(IMAGE_LINKS) ;
+    }
 
-	return mIcon ;
+    return mIcon ;
 }
 
 RsPQIService * ZeroReservePlugin::rs_pqi_service() const
 {
-        if(m_ZeroReserve == NULL){
-                m_ZeroReserve = new p3ZeroReserveRS(mPlugInHandler) ;
-        }
+    std::cerr << "ZeroReservePlugin::rs_pqi_service()" << std::endl;
 
-        return m_ZeroReserve ;
+    if(m_ZeroReserve == NULL){
+        m_ZeroReserve = new p3ZeroReserveRS(mPlugInHandler) ;
+    }
+
+    return m_ZeroReserve ;
 }
 
 std::string ZeroReservePlugin::getShortPluginDescription() const

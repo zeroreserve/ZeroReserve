@@ -41,7 +41,8 @@ public:
         QString m_price;      // a string of the form "77.123" - any length. For printing
         double m_price_d;     // the amount as a double for sorting
         Currency::CurrencySympols m_currency;
-        QDateTime m_timeStamp;
+        time_t m_timeStamp;   // no more than 1 order / second
+        bool sent;            //
 
         bool setPrice( QString price );
         void setCurrencyFromName( QString currency );
@@ -59,6 +60,7 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
     void addOrder( Order* order );
+
 
 protected:
     QList < Order* > orders;

@@ -9,14 +9,16 @@ SOURCES = ZeroReserveDialog.cpp \
     paymentdialog.cpp \
     OrderBook.cpp \
     Currency.cpp \
-    p3ZeroReserveRS.cpp
+    p3ZeroReserveRS.cpp \
+    RSZeroReserveItems.cpp
 HEADERS = ZeroReserveDialog.h \
     ZeroReservePlugin.h \
     frienddetailsdialog.h \
     paymentdialog.h \
     OrderBook.h \
     Currency.h \
-    p3ZeroReserverRS.h
+    p3ZeroReserverRS.h \
+    RSZeroReserveItems.h
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
     paymentdialog.ui

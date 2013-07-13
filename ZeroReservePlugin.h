@@ -37,7 +37,7 @@ class ZeroReservePlugin: public RsPlugin
 		virtual void getPluginVersion(int& major,int& minor,int& svn_rev) const ;
 		virtual void setPlugInHandler(RsPluginHandler *pgHandler);
 
-		virtual std::string configurationFileName() const { return std::string() ; }
+                virtual std::string configurationFileName() const { return "zeroreserve.cfg" ; }
 
 		virtual std::string getShortPluginDescription() const ;
 		virtual std::string getPluginName() const;
@@ -47,6 +47,7 @@ class ZeroReservePlugin: public RsPlugin
 		mutable RsPluginHandler *mPlugInHandler;
 		mutable MainPage* mainpage ;
 		mutable QIcon* mIcon ;
+                mutable RsPeers* mPeers;
                 OrderBook * m_asks;
                 OrderBook * m_bids;
                 mutable p3ZeroReserveRS * m_ZeroReserve;

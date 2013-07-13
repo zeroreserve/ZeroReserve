@@ -16,6 +16,8 @@
 */
 
 #include "p3ZeroReserverRS.h"
+#include <iostream>
+
 
 p3ZeroReserveRS::p3ZeroReserveRS( RsPluginHandler *pgHandler ) :
         RsPQIService( RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, CONFIG_TYPE_ZERORESERVE_PLUGIN, 0, pgHandler )
@@ -24,5 +26,38 @@ p3ZeroReserveRS::p3ZeroReserveRS( RsPluginHandler *pgHandler ) :
 
 int p3ZeroReserveRS::tick()
 {
+    std::cerr << "Zero Reserve: tick()" << std::endl;
+    processIncoming();
+    sendPackets();
     return 0;
+}
+
+void p3ZeroReserveRS::processIncoming()
+{
+    RsItem *item = NULL;
+    while(NULL != (item = recvItem())){
+        handleOrder( dynamic_cast<RsZeroReserveOrderBookItem*>( item ) );
+        delete item;
+    }
+}
+
+void p3ZeroReserveRS::sendPackets()
+{
+
+}
+
+
+void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
+{
+
+}
+
+bool p3ZeroReserveRS::sendOrder( const std::string& peer_id, const OrderBook::Order * order )
+{
+    RsZeroReserveOrderBookItem * item = new RsZeroReserveOrderBookItem( order );
+    if(!item){
+            std::cerr << "Cannot allocate RsZeroReserveOrderBookItem !" << std::endl;
+            return false ;
+    }
+    sendItem( item );
 }

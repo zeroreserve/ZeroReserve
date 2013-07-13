@@ -30,9 +30,12 @@
 #define IMAGE_FRIENDINFO ":/images/peerdetails_16x16.png"
 
 
-ZeroReserveDialog::ZeroReserveDialog(OrderBook * asks, OrderBook * bids, QWidget *parent)
+ZeroReserveDialog::ZeroReserveDialog(OrderBook * asks, OrderBook * bids, RsPeers* peers, p3ZeroReserveRS * p3zr, QWidget *parent )
 : MainPage(parent)
 {
+    m_Peers = peers;
+    m_ZeroReserveRS = p3zr;
+
     ui.setupUi(this);
 
     ui.ask_price->setValidator( new QDoubleValidator(0) );
@@ -104,8 +107,11 @@ void ZeroReserveDialog::addBid()
     bid->setCurrencyFromName( ui.CurrencySelector->currentText() );
     bid->m_amount = ui.bid_amount->text();
     bid->m_orderType = OrderBook::Order::BID;
-    // TODO: Add remaining fields, dito ask
+    bid->sent = false;
+    bid->m_timeStamp = time(0);
+    bid->m_trader_id = m_Peers->getOwnId();
     bids->addOrder( bid );
+    m_ZeroReserveRS->sendOrder( m_Peers->getOwnId(), bid );
 }
 
 void ZeroReserveDialog::addAsk()
@@ -116,5 +122,19 @@ void ZeroReserveDialog::addAsk()
     ask->setCurrencyFromName( ui.CurrencySelector->currentText() );
     ask->m_amount = ui.ask_amount->text();
     ask->m_orderType = OrderBook::Order::ASK;
+    ask->sent = false;
+    ask->m_timeStamp = time(0);
+    ask->m_trader_id = m_Peers->getOwnId();
     asks->addOrder( ask );
+    broadcastOrder( ask );
+
+}
+
+void ZeroReserveDialog::broadcastOrder( OrderBook::Order * order )
+{
+    std::list< std::string > sendList;
+    m_Peers->getOnlineList(sendList);
+    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
+        m_ZeroReserveRS->sendOrder( *it, order );
+    }
 }

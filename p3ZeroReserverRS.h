@@ -20,8 +20,9 @@
 
 #include "plugins/rspqiservice.h"
 
-const uint16_t RS_SERVICE_TYPE_ZERORESERVE_PLUGIN = 0xBEEF;
-static const uint32_t CONFIG_TYPE_ZERORESERVE_PLUGIN     = 0xDEADBEEF;
+#include "RSZeroReserveItems.h"
+
+
 
 
 class RsPluginHandler;
@@ -32,8 +33,13 @@ public:
     p3ZeroReserveRS(RsPluginHandler *pgHandler);
 
     virtual int tick();
+    bool sendOrder( const std::string& peer_id, const OrderBook::Order * order );
 
 private:
+
+    void processIncoming();
+    void sendPackets();
+    void handleOrder(RsZeroReserveOrderBookItem *item);
 
 };
 

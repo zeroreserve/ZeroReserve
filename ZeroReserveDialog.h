@@ -23,15 +23,18 @@
 
 #include "retroshare-gui/mainpage.h"
 #include "ui_ZeroReserveDialog.h"
+#include "p3ZeroReserverRS.h"
 
-class OrderBook;
+
+class RsPeers;
+
 
 class ZeroReserveDialog : public MainPage
 {
     Q_OBJECT
 
 public:
-    ZeroReserveDialog( OrderBook * asks, OrderBook * bids, QWidget *parent = 0 );
+    ZeroReserveDialog( OrderBook * asks, OrderBook * bids, RsPeers* peers, p3ZeroReserveRS * p3zr, QWidget *parent = 0 );
 
 
 public slots:
@@ -45,6 +48,12 @@ private slots:
 
 private:
     Ui::ZeroReserveDialog ui;
+    RsPeers * m_Peers;
+    p3ZeroReserveRS * m_ZeroReserveRS;
+
+private:
+    void broadcastOrder( OrderBook::Order * order );
+
 };
 
 #endif // ZERORESERVEDIALOG_H

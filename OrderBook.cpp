@@ -17,6 +17,7 @@
 
 #include "OrderBook.h"
 
+
 bool OrderBook::compareOrder( const Order * left, const Order * right ){
     if(left->m_orderType == Order::ASK){
         if( left->m_price_d < right->m_price_d){
