@@ -53,13 +53,14 @@ class RsZeroReserveOrderBookItem: public RsZeroReserveItem
 public:
     RsZeroReserveOrderBookItem() :RsZeroReserveItem(RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM) {}
     RsZeroReserveOrderBookItem(void *data,uint32_t size) ;
-    RsZeroReserveOrderBookItem( const OrderBook::Order * order) ;
+    RsZeroReserveOrderBookItem( OrderBook::Order * order) ;
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
 
     virtual ~RsZeroReserveOrderBookItem() {}
     virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
+    OrderBook::Order * getOrder(){ return m_order; }
 
 private:
     OrderBook::Order * m_order;
@@ -70,8 +71,10 @@ private:
 class RsZeroReserveSerialiser: public RsSerialType
 {
 public:
-    RsZeroReserveSerialiser()
-        :RsSerialType(RS_PKT_VERSION_SERVICE, RS_SERVICE_TYPE_ZERORESERVE_PLUGIN)
+    RsZeroReserveSerialiser( OrderBook * bids, OrderBook * asks )
+        :RsSerialType(RS_PKT_VERSION_SERVICE, RS_SERVICE_TYPE_ZERORESERVE_PLUGIN),
+        m_bids(bids),
+        m_asks(asks)
     {
     }
     virtual ~RsZeroReserveSerialiser() {}
@@ -86,6 +89,8 @@ public:
         return dynamic_cast<RsZeroReserveItem *>(item)->serialise(data,*size) ;
     }
     virtual	RsItem *deserialise(void *data, uint32_t *size);
+    OrderBook * m_bids;
+    OrderBook * m_asks;
 };
 
 #endif // RSZERORESERVEITEMS_H

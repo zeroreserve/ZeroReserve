@@ -24,6 +24,7 @@
 #include <retroshare/rsplugin.h>
 #include <util/rsversion.h>
 #include <QTranslator>
+#include <QMessageBox>
 
 
 extern "C" {
@@ -110,7 +111,7 @@ RsPQIService * ZeroReservePlugin::rs_pqi_service() const
     std::cerr << "ZeroReservePlugin::rs_pqi_service()" << std::endl;
 
     if(m_ZeroReserve == NULL){
-        m_ZeroReserve = new p3ZeroReserveRS(mPlugInHandler) ;
+        m_ZeroReserve = new p3ZeroReserveRS(mPlugInHandler, m_bids, m_asks) ;
     }
 
     return m_ZeroReserve ;
@@ -142,4 +143,25 @@ QTranslator* ZeroReservePlugin::qt_translator(QApplication */*app*/, const QStri
 
 	delete(translator);
 	return NULL;
+}
+
+QDialog * ZeroReservePlugin::qt_about_page() const
+{
+        static QMessageBox *about_dialog = NULL ;
+
+        if(about_dialog == NULL)
+        {
+                about_dialog = new QMessageBox() ;
+
+                QString text ;
+                text += QObject::tr("<h3>RetroShare Zero Reserve plugin</h3><br/>   * Author: R&uuml;diger Koch<br/>" ) ;
+                text += QObject::tr("<br/>Zero Reserve implements a distributed Bitcoin Exchange based on the Ripple idea.") ;
+                text += QObject::tr("Your friend needs to run the plugin to trade with you, of course.") ;
+                text += QObject::tr("<br/><br/>This is experimental software. Use at your own risk. Don't hesitate to send comments and suggestion to anu at zerostate dot net.") ;
+
+                about_dialog->setText(text) ;
+                about_dialog->setStandardButtons(QMessageBox::Ok) ;
+        }
+
+        return about_dialog ;
 }

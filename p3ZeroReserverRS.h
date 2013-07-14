@@ -26,14 +26,15 @@
 
 
 class RsPluginHandler;
+class OrderBook;
 
 class p3ZeroReserveRS : public RsPQIService
 {
 public:
-    p3ZeroReserveRS(RsPluginHandler *pgHandler);
+    p3ZeroReserveRS(RsPluginHandler *pgHandler, OrderBook * bids, OrderBook * asks);
 
     virtual int tick();
-    bool sendOrder( const std::string& peer_id, const OrderBook::Order * order );
+    bool sendOrder( const std::string& peer_id, OrderBook::Order * order );
 
 private:
 

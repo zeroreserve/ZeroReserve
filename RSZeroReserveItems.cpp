@@ -41,7 +41,15 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
         return NULL ;
 
     try{
-        return new RsZeroReserveOrderBookItem(data, *pktsize);
+        RsZeroReserveOrderBookItem * item = new RsZeroReserveOrderBookItem(data, *pktsize);
+        OrderBook::Order * order = item->getOrder();
+        if( order->m_orderType == OrderBook::Order::ASK ){
+            m_asks->addOrder( order );
+        }
+        else{
+            m_bids->addOrder( order );
+        }
+        return item;
     }
     catch(std::exception& e){
         std::cerr << "RsZeroReserveSerialiser: deserialization error: " << e.what() << std::endl;
@@ -70,10 +78,15 @@ std::ostream& RsZeroReserveOrderBookItem::print(std::ostream &out, uint16_t inde
 
 uint32_t RsZeroReserveOrderBookItem::serial_size() const
 {
+#define CURRENCY_STRLEN 3
+#define HOLLERITH_LEN_SPEC 4
         uint32_t s = 8; /* header */
-        s += 4; /* flags */
-        s += 4; /* data_size  */
-        s += m_data_size;
+        s += m_order->m_amount.length() + HOLLERITH_LEN_SPEC;
+        s += m_order->m_price.length() + HOLLERITH_LEN_SPEC;
+        s += sizeof(uint8_t); // the type (BID / ASK)
+        s += CURRENCY_STRLEN + HOLLERITH_LEN_SPEC;
+        s += sizeof(uint64_t);
+        s+= m_order->m_trader_id.length() + HOLLERITH_LEN_SPEC;
 
         return s;
 }
@@ -81,7 +94,6 @@ uint32_t RsZeroReserveOrderBookItem::serial_size() const
 bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
 {
         uint32_t tlvsize = serial_size() ;
-        uint32_t offset = 0;
 
         if (pktsize < tlvsize)
                 return false; /* not enough space */
@@ -92,21 +104,23 @@ bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
 
         ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
 
-#ifdef RSSERIAL_DEBUG
-        std::cerr << "RsVoipSerialiser::serialiseVoipPingItem() Header: " << ok << std::endl;
-        std::cerr << "RsVoipSerialiser::serialiseVoipPingItem() Size: " << tlvsize << std::endl;
-#endif
+        uint32_t offset = 8;  // skip header
 
-        /* skip the header */
-        offset += 8;
+        std::string buf = m_order->m_amount.toStdString();
+        ok &= setRawString( data, tlvsize, &offset, buf );
 
-        /* add mandatory parts first */
-        std::string amount = m_order->m_amount.toStdString();
-        ok &= setRawString(data, tlvsize, &offset, amount);
-        ok &= setRawUInt32(data, tlvsize, &offset, m_order->m_currency);
+        buf = Currency::currencySymbols[m_order->m_currency];
+        ok &= setRawString( data, tlvsize, &offset, buf );
 
-        if (offset != tlvsize)
-        {
+        ok &= setRawUInt8( data, tlvsize, &offset, m_order->m_orderType );
+
+        buf = m_order->m_price.toStdString();
+        ok &= setRawString( data, tlvsize, &offset, buf );
+
+        ok &= setRawUInt64( data, tlvsize, &offset, m_order->m_timeStamp );
+        ok &= setRawString( data, tlvsize, &offset, m_order->m_trader_id );
+
+        if (offset != tlvsize){
                 ok = false;
                 std::cerr << "RsZeroReserveOrderBookItem::serialise() Size Error! " << std::endl;
         }
@@ -116,40 +130,58 @@ bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
 
 RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pktsize)
         : RsZeroReserveItem(RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM)
-{
-        /* get the type and size */
-        uint32_t rstype = getRsItemId(data);
-        uint32_t rssize = getRsItemSize(data);
+{   
+    /* get the type and size */
+    uint32_t rstype = getRsItemId(data);
+    uint32_t rssize = getRsItemSize(data);
 
-        uint32_t offset = 0;
+    uint32_t offset = 8;
 
 
-        if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM != getRsItemSubType(rstype)))
-                throw std::runtime_error("Wrong packet type!") ;
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM != getRsItemSubType(rstype)))
+        throw std::runtime_error("Wrong packet type!") ;
 
-        if (pktsize < rssize)    /* check size */
-                throw std::runtime_error("Not enough size!") ;
+    if (pktsize < rssize)    /* check size */
+        throw std::runtime_error("Not enough size!") ;
 
-        bool ok = true;
+    bool ok = true;
 
-        /* skip the header */
-        offset += 8;
+    m_order = new OrderBook::Order;
 
-        /* get mandatory parts first */
-        std::string amount;
-        uint32_t currency;
-        ok &= getRawString(data, rssize, &offset, amount);
-        ok &= getRawUInt32(data, rssize, &offset, &currency);
+    std::string amount;
+    ok &= getRawString(data, rssize, &offset, amount);
+    m_order->m_amount = QString::fromStdString( amount );
 
-        if (offset != rssize)
-                throw std::runtime_error("Deserialisation error!") ;
+    std::string currency;
+    ok &= getRawString(data, rssize, &offset, currency);
+    m_order->setCurrencyFromSymbol( currency );  // TODO: Check error "no such symbol"
 
-        if (!ok)
-                throw std::runtime_error("Deserialisation error!") ;
+    uint8_t order_type;
+    ok &= getRawUInt8(data, rssize, &offset, &order_type );
+    m_order->m_orderType = (OrderBook::Order::OrderType) order_type;
+
+    std::string price;
+    ok &= getRawString(data, rssize, &offset, price);
+    m_order->setPrice( QString::fromStdString( price ) );
+
+    uint64_t timestamp;
+    ok &= getRawUInt64(data, rssize, &offset, &timestamp );
+    m_order->m_timeStamp = timestamp;
+
+    std::string trader_id;
+    ok &= getRawString(data, rssize, &offset, trader_id);
+    m_order->m_trader_id = trader_id;
+
+    if (offset != rssize)
+        throw std::runtime_error("Deserialisation error!") ;
+
+    if (!ok)
+        throw std::runtime_error("Deserialisation error!") ;
 }
 
-RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem( const OrderBook::Order * order)
-        : RsZeroReserveItem(RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM)
+RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem( OrderBook::Order * order)
+        : RsZeroReserveItem(RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM),
+        m_order( order )
 {
 
 }

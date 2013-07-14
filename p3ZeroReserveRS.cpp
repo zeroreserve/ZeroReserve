@@ -19,14 +19,14 @@
 #include <iostream>
 
 
-p3ZeroReserveRS::p3ZeroReserveRS( RsPluginHandler *pgHandler ) :
+p3ZeroReserveRS::p3ZeroReserveRS( RsPluginHandler *pgHandler, OrderBook * bids, OrderBook * asks ) :
         RsPQIService( RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, CONFIG_TYPE_ZERORESERVE_PLUGIN, 0, pgHandler )
 {
+    addSerialType(new RsZeroReserveSerialiser( bids, asks ));
 }
 
 int p3ZeroReserveRS::tick()
 {
-    std::cerr << "Zero Reserve: tick()" << std::endl;
     processIncoming();
     sendPackets();
     return 0;
@@ -36,6 +36,7 @@ void p3ZeroReserveRS::processIncoming()
 {
     RsItem *item = NULL;
     while(NULL != (item = recvItem())){
+        std::cerr << "XXXXXXXXXXXX OrderBook item received" << std::endl;
         handleOrder( dynamic_cast<RsZeroReserveOrderBookItem*>( item ) );
         delete item;
     }
@@ -52,12 +53,14 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
 
 }
 
-bool p3ZeroReserveRS::sendOrder( const std::string& peer_id, const OrderBook::Order * order )
+bool p3ZeroReserveRS::sendOrder( const std::string& peer_id, OrderBook::Order * order )
 {
+    std::cerr << "Zero Reserve: Sending order to " << peer_id << std::endl;
     RsZeroReserveOrderBookItem * item = new RsZeroReserveOrderBookItem( order );
     if(!item){
             std::cerr << "Cannot allocate RsZeroReserveOrderBookItem !" << std::endl;
             return false ;
     }
+    item->PeerId( peer_id );
     sendItem( item );
 }

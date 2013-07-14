@@ -131,3 +131,16 @@ void OrderBook::Order::setCurrencyFromName( QString currency )
     }
 // TODO: throw
 }
+
+void OrderBook::Order::setCurrencyFromSymbol( const std::string & currency )
+{
+    int index = 0;
+    while(Currency::currencySymbols[ index ]){
+        if( currency == Currency::currencySymbols[ index ]){
+            this->m_currency = (Currency::CurrencySympols)index;
+            return;
+        }
+        index++;
+    }
+// TODO: throw
+}
