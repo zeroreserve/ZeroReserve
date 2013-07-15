@@ -26,15 +26,13 @@
 #include "p3ZeroReserverRS.h"
 
 
-class RsPeers;
-
 
 class ZeroReserveDialog : public MainPage
 {
     Q_OBJECT
 
 public:
-    ZeroReserveDialog( OrderBook * bids, OrderBook * asks, RsPeers* peers, p3ZeroReserveRS * p3zr, QWidget *parent = 0 );
+    ZeroReserveDialog( OrderBook * bids, OrderBook * asks, p3ZeroReserveRS * p3zr, QWidget *parent = 0 );
 
 
 public slots:
@@ -48,11 +46,7 @@ private slots:
 
 private:
     Ui::ZeroReserveDialog ui;
-    RsPeers * m_Peers;
     p3ZeroReserveRS * m_ZeroReserveRS;
-
-private:
-    void publishOrder( OrderBook::Order * order );
 
 };
 

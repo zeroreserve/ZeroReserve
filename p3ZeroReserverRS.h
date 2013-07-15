@@ -18,23 +18,27 @@
 #ifndef P3ZERORESERVERRS_H
 #define P3ZERORESERVERRS_H
 
-#include "plugins/rspqiservice.h"
 
 #include "RSZeroReserveItems.h"
 
+#include "retroshare/rspeers.h"
+#include "plugins/rspqiservice.h"
 
 
 
 class RsPluginHandler;
 class OrderBook;
+class RsPeers;
 
 class p3ZeroReserveRS : public RsPQIService
 {
 public:
-    p3ZeroReserveRS(RsPluginHandler *pgHandler, OrderBook * bids, OrderBook * asks);
+    p3ZeroReserveRS(RsPluginHandler *pgHandler, OrderBook * bids, OrderBook * asks, RsPeers* peers);
 
     virtual int tick();
     bool sendOrder( const std::string& peer_id, OrderBook::Order * order );
+    void publishOrder( OrderBook::Order * order );
+    std::string getOwnId(){ return m_peers->getOwnId(); }
 
 private:
 
@@ -45,6 +49,7 @@ private:
 private:
     OrderBook * m_bids;
     OrderBook * m_asks;
+    RsPeers * m_peers;
 };
 
 #endif // P3ZERORESERVERRS_H

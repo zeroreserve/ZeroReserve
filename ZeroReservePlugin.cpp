@@ -62,8 +62,7 @@ ZeroReservePlugin::ZeroReservePlugin()
         mIcon = NULL ;
         mPlugInHandler = NULL;
         m_ZeroReserve = NULL;
-        mPeers = NULL;
-//        mFiles = NULL;
+        m_peers = NULL;
 
         m_asks = new OrderBook();
         m_bids = new OrderBook();
@@ -71,18 +70,13 @@ ZeroReservePlugin::ZeroReservePlugin()
 
 void ZeroReservePlugin::setInterfaces(RsPlugInInterfaces &interfaces)
 {
-    std::cerr << "ZeroReservePlugin::setInterfaces()" << std::endl;
-    mPeers = interfaces.mPeers;
-//    OrderBook::own_id = mPeers->getOwnId();
-//    mFiles = interfaces.mFiles;
+    m_peers = interfaces.mPeers;
 }
 
 MainPage *ZeroReservePlugin::qt_page() const
 {
-   std::cerr << "ZeroReservePlugin::qt_page()" << std::endl;
-
     if(mainpage == NULL){
-        mainpage = new ZeroReserveDialog( m_bids, m_asks, mPeers, m_ZeroReserve );
+        mainpage = new ZeroReserveDialog( m_bids, m_asks, m_ZeroReserve );
     }
 
     return mainpage ;
@@ -108,10 +102,8 @@ QIcon *ZeroReservePlugin::qt_icon() const
 
 RsPQIService * ZeroReservePlugin::rs_pqi_service() const
 {
-    std::cerr << "ZeroReservePlugin::rs_pqi_service()" << std::endl;
-
     if(m_ZeroReserve == NULL){
-        m_ZeroReserve = new p3ZeroReserveRS(mPlugInHandler, m_bids, m_asks) ;
+        m_ZeroReserve = new p3ZeroReserveRS(mPlugInHandler, m_bids, m_asks, m_peers ) ;
     }
 
     return m_ZeroReserve ;

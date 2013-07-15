@@ -105,17 +105,18 @@ QVariant OrderBook::headerData(int section, Qt::Orientation orientation, int rol
     return QVariant();
 }
 
-void OrderBook::addOrder( Order * order )
+bool OrderBook::addOrder( Order * order )
 {
     // do not insert an order that already exists
     for(QList<Order*>::iterator it = orders.begin(); it != orders.end(); it++){
-        if( *order == *(*it) ) return;
+        if( *order == *(*it) ) return false;
     }
     std::cerr << "Zero Reserve: Inserting Type: " << (int)order->m_orderType << std::endl;
     beginInsertRows( QModelIndex(), orders.size(), orders.size());
     orders.append(order);
     qSort(orders.begin(), orders.end(), compareOrder);
     endInsertRows();
+    return true;
 }
 
 bool OrderBook::Order::setPrice(QString price)

@@ -19,10 +19,11 @@
 #include <iostream>
 
 
-p3ZeroReserveRS::p3ZeroReserveRS( RsPluginHandler *pgHandler, OrderBook * bids, OrderBook * asks ) :
+p3ZeroReserveRS::p3ZeroReserveRS( RsPluginHandler *pgHandler, OrderBook * bids, OrderBook * asks, RsPeers* peers ) :
         RsPQIService( RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, CONFIG_TYPE_ZERORESERVE_PLUGIN, 0, pgHandler ),
         m_bids(bids),
-        m_asks(asks)
+        m_asks(asks),
+        m_peers(peers)
 {
     addSerialType(new RsZeroReserveSerialiser());
 }
@@ -54,11 +55,15 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
 {
     std::cerr << "Zero Reserve: Received Item" << std::endl;
     OrderBook::Order * order = item->getOrder();
+    bool newOrder;
     if( order->m_orderType == OrderBook::Order::ASK ){
-        m_asks->addOrder( order );
+        newOrder = m_asks->addOrder( order );
     }
     else{
-        m_bids->addOrder( order );
+        newOrder = m_bids->addOrder( order );
+    }
+    if( newOrder == true ){
+        publishOrder( order );
     }
 }
 
@@ -72,4 +77,14 @@ bool p3ZeroReserveRS::sendOrder( const std::string& peer_id, OrderBook::Order * 
     }
     item->PeerId( peer_id );
     sendItem( item );
+}
+
+
+void p3ZeroReserveRS::publishOrder( OrderBook::Order * order )
+{
+    std::list< std::string > sendList;
+    m_peers->getOnlineList(sendList);
+    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
+        sendOrder( *it, order );
+    }
 }

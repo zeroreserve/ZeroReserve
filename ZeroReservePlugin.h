@@ -48,7 +48,7 @@ class ZeroReservePlugin: public RsPlugin
 		mutable RsPluginHandler *mPlugInHandler;
 		mutable MainPage* mainpage ;
 		mutable QIcon* mIcon ;
-                mutable RsPeers* mPeers;
+                mutable RsPeers* m_peers;
                 OrderBook * m_asks;
                 OrderBook * m_bids;
                 mutable p3ZeroReserveRS * m_ZeroReserve;

@@ -20,8 +20,6 @@
 #include "paymentdialog.h"
 #include "OrderBook.h"
 
-#include "retroshare/rspeers.h"
-
 #include <QMenu>
 #include <QStandardItem>
 #include <list>
@@ -30,10 +28,9 @@
 #define IMAGE_FRIENDINFO ":/images/peerdetails_16x16.png"
 
 
-ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, RsPeers* peers, p3ZeroReserveRS * p3zr, QWidget *parent )
+ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, p3ZeroReserveRS * p3zr, QWidget *parent )
 : MainPage(parent)
 {
-    m_Peers = peers;
     m_ZeroReserveRS = p3zr;
 
     ui.setupUi(this);
@@ -109,9 +106,9 @@ void ZeroReserveDialog::addBid()
     bid->m_orderType = OrderBook::Order::BID;
     bid->sent = false;
     bid->m_timeStamp = time(0);
-    bid->m_trader_id = m_Peers->getOwnId();
+    bid->m_trader_id = m_ZeroReserveRS->getOwnId();
     bids->addOrder( bid );
-    publishOrder( bid );
+    m_ZeroReserveRS->publishOrder( bid );
 }
 
 void ZeroReserveDialog::addAsk()
@@ -124,17 +121,8 @@ void ZeroReserveDialog::addAsk()
     ask->m_orderType = OrderBook::Order::ASK;
     ask->sent = false;
     ask->m_timeStamp = time(0);
-    ask->m_trader_id = m_Peers->getOwnId();
+    ask->m_trader_id = m_ZeroReserveRS->getOwnId();
     asks->addOrder( ask );
-    publishOrder( ask );
-
+    m_ZeroReserveRS->publishOrder( ask );
 }
 
-void ZeroReserveDialog::publishOrder( OrderBook::Order * order )
-{
-    std::list< std::string > sendList;
-    m_Peers->getOnlineList(sendList);
-    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
-        m_ZeroReserveRS->sendOrder( *it, order );
-    }
-}

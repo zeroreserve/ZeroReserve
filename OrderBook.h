@@ -61,7 +61,7 @@ public:
     virtual QVariant data(const QModelIndex&, int role = Qt::DisplayRole) const;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
-    void addOrder( Order* order );
+    bool addOrder( Order* order );
 
 
 protected:
