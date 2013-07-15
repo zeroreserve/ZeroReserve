@@ -47,7 +47,7 @@ public:
         bool setPrice( QString price );
         void setCurrencyFromName( QString currency );
         void setCurrencyFromSymbol( const std::string & currency );
-
+        bool operator == (const Order & other);
     };
 
 public:

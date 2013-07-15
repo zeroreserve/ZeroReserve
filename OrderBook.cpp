@@ -17,6 +17,8 @@
 
 #include "OrderBook.h"
 
+#include <iostream>
+
 
 bool OrderBook::compareOrder( const Order * left, const Order * right ){
     if(left->m_orderType == Order::ASK){
@@ -103,8 +105,13 @@ QVariant OrderBook::headerData(int section, Qt::Orientation orientation, int rol
     return QVariant();
 }
 
-void OrderBook::addOrder( Order* order )
+void OrderBook::addOrder( Order * order )
 {
+    // do not insert an order that already exists
+    for(QList<Order*>::iterator it = orders.begin(); it != orders.end(); it++){
+        if( *order == *(*it) ) return;
+    }
+    std::cerr << "Zero Reserve: Inserting Type: " << (int)order->m_orderType << std::endl;
     beginInsertRows( QModelIndex(), orders.size(), orders.size());
     orders.append(order);
     qSort(orders.begin(), orders.end(), compareOrder);
@@ -144,3 +151,18 @@ void OrderBook::Order::setCurrencyFromSymbol( const std::string & currency )
     }
 // TODO: throw
 }
+
+bool OrderBook::Order::operator == ( const OrderBook::Order & other )
+{
+    if(m_trader_id == other.m_trader_id &&
+       m_amount == other.m_amount &&
+       m_price == other.m_price &&
+       m_currency == other.m_currency &&
+       m_timeStamp == other.m_timeStamp
+       )
+        return true;
+    else
+        return false;
+}
+
+

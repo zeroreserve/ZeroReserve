@@ -34,7 +34,7 @@ class ZeroReserveDialog : public MainPage
     Q_OBJECT
 
 public:
-    ZeroReserveDialog( OrderBook * asks, OrderBook * bids, RsPeers* peers, p3ZeroReserveRS * p3zr, QWidget *parent = 0 );
+    ZeroReserveDialog( OrderBook * bids, OrderBook * asks, RsPeers* peers, p3ZeroReserveRS * p3zr, QWidget *parent = 0 );
 
 
 public slots:
@@ -52,7 +52,7 @@ private:
     p3ZeroReserveRS * m_ZeroReserveRS;
 
 private:
-    void broadcastOrder( OrderBook::Order * order );
+    void publishOrder( OrderBook::Order * order );
 
 };
 

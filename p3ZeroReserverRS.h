@@ -42,6 +42,9 @@ private:
     void sendPackets();
     void handleOrder(RsZeroReserveOrderBookItem *item);
 
+private:
+    OrderBook * m_bids;
+    OrderBook * m_asks;
 };
 
 #endif // P3ZERORESERVERRS_H

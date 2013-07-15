@@ -30,7 +30,7 @@
 #define IMAGE_FRIENDINFO ":/images/peerdetails_16x16.png"
 
 
-ZeroReserveDialog::ZeroReserveDialog(OrderBook * asks, OrderBook * bids, RsPeers* peers, p3ZeroReserveRS * p3zr, QWidget *parent )
+ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, RsPeers* peers, p3ZeroReserveRS * p3zr, QWidget *parent )
 : MainPage(parent)
 {
     m_Peers = peers;
@@ -111,7 +111,7 @@ void ZeroReserveDialog::addBid()
     bid->m_timeStamp = time(0);
     bid->m_trader_id = m_Peers->getOwnId();
     bids->addOrder( bid );
-    m_ZeroReserveRS->sendOrder( m_Peers->getOwnId(), bid );
+    publishOrder( bid );
 }
 
 void ZeroReserveDialog::addAsk()
@@ -126,11 +126,11 @@ void ZeroReserveDialog::addAsk()
     ask->m_timeStamp = time(0);
     ask->m_trader_id = m_Peers->getOwnId();
     asks->addOrder( ask );
-    broadcastOrder( ask );
+    publishOrder( ask );
 
 }
 
-void ZeroReserveDialog::broadcastOrder( OrderBook::Order * order )
+void ZeroReserveDialog::publishOrder( OrderBook::Order * order )
 {
     std::list< std::string > sendList;
     m_Peers->getOnlineList(sendList);

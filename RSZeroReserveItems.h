@@ -71,10 +71,8 @@ private:
 class RsZeroReserveSerialiser: public RsSerialType
 {
 public:
-    RsZeroReserveSerialiser( OrderBook * bids, OrderBook * asks )
-        :RsSerialType(RS_PKT_VERSION_SERVICE, RS_SERVICE_TYPE_ZERORESERVE_PLUGIN),
-        m_bids(bids),
-        m_asks(asks)
+    RsZeroReserveSerialiser()
+        :RsSerialType(RS_PKT_VERSION_SERVICE, RS_SERVICE_TYPE_ZERORESERVE_PLUGIN)
     {
     }
     virtual ~RsZeroReserveSerialiser() {}
@@ -89,8 +87,6 @@ public:
         return dynamic_cast<RsZeroReserveItem *>(item)->serialise(data,*size) ;
     }
     virtual	RsItem *deserialise(void *data, uint32_t *size);
-    OrderBook * m_bids;
-    OrderBook * m_asks;
 };
 
 #endif // RSZERORESERVEITEMS_H

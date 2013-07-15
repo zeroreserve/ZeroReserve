@@ -41,15 +41,7 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
         return NULL ;
 
     try{
-        RsZeroReserveOrderBookItem * item = new RsZeroReserveOrderBookItem(data, *pktsize);
-        OrderBook::Order * order = item->getOrder();
-        if( order->m_orderType == OrderBook::Order::ASK ){
-            m_asks->addOrder( order );
-        }
-        else{
-            m_bids->addOrder( order );
-        }
-        return item;
+        return new RsZeroReserveOrderBookItem(data, *pktsize);
     }
     catch(std::exception& e){
         std::cerr << "RsZeroReserveSerialiser: deserialization error: " << e.what() << std::endl;
