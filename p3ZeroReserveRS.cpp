@@ -63,7 +63,7 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
         newOrder = m_bids->addOrder( order );
     }
     if( newOrder == true ){
-        publishOrder( order );
+        publishOrder( order ); // republish incoming orders we didn't have yet
     }
 }
 
@@ -77,6 +77,7 @@ bool p3ZeroReserveRS::sendOrder( const std::string& peer_id, OrderBook::Order * 
     }
     item->PeerId( peer_id );
     sendItem( item );
+    return true;
 }
 
 
