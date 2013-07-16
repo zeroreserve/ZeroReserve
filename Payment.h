@@ -18,12 +18,15 @@
 #ifndef PAYMENT_H
 #define PAYMENT_H
 
+#include "TransactionManager.h"
+
 /**
-  Encapsule the payment data.
+  3 phase commit protocol for payments between peers.
   */
 
 class Payment
 {
+    friend class TransactionManager;
 public:
     Payment();
 };

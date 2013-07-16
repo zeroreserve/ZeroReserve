@@ -25,11 +25,18 @@
 #include "Currency.h"
 
 
+/**
+  An object of this class is either the bid or the ask side of the complete order book.
+  */
+
 class OrderBook : public QAbstractItemModel
 {
     Q_OBJECT
 
 public:
+    /**
+      A single order
+      */
     class Order
     {
     public:
