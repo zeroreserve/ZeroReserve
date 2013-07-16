@@ -18,6 +18,7 @@
 
 #include "frienddetailsdialog.h"
 #include "ui_frienddetailsdialog.h"
+#include "zrdb.h"
 
 #include <QString>
 
@@ -27,9 +28,16 @@ FriendDetailsDialog::FriendDetailsDialog(QWidget *parent, const std::string & ui
 {
     ui->setupUi(this);
     ui->label->setText( QString::fromUtf8( uid.c_str() ) );
+
+    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(editFriend()));
 }
 
 FriendDetailsDialog::~FriendDetailsDialog()
 {
     delete ui;
+}
+
+void FriendDetailsDialog::editFriend()
+{
+    ZrDB::Instance();
 }

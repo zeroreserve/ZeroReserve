@@ -35,6 +35,9 @@ public:
 
 private:
     Ui::FriendDetailsDialog *ui;
+
+protected slots:
+    void editFriend();
 };
 
 #endif // FRIENDDETAILSDIALOG_H
