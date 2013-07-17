@@ -82,7 +82,7 @@ void ZeroReserveDialog::friendDetails()
     const std::string uid = ui.friendSelectionWidget->selectedId( id );
     const std::string peername = rsPeers->getPeerName( uid );
 
-    FriendDetailsDialog d( this, peername );
+    FriendDetailsDialog d( uid, this, peername );
     d.exec();
 }
 

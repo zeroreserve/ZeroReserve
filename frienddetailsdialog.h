@@ -30,11 +30,12 @@ class FriendDetailsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit FriendDetailsDialog(QWidget *parent = 0, const std::string & uid = "Error. No id selected!" );
+    explicit FriendDetailsDialog( const std::string & id, QWidget *parent = 0, const std::string & name = "Error. No id selected!" );
     ~FriendDetailsDialog();
 
 private:
     Ui::FriendDetailsDialog *ui;
+    std::string m_id;
 
 protected slots:
     void editFriend();

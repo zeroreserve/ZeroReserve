@@ -58,7 +58,7 @@
    </property>
    <item>
     <property name="text">
-     <string>Test Bitcoin</string>
+     <string>Testnet Bitcoin</string>
     </property>
    </item>
    <item>
@@ -89,7 +89,7 @@
    <property name="geometry">
     <rect>
      <x>190</x>
-     <y>101</y>
+     <y>110</y>
      <width>191</width>
      <height>31</height>
     </rect>
@@ -101,11 +101,11 @@
     <double>1000000.000000000000000</double>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="debtLCD">
+  <widget class="QLCDNumber" name="balance">
    <property name="geometry">
     <rect>
      <x>190</x>
-     <y>142</y>
+     <y>160</y>
      <width>191</width>
      <height>31</height>
     </rect>
@@ -115,7 +115,7 @@
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>147</y>
+     <y>170</y>
      <width>91</width>
      <height>21</height>
     </rect>
@@ -126,14 +126,14 @@
     </font>
    </property>
    <property name="text">
-    <string>Debt</string>
+    <string>Balance</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>110</y>
+     <y>120</y>
      <width>131</width>
      <height>21</height>
     </rect>
@@ -147,39 +147,11 @@
     <string>Credit</string>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="outstandingLCD">
+  <widget class="QLCDNumber" name="yourCredit">
    <property name="geometry">
     <rect>
      <x>190</x>
-     <y>190</y>
-     <width>191</width>
-     <height>31</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_5">
-   <property name="geometry">
-    <rect>
-     <x>40</x>
-     <y>192</y>
-     <width>131</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>11</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>Outstanding</string>
-   </property>
-  </widget>
-  <widget class="QLCDNumber" name="yourCreditLCD">
-   <property name="geometry">
-    <rect>
-     <x>190</x>
-     <y>240</y>
+     <y>220</y>
      <width>191</width>
      <height>31</height>
     </rect>
@@ -189,7 +161,7 @@
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>241</y>
+     <y>220</y>
      <width>131</width>
      <height>31</height>
     </rect>

@@ -15,10 +15,12 @@
     along with Zero Reserve.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string>
+
 class Currency
 {
 public:
-    enum CurrencySympols
+    enum CurrencySymbols
     {
         AED = 0,
         AFN,
@@ -196,6 +198,7 @@ public:
 public:
     Currency();
     ~Currency();
+    static CurrencySymbols getCurrencyByName( const std::string & currency );
 
 };
 

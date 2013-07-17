@@ -18,9 +18,10 @@
 #ifndef ZRDB_H
 #define ZRDB_H
 
-#include <sqlite3.h>
+#include "util/rsthreads.h"
 
-class ZrPeer;
+#include <sqlite3.h>
+#include <string>
 
 /**
   Database class to save and load friend data and payment info. Uses sqlite3
@@ -31,17 +32,35 @@ class ZrDB
     ZrDB();
     void init();
 public:
+
+    typedef struct  {
+        std::string id;
+        std::string currency;
+        std::string our_credit; // our credit with peer
+        std::string credit;     // their credit with us
+        std::string balance;    // negative means we owe them money
+    } Credit;
+
     static ZrDB * Instance();
-    void storePeer( const ZrPeer & peer_in ) const;
-    void loadPeer( const ZrPeer & peer_out ) const;
+    void storePeer( const Credit & peer_in );
+    void loadPeer( const std::string & id, Credit & peer_out );
+    void close();
+    void peerRecordExists(){ m_peer_record_exists = true; }
+    void setPeerCredit( const std::string & credit ) { m_credit->credit = credit; }
+
     // TODO void logPayment() const;
     // TODO: void replayPaymentLog();
     // TODO: void backup() const;
     // TODO: void restore() const;
 
 private:
-    static ZrDB * instance;
+    RsMutex m_peer_mutex;
+    Credit * m_credit;
+    sqlite3 *m_db;
+    bool m_peer_record_exists;
 
+    static ZrDB * instance;
+    static RsMutex creation_mutex;
 };
 
 #endif // ZRDB_H

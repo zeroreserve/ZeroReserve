@@ -371,3 +371,14 @@ Currency::Currency()
 Currency::~Currency()
 {}
 
+Currency::CurrencySymbols Currency::getCurrencyByName( const std::string & currency )
+{
+    int index = 0;
+    while(Currency::currencyNames[ index ]){
+        if( currency == Currency::currencyNames[ index ]){
+            return (Currency::CurrencySymbols)index;
+        }
+        index++;
+    }
+// TODO: throw
+}

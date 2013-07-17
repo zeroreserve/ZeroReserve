@@ -47,7 +47,7 @@ public:
         QString m_amount;
         QString m_price;      // a string of the form "77.123" - any length. For printing
         double m_price_d;     // the amount as a double for sorting
-        Currency::CurrencySympols m_currency;
+        Currency::CurrencySymbols m_currency;
         time_t m_timeStamp;   // no more than 1 order / second
         bool sent;            //
 

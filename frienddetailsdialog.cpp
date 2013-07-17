@@ -19,17 +19,31 @@
 #include "frienddetailsdialog.h"
 #include "ui_frienddetailsdialog.h"
 #include "zrdb.h"
+#include "Currency.h"
 
 #include <QString>
+#include <QMessageBox>
 
-FriendDetailsDialog::FriendDetailsDialog(QWidget *parent, const std::string & uid ) :
+FriendDetailsDialog::FriendDetailsDialog( const std::string & uid, QWidget *parent, const std::string & name ) :
     QDialog(parent),
-    ui(new Ui::FriendDetailsDialog)
+    ui(new Ui::FriendDetailsDialog),
+    m_id(uid)
 {
     ui->setupUi(this);
-    ui->label->setText( QString::fromUtf8( uid.c_str() ) );
+    ui->label->setText( QString::fromUtf8( name.c_str() ) );
 
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(editFriend()));
+
+    ZrDB::Credit peerCredit;
+    Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
+    peerCredit.currency = Currency::currencySymbols[ sym ];
+    try {
+        ZrDB::Instance()->loadPeer( m_id, peerCredit );
+    }
+    catch( const char * e) {
+        QMessageBox::critical(0, "Error reading credit", e);
+    }
+    ui->creditSpinBox->setValue( QString::fromStdString(peerCredit.credit).toDouble() );
 }
 
 FriendDetailsDialog::~FriendDetailsDialog()
@@ -39,5 +53,15 @@ FriendDetailsDialog::~FriendDetailsDialog()
 
 void FriendDetailsDialog::editFriend()
 {
-    ZrDB::Instance();
+    ZrDB::Credit peerCredit;
+    peerCredit.id = m_id;
+    peerCredit.credit = ui->creditSpinBox->text().toStdString();
+    Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
+    peerCredit.currency = Currency::currencySymbols[ sym ];
+    try {
+        ZrDB::Instance()->storePeer( peerCredit );
+    }
+    catch( const char * e) {
+        QMessageBox::critical(0, "Error inserting credit", e);
+    }
 }

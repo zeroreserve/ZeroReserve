@@ -132,7 +132,7 @@ void OrderBook::Order::setCurrencyFromName( QString currency )
     int index = 0;
     while(Currency::currencyNames[ index ]){
         if( currency == Currency::currencyNames[ index ]){
-            this->m_currency = (Currency::CurrencySympols)index;
+            this->m_currency = (Currency::CurrencySymbols)index;
             return;
         }
         index++;
@@ -142,15 +142,7 @@ void OrderBook::Order::setCurrencyFromName( QString currency )
 
 void OrderBook::Order::setCurrencyFromSymbol( const std::string & currency )
 {
-    int index = 0;
-    while(Currency::currencySymbols[ index ]){
-        if( currency == Currency::currencySymbols[ index ]){
-            this->m_currency = (Currency::CurrencySympols)index;
-            return;
-        }
-        index++;
-    }
-// TODO: throw
+    m_currency = Currency::getCurrencyByName( currency );
 }
 
 bool OrderBook::Order::operator == ( const OrderBook::Order & other )
