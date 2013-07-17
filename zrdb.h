@@ -20,6 +20,8 @@
 
 #include <sqlite3.h>
 
+class ZrPeer;
+
 /**
   Database class to save and load friend data and payment info. Uses sqlite3
   */
@@ -31,6 +33,12 @@ class ZrDB
 public:
     static ZrDB * Instance();
     void table_exists(){ m_table_exists = 1; }
+    void storePeer( const ZrPeer & peer_in ) const;
+    void loadPeer( const ZrPeer & peer_out ) const;
+    // TODO void logPayment() const;
+    // TODO: void replayPaymentLog();
+    // TODO: void backup() const;
+    // TODO: void restore() const;
 
 private:
     static ZrDB * instance;

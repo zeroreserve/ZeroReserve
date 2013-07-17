@@ -16,6 +16,7 @@
 */
 
 #include "zrdb.h"
+#include "ZrPeer.h"
 
 #include <iostream>
 #include <map>
@@ -100,3 +101,17 @@ void ZrDB::init()
     }
     sqlite3_close(db);
 }
+
+
+void ZrDB::storePeer( const ZrPeer & peer_in ) const
+{
+
+}
+
+
+void ZrDB::loadPeer( const ZrPeer & peer_out ) const
+{
+
+}
+
+
