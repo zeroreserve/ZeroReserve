@@ -32,7 +32,6 @@ class ZrDB
     void init();
 public:
     static ZrDB * Instance();
-    void table_exists(){ m_table_exists = 1; }
     void storePeer( const ZrPeer & peer_in ) const;
     void loadPeer( const ZrPeer & peer_out ) const;
     // TODO void logPayment() const;
@@ -43,7 +42,6 @@ public:
 private:
     static ZrDB * instance;
 
-    bool m_table_exists;
 };
 
 #endif // ZRDB_H

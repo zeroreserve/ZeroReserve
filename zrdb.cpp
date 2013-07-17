@@ -19,7 +19,7 @@
 #include "ZrPeer.h"
 
 #include <iostream>
-#include <map>
+#include <vector>
 #include <exception>
 #include <QMessageBox>
 
@@ -29,11 +29,6 @@
 ZrDB * ZrDB::instance = 0;
 
 
-static int table_exist_callback(void *, int, char **, char **)
-{
-    ZrDB::Instance()->table_exists();
-    return 0;
-}
 
 static int noop_callback(void *, int, char **, char **)
 {
@@ -63,13 +58,13 @@ void ZrDB::init()
     char *zErrMsg = 0;
     int rc;
     std::string db_name = RsInit::RsConfigDirectory() + "/zeroreserve.db";
-    std::map < const char*, const char* > tables;
-    tables[ "SELECT name FROM sqlite_master WHERE type='table' AND name='peers'" ] =
-            "create table peers ( id varchar(32), currency varchar(3), credit decimal(8,8), debt decimal(8,8) )";
-    tables[ "SELECT name FROM sqlite_master WHERE type='table' AND name='config'"] =
-            "create table config ( key varchar(32), value varchar(80) )";
-    tables[ "SELECT name FROM sqlite_master WHERE type='table' AND name='payments'" ] =
-            "create table payments ( payee varchar(32), currency varchar(3), amount decimal(8,8) )";
+    std::vector < const char* > tables;
+    tables.push_back( "create table if not exists peers ( id varchar(32), currency varchar(3), credit decimal(8,8), debt decimal(8,8) )");
+    tables.push_back( "create table if not exists config ( key varchar(32), value varchar(80) )");
+    tables.push_back( "create table if not exists payments ( payee varchar(32), currency varchar(3), amount decimal(8,8) )");
+
+    tables.push_back( "create unique index if not exists id_curr on peers ( id, currency)");
+
 
     std::cerr << "Opening or creating DB " << db_name << std::endl;
     rc = sqlite3_open( db_name.c_str(), &db);
@@ -80,23 +75,13 @@ void ZrDB::init()
 
     }
 
-    for(std::map < const char*, const char* >::const_iterator it = tables.begin(); it != tables.end(); it++ ){
-        m_table_exists = 0;
-        rc = sqlite3_exec(db, (*it).first, table_exist_callback, 0, &zErrMsg);
+    for(std::vector < const char* >::const_iterator it = tables.begin(); it != tables.end(); it++ ){
+        rc = sqlite3_exec(db, *it, noop_callback, 0, &zErrMsg);
         if( rc!=SQLITE_OK ){
             std::cerr << "SQL error: " << zErrMsg << std::endl;
             sqlite3_free(zErrMsg);
-            throw "SQL Error: Cannot test table";
-        }
+            throw "SQL Error: Cannot create table";
 
-        if( ! m_table_exists ){
-            rc = sqlite3_exec(db, (*it).second, noop_callback, 0, &zErrMsg);
-            if( rc!=SQLITE_OK ){
-                std::cerr << "SQL error: " << zErrMsg << std::endl;
-                sqlite3_free(zErrMsg);
-                throw "SQL Error: Cannot create table";
-
-            }
         }
     }
     sqlite3_close(db);
