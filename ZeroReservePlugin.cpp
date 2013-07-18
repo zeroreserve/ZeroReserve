@@ -20,6 +20,7 @@
 #include "ZeroReserveDialog.h"
 #include "OrderBook.h"
 #include "p3ZeroReserverRS.h"
+#include "zrdb.h"
 
 #include <retroshare/rsplugin.h>
 #include <util/rsversion.h>
@@ -156,4 +157,10 @@ QDialog * ZeroReservePlugin::qt_about_page() const
         }
 
         return about_dialog ;
+}
+
+void ZeroReservePlugin::stop() const
+{
+    std::cerr << "Zero Reserve: Closing Database" << std::endl;
+    ZrDB::Instance()->close();
 }
