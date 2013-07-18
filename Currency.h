@@ -199,6 +199,7 @@ public:
     Currency();
     ~Currency();
     static CurrencySymbols getCurrencyByName( const std::string & currency );
+    static CurrencySymbols getCurrencyBySymbol( const std::string & currency );
 
 };
 

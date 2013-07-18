@@ -146,7 +146,7 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
 
     std::string currency;
     ok &= getRawString(data, rssize, &offset, currency);
-    m_order->setCurrencyFromSymbol( currency );  // TODO: Check error "no such symbol"
+    m_order->m_currency = Currency::getCurrencyBySymbol( currency );  // TODO: Check error "no such symbol"
 
     uint8_t order_type;
     ok &= getRawUInt8(data, rssize, &offset, &order_type );

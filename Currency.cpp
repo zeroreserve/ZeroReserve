@@ -17,6 +17,8 @@
 
 #include "Currency.h"
 
+#include <iostream>
+
 const char * const Currency::currencyNames[] =
     {
         "UAE Dirham",
@@ -371,6 +373,19 @@ Currency::Currency()
 Currency::~Currency()
 {}
 
+Currency::CurrencySymbols Currency::getCurrencyBySymbol( const std::string & currency )
+{
+    int index = 0;
+    while(Currency::currencySymbols[ index ]){
+        if( currency == Currency::currencySymbols[ index ]){
+            return (Currency::CurrencySymbols)index;
+        }
+        index++;
+    }
+    std::cerr << "Zero Reserve: Currency Symbol " << currency << " not found" << std::endl;
+// TODO: throw
+}
+
 Currency::CurrencySymbols Currency::getCurrencyByName( const std::string & currency )
 {
     int index = 0;
@@ -380,5 +395,6 @@ Currency::CurrencySymbols Currency::getCurrencyByName( const std::string & curre
         }
         index++;
     }
+    std::cerr << "Zero Reserve: Currency Name " << currency << " not found" << std::endl;
 // TODO: throw
 }
