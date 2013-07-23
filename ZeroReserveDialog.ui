@@ -281,7 +281,7 @@ p, li { white-space: pre-wrap; }
         <string>Buy</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="currencySelector">
+      <widget class="QComboBox" name="currencySelector1">
        <property name="geometry">
         <rect>
          <x>590</x>
@@ -290,11 +290,6 @@ p, li { white-space: pre-wrap; }
          <height>22</height>
         </rect>
        </property>
-       <item>
-        <property name="text">
-         <string>Zimbabwe Dollar</string>
-        </property>
-       </item>
       </widget>
      </widget>
      <widget class="QWidget" name="PaymentTab">
@@ -438,7 +433,7 @@ p, li { white-space: pre-wrap; }
         <string>Outstanding claims minus debt</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="CurrencySelector">
+      <widget class="QComboBox" name="currencySelector2">
        <property name="geometry">
         <rect>
          <x>540</x>
@@ -447,16 +442,6 @@ p, li { white-space: pre-wrap; }
          <height>22</height>
         </rect>
        </property>
-       <item>
-        <property name="text">
-         <string>Zimbabwe Dollar</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Testnet Bitcoin</string>
-        </property>
-       </item>
       </widget>
      </widget>
     </widget>

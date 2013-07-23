@@ -56,16 +56,6 @@
      <height>31</height>
     </rect>
    </property>
-   <item>
-    <property name="text">
-     <string>Testnet Bitcoin</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>Zimbabwe Dollar</string>
-    </property>
-   </item>
   </widget>
   <widget class="QLabel" name="label_2">
    <property name="geometry">

@@ -17,6 +17,7 @@
 
 #include "paymentdialog.h"
 #include "ui_paymentdialog.h"
+#include "Currency.h"
 
 PaymentDialog::PaymentDialog(QWidget *parent, const std::string & peername ) :
     QDialog(parent),
@@ -24,6 +25,11 @@ PaymentDialog::PaymentDialog(QWidget *parent, const std::string & peername ) :
 {
     ui->setupUi(this);
     ui->label->setText( QString::fromUtf8( peername.c_str() ) );
+    int index = 0;
+    while(Currency::currencyNames[ index ]){
+        ui->currencySelector->addItem( Currency::currencyNames[ index ] );
+        index++;
+    }
 }
 
 PaymentDialog::~PaymentDialog()

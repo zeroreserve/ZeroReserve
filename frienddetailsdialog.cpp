@@ -30,6 +30,13 @@ FriendDetailsDialog::FriendDetailsDialog( const std::string & uid, QWidget *pare
     m_id(uid)
 {
     ui->setupUi(this);
+
+    int index = 0;
+    while(Currency::currencyNames[ index ]){
+        ui->currencySelector->addItem( Currency::currencyNames[ index ] );
+        index++;
+    }
+
     ui->label->setText( QString::fromUtf8( name.c_str() ) );
 
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(editFriend()));

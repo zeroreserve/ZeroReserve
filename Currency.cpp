@@ -21,6 +21,14 @@
 
 const char * const Currency::currencyNames[] =
     {
+#ifdef ZR_TESTNET
+        "Fools Gold (ug)",
+        "German Papiermark (1923)",
+        "Testnet Bitcoin",
+        "Zimbabwe Dollar",
+        0
+#else
+
         "UAE Dirham",
         "Afghanistan Afghani",
         "Albania Lek",
@@ -29,6 +37,7 @@ const char * const Currency::currencyNames[] =
         "Angola Kwanza",
         "Argentina Peso",
         "Australia Dollar",
+        "Gold (troy ounce)",
         "Aruba Guilder",
         "Azerbaijan New Manat",
         "Bosnia and Herzegovina Convertible Marka",
@@ -160,7 +169,6 @@ const char * const Currency::currencyNames[] =
         "El Salvador Colon",
         "Syria Pound",
         "Swaziland Lilangeni",
-        "Testnet Bitcoin",
         "Thailand Baht",
         "Tajikistan Somoni",
         "Turkmenistan Manat",
@@ -188,12 +196,19 @@ const char * const Currency::currencyNames[] =
         "Yemen Rial",
         "South Africa Rand",
         "Zambia Kwacha",
-        "Zimbabwe Dollar",
         0
+#endif // ZR_TESTNET
     };
     
 const char * const Currency::currencySymbols[] =
     {
+#ifdef ZR_TESTNET
+        "FAU",
+        "GPM",
+        "TBC",
+        "ZWD",
+        0
+#else
         "AED",
         "AFN",
         "ALL",
@@ -333,7 +348,6 @@ const char * const Currency::currencySymbols[] =
         "SVC",
         "SYP",
         "SZL",
-        "TBC",
         "THB",
         "TJS",
         "TMT",
@@ -361,8 +375,8 @@ const char * const Currency::currencySymbols[] =
         "YER",
         "ZAR",
         "ZMW",
-        "ZWD",
         0
+#endif // ZR_TESTNET
     };
 
 

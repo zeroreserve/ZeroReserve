@@ -34,6 +34,18 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, p3ZeroR
     m_ZeroReserveRS = p3zr;
 
     ui.setupUi(this);
+    int index = 0;
+    while(Currency::currencyNames[ index ]){
+        ui.currencySelector2->addItem( Currency::currencyNames[ index ] );
+#ifdef ZR_TESTNET
+        if(QString(Currency::currencyNames[ index ]) != "Testnet Bitcoin" ){
+#else
+        if(QString(Currency::currencyNames[ index ]) != "Bitcoin" ){
+#endif
+            ui.currencySelector1->addItem( Currency::currencyNames[ index ] );
+        }
+        index++;
+    }
 
     ui.ask_price->setValidator( new QDoubleValidator(0) );
     ui.ask_amount->setValidator( new QDoubleValidator(0) );
@@ -101,7 +113,7 @@ void ZeroReserveDialog::addBid()
     OrderBook * bids = dynamic_cast<OrderBook*>(ui.bidsTableView->model());
     OrderBook::Order * bid = new OrderBook::Order();
     bid->setPrice( ui.bid_price->text() );
-    bid->m_currency = Currency::getCurrencyByName( ui.CurrencySelector->currentText().toStdString() );
+    bid->m_currency = Currency::getCurrencyByName( ui.currencySelector1->currentText().toStdString() );
     bid->m_amount = ui.bid_amount->text();
     bid->m_orderType = OrderBook::Order::BID;
     bid->sent = false;
@@ -116,7 +128,7 @@ void ZeroReserveDialog::addAsk()
     OrderBook * asks = dynamic_cast<OrderBook*>(ui.asksTableView->model());
     OrderBook::Order * ask = new OrderBook::Order();
     ask->setPrice( ui.ask_price->text() );
-    ask->m_currency = Currency::getCurrencyByName( ui.CurrencySelector->currentText().toStdString() );
+    ask->m_currency = Currency::getCurrencyByName( ui.currencySelector1->currentText().toStdString() );
     ask->m_amount = ui.ask_amount->text();
     ask->m_orderType = OrderBook::Order::ASK;
     ask->sent = false;

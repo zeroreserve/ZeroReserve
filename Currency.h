@@ -22,6 +22,12 @@ class Currency
 public:
     enum CurrencySymbols
     {
+#ifdef ZR_TESTNET
+        FAU = 0,
+        GPM,
+        TBC,
+        ZWD
+#else
         AED = 0,
         AFN,
         ALL,
@@ -30,6 +36,7 @@ public:
         AOA,
         ARS,
         AUD,
+        AUR,
         AWG,
         AZN,
         BAM,
@@ -161,7 +168,6 @@ public:
         SVC,
         SYP,
         SZL,
-        TBC,
         THB,
         TJS,
         TMT,
@@ -188,8 +194,8 @@ public:
         XPF,
         YER,
         ZAR,
-        ZMW,
-        ZWD
+        ZMW
+#endif // ZR_TESTNET
     };
 
     static const char * const currencyNames[];
