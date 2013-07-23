@@ -16,7 +16,6 @@
 */
 
 #include "zrdb.h"
-#include "ZrPeer.h"
 
 #include <iostream>
 #include <sstream>
