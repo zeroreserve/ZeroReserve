@@ -3,7 +3,7 @@ ZeroReserve
 
 Friend 2 Friend Payment and Bitcoin exchange
 
-Prerequisite for building is a successful RetroShare build.
+Prerequisite for building is a successful RetroShare build and sqlite3.
 
 To build, checkout the sources to the plugins directory of Retroshare and build with
 
