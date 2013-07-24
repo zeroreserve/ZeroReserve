@@ -26,7 +26,7 @@ public:
         FAU = 0,
         GPM,
         TBC,
-        ZWD
+        ZWD,
 #else
         AED = 0,
         AFN,
@@ -194,8 +194,9 @@ public:
         XPF,
         YER,
         ZAR,
-        ZMW
+        ZMW,
 #endif // ZR_TESTNET
+        INVALID
     };
 
     static const char * const currencyNames[];

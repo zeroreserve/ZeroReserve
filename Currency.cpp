@@ -397,7 +397,7 @@ Currency::CurrencySymbols Currency::getCurrencyBySymbol( const std::string & cur
         index++;
     }
     std::cerr << "Zero Reserve: Currency Symbol " << currency << " not found" << std::endl;
-// TODO: throw
+    return INVALID;
 }
 
 Currency::CurrencySymbols Currency::getCurrencyByName( const std::string & currency )
@@ -410,5 +410,5 @@ Currency::CurrencySymbols Currency::getCurrencyByName( const std::string & curre
         index++;
     }
     std::cerr << "Zero Reserve: Currency Name " << currency << " not found" << std::endl;
-// TODO: throw
+    return INVALID;
 }
