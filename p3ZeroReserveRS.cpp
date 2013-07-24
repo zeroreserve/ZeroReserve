@@ -19,6 +19,7 @@
 #include <iostream>
 
 
+
 p3ZeroReserveRS::p3ZeroReserveRS( RsPluginHandler *pgHandler, OrderBook * bids, OrderBook * asks, RsPeers* peers ) :
         RsPQIService( RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, CONFIG_TYPE_ZERORESERVE_PLUGIN, 0, pgHandler ),
         m_bids(bids),
@@ -40,7 +41,7 @@ void p3ZeroReserveRS::processIncoming()
     while(NULL != (item = recvItem())){
         switch( item->PacketSubType() )
         {
-        case RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM:
+        case RsZeroReserveItem::ZERORESERVE_ORDERBOOK_ITEM:
             handleOrder( dynamic_cast<RsZeroReserveOrderBookItem*>( item ) );
             break;
         default:

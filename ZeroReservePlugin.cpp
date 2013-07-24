@@ -28,12 +28,13 @@
 #include <QMessageBox>
 
 
+ZeroReservePlugin * g_ZeroReservePlugin;
+
 extern "C" {
 	void *RETROSHARE_PLUGIN_provide()
 	{
-		static ZeroReservePlugin *p = new ZeroReservePlugin() ;
-
-		return (void*)p ;
+        g_ZeroReservePlugin = new ZeroReservePlugin() ;
+        return (void*) g_ZeroReservePlugin;
 	}
 	// This symbol contains the svn revision number grabbed from the executable. 
 	// It will be tested by RS to load the plugin automatically, since it is safe to load plugins
@@ -77,7 +78,7 @@ void ZeroReservePlugin::setInterfaces(RsPlugInInterfaces &interfaces)
 MainPage *ZeroReservePlugin::qt_page() const
 {
     if(mainpage == NULL){
-        mainpage = new ZeroReserveDialog( m_bids, m_asks, m_ZeroReserve );
+        mainpage = new ZeroReserveDialog( m_bids, m_asks );
     }
 
     return mainpage ;

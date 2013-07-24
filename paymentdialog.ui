@@ -47,7 +47,7 @@
     <string>Error, no friend selected</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QLineEdit" name="amount">
    <property name="geometry">
     <rect>
      <x>215</x>

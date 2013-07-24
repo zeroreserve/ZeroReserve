@@ -19,6 +19,11 @@
 #ifndef TRANSACTIONMANAGER_H
 #define TRANSACTIONMANAGER_H
 
+#include <map>
+#include <string>
+
+class RsZeroReserveTxItem;
+class RsZeroReserveInitTxItem;
 
 /**
   Manage multi hop transaction. The payer is the coordiantor, all in between
@@ -29,7 +34,39 @@
 class TransactionManager
 {
 public:
+    typedef std::map< std::string, TransactionManager *> TxManagers;
+    enum TxPhase {
+        INIT = 0,
+        QUERY,
+        VOTE,
+        COMMIT,
+        ACK_COMMIT,
+        ABORT,
+        ACK
+    };
+
     TransactionManager();
+    ~TransactionManager();
+
+    bool initCoordinator( const std::string & payee, const std::string & amount );
+    bool initCohort( RsZeroReserveInitTxItem * item );
+
+    static bool handleTxItem( RsZeroReserveTxItem * item );
+
+private:
+    bool processItem( RsZeroReserveTxItem * item );
+    static void abortTx( RsZeroReserveTxItem * item );
+
+    enum Role {
+         Manager = 0,
+         Payee,
+         Hop
+    };
+
+    Role role;
+    std::string coordinator;
+
+    static TxManagers currentTX;
 };
 
 #endif // TRANSACTIONMANAGER_H

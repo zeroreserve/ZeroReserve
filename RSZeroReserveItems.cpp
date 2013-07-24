@@ -27,6 +27,8 @@
 const uint16_t RS_SERVICE_TYPE_ZERORESERVE_PLUGIN = 0xBEEF;
 const uint32_t CONFIG_TYPE_ZERORESERVE_PLUGIN     = 0xDEADBEEF;
 
+#define CURRENCY_STRLEN 3
+#define HOLLERITH_LEN_SPEC 4
 
 RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
 {
@@ -70,8 +72,6 @@ std::ostream& RsZeroReserveOrderBookItem::print(std::ostream &out, uint16_t inde
 
 uint32_t RsZeroReserveOrderBookItem::serial_size() const
 {
-#define CURRENCY_STRLEN 3
-#define HOLLERITH_LEN_SPEC 4
         uint32_t s = 8; /* header */
         s += m_order->m_amount.length() + HOLLERITH_LEN_SPEC;
         s += m_order->m_price.length() + HOLLERITH_LEN_SPEC;
@@ -121,7 +121,7 @@ bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
 }
 
 RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pktsize)
-        : RsZeroReserveItem(RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM)
+        : RsZeroReserveItem( ZERORESERVE_ORDERBOOK_ITEM )
 {   
     /* get the type and size */
     uint32_t rstype = getRsItemId(data);
@@ -130,7 +130,7 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
     uint32_t offset = 8;
 
 
-    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM != getRsItemSubType(rstype)))
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_ORDERBOOK_ITEM != getRsItemSubType(rstype)))
         throw std::runtime_error("Wrong packet type!") ;
 
     if (pktsize < rssize)    /* check size */
@@ -164,16 +164,155 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
     ok &= getRawString(data, rssize, &offset, trader_id);
     m_order->m_trader_id = trader_id;
 
-    if (offset != rssize)
-        throw std::runtime_error("Deserialisation error!") ;
-
-    if (!ok)
+    if (offset != rssize || !ok )
         throw std::runtime_error("Deserialisation error!") ;
 }
 
 RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem( OrderBook::Order * order)
-        : RsZeroReserveItem(RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM),
+        : RsZeroReserveItem( ZERORESERVE_ORDERBOOK_ITEM ),
         m_order( order )
 {
 
 }
+
+
+//// Begin TX Items  /////
+
+
+RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SUBTYPE zeroreserve_subtype )
+        : RsZeroReserveItem( zeroreserve_subtype )
+{
+    uint32_t rssize = getRsItemSize(data);
+    if( zeroreserve_subtype == ZERORESERVE_TX_ITEM ){
+        /* get the type and size */
+        uint32_t rstype = getRsItemId(data);
+
+        if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_TX_ITEM != getRsItemSubType(rstype)))
+            throw std::runtime_error("Wrong packet type!") ;
+
+        if (pktsize < rssize)    /* check size */
+            throw std::runtime_error("Not enough size!") ;
+    }
+
+    m_offset = 8;
+    bool ok = true;
+
+    ok &= getRawUInt8(data, rssize, &m_offset, &m_TxPhase );
+
+    if ( !ok )
+        throw std::runtime_error("Deserialisation error!") ;
+}
+
+uint32_t RsZeroReserveTxItem::serial_size() const
+{
+    return 8                    //  header
+            + sizeof(uint8_t);  // TX Phase
+}
+
+
+
+bool RsZeroReserveTxItem::serialise(void *data, uint32_t& pktsize)
+{
+    uint32_t tlvsize = serial_size() ;
+
+    if (pktsize < tlvsize)
+        return false; /* not enough space */
+
+    pktsize = tlvsize;
+
+    bool ok = true;
+
+    ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
+
+    m_offset = 8;  // skip header
+
+    ok &= setRawUInt8( data, tlvsize, &m_offset, m_TxPhase );
+
+    return ok;
+}
+
+std::ostream& RsZeroReserveTxItem::print(std::ostream &out, uint16_t indent)
+{
+    printRsItemBase(out, "RsZeroReserveTxItem", indent);
+    uint16_t int_Indent = indent + 2;
+    printIndent(out, int_Indent);
+    out << "TX Phase : " << m_TxPhase << std::endl;
+
+    printRsItemEnd(out, "RsZeroReserveTxItem", indent);
+    return out;
+}
+
+
+
+//// Begin TX INIT Item  /////
+
+
+RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
+        : RsZeroReserveTxItem( data, pktsize, ZERORESERVE_TX_INIT_ITEM )
+{
+    uint32_t rstype = getRsItemId(data);
+    uint32_t rssize = getRsItemSize(data);
+
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_TX_ITEM != getRsItemSubType(rstype)))
+        throw std::runtime_error("Wrong packet type!") ;
+
+    if (pktsize < rssize)    /* check size */
+        throw std::runtime_error("Not enough size!") ;
+
+    bool ok = true;
+
+    ok &= getRawUInt8(data, rssize, &m_offset, &m_Role );
+    ok &= getRawString(data, rssize, &m_offset, m_amount );
+    ok &= getRawString(data, rssize, &m_offset, m_currency );
+
+    if ( !ok )
+        throw std::runtime_error("Deserialisation error!") ;
+}
+
+
+uint32_t RsZeroReserveInitTxItem::serial_size() const
+{
+    return RsZeroReserveTxItem::serial_size()
+            + sizeof(uint8_t);  // Role
+            + CURRENCY_STRLEN + HOLLERITH_LEN_SPEC     // currency
+            + m_amount.length() + HOLLERITH_LEN_SPEC;  // amount
+}
+
+
+
+bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
+{
+    bool ok = true;
+    RsZeroReserveTxItem::serialise( data, pktsize);
+
+    uint32_t tlvsize = serial_size() ;
+
+    if (m_offset != tlvsize){
+        ok = false;
+        std::cerr << "RsZeroReserveInitTxItem::serialise() Size Error! " << std::endl;
+    }
+
+    ok &= setRawUInt8( data, tlvsize, &m_offset, m_Role );
+    ok &= setRawString( data, tlvsize, &m_offset, m_amount );
+    ok &= setRawString( data, tlvsize, &m_offset, m_currency );
+
+    return ok;
+}
+
+std::ostream& RsZeroReserveInitTxItem::print(std::ostream &out, uint16_t indent)
+{
+    printRsItemBase(out, "RsZeroReserveInitTxItem", indent);
+    uint16_t int_Indent = indent + 2;
+    printIndent(out, int_Indent);
+    out << "Role     : " << m_Role << std::endl;
+
+    printIndent(out, int_Indent);
+    out << "Amount   : " << m_amount << std::endl;
+
+    printIndent(out, int_Indent);
+    out << "Currency : " << m_currency << std::endl;
+
+    printRsItemEnd(out, "RsZeroReserveInitTxItem", indent);
+    return out;
+}
+

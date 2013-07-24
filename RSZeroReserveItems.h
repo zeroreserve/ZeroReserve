@@ -26,8 +26,6 @@
 const uint8_t QOS_PRIORITY_RS_ZERORESERVE = 3;
 extern const uint16_t RS_SERVICE_TYPE_ZERORESERVE_PLUGIN;
 extern const uint32_t CONFIG_TYPE_ZERORESERVE_PLUGIN;
-const uint8_t RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM = 0x01;
-
 
 
 class RsZeroReserveItem: public RsItem
@@ -38,6 +36,11 @@ public:
     {
         setPriorityLevel(QOS_PRIORITY_RS_ZERORESERVE) ;
     }
+    enum RS_PKT_SUBTYPE {
+        ZERORESERVE_ORDERBOOK_ITEM = 0x01,
+        ZERORESERVE_TX_ITEM,
+        ZERORESERVE_TX_INIT_ITEM
+    };
 
     virtual ~RsZeroReserveItem() {};
     virtual void clear() {};
@@ -47,11 +50,59 @@ public:
     virtual uint32_t serial_size() const = 0 ;
 };
 
+class RsZeroReserveTxItem: public RsZeroReserveItem
+{
+    RsZeroReserveTxItem();
+public:
+    RsZeroReserveTxItem( RS_PKT_SUBTYPE zeroreserve_subtype = ZERORESERVE_TX_ITEM) :
+        RsZeroReserveItem( (uint8_t)zeroreserve_subtype ) {}
+
+    RsZeroReserveTxItem(void *data,uint32_t size, RS_PKT_SUBTYPE zeroreserve_subtype = ZERORESERVE_TX_ITEM );
+    RsZeroReserveTxItem( uint8_t phase, RS_PKT_SUBTYPE subtype = ZERORESERVE_TX_ITEM );
+
+    virtual bool serialise(void *data,uint32_t& size) ;
+    virtual uint32_t serial_size() const ;
+
+    virtual ~RsZeroReserveTxItem() {}
+    virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
+
+    uint8_t getTxPhase();
+
+protected:
+    uint8_t m_TxPhase;
+    uint32_t m_offset;
+
+};
+
+
+class RsZeroReserveInitTxItem: public RsZeroReserveTxItem
+{
+    RsZeroReserveInitTxItem();
+public:
+    RsZeroReserveInitTxItem(void *data,uint32_t size) ;
+    RsZeroReserveInitTxItem( uint8_t phase, const std::string & amount );
+
+    virtual bool serialise(void *data,uint32_t& size) ;
+    virtual uint32_t serial_size() const ;
+
+    virtual ~RsZeroReserveInitTxItem() {}
+    virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
+
+    std::string getAmount(){ return m_amount; }
+    std::string getCurrency(){ return m_currency; }
+    uint8_t getRole();
+
+private:
+    uint8_t m_Role;
+    std::string m_amount;
+    std::string m_currency;
+};
+
 
 class RsZeroReserveOrderBookItem: public RsZeroReserveItem
 {
 public:
-    RsZeroReserveOrderBookItem() :RsZeroReserveItem(RS_PKT_SUBTYPE_ZERORESERVE_ORDERBOOKITEM) {}
+    RsZeroReserveOrderBookItem() :RsZeroReserveItem( ZERORESERVE_ORDERBOOK_ITEM ) {}
     RsZeroReserveOrderBookItem(void *data,uint32_t size) ;
     RsZeroReserveOrderBookItem( OrderBook::Order * order) ;
 

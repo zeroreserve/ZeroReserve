@@ -18,10 +18,12 @@
 #include "paymentdialog.h"
 #include "ui_paymentdialog.h"
 #include "Currency.h"
+#include "TransactionManager.h"
 
-PaymentDialog::PaymentDialog(QWidget *parent, const std::string & peername ) :
-    QDialog(parent),
-    ui(new Ui::PaymentDialog)
+PaymentDialog::PaymentDialog( const std::string & payee, QWidget *parent, const std::string & peername ) :
+    QDialog( parent ),
+    ui( new Ui::PaymentDialog ),
+    m_payee( payee )
 {
     ui->setupUi(this);
     ui->label->setText( QString::fromUtf8( peername.c_str() ) );
@@ -30,9 +32,16 @@ PaymentDialog::PaymentDialog(QWidget *parent, const std::string & peername ) :
         ui->currencySelector->addItem( Currency::currencyNames[ index ] );
         index++;
     }
+    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT( payTo()));
 }
 
 PaymentDialog::~PaymentDialog()
 {
     delete ui;
+}
+
+void PaymentDialog::payTo()
+{
+    TransactionManager * tm = new TransactionManager();
+    tm->initCoordinator( m_payee, ui->amount->text().toStdString() );
 }

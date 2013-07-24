@@ -26,34 +26,37 @@ class p3ZeroReserveRS;
 
 class ZeroReservePlugin: public RsPlugin
 {
-	public:
-		ZeroReservePlugin() ;
-		virtual ~ZeroReservePlugin() {}
+public:
+    ZeroReservePlugin() ;
+    virtual ~ZeroReservePlugin() {}
 
-		virtual MainPage       *qt_page()       			const	;
-		virtual QIcon          *qt_icon()       			const	;
-		virtual QTranslator    *qt_translator(QApplication *app, const QString& languageCode, const QString& externalDir) const;
-                virtual QDialog * qt_about_page() const;
-                virtual void stop() const;
+    virtual MainPage       *qt_page()       			const	;
+    virtual QIcon          *qt_icon()       			const	;
+    virtual QTranslator    *qt_translator(QApplication *app, const QString& languageCode, const QString& externalDir) const;
+    virtual QDialog * qt_about_page() const;
+    virtual void stop() const;
 
-		virtual void getPluginVersion(int& major,int& minor,int& svn_rev) const ;
-		virtual void setPlugInHandler(RsPluginHandler *pgHandler);
+    virtual void getPluginVersion(int& major,int& minor,int& svn_rev) const ;
+    virtual void setPlugInHandler(RsPluginHandler *pgHandler);
 
-                virtual std::string configurationFileName() const { return "zeroreserve.cfg" ; }
+    virtual std::string configurationFileName() const { return "zeroreserve.cfg" ; }
 
-		virtual std::string getShortPluginDescription() const ;
-		virtual std::string getPluginName() const;
-                virtual RsPQIService * rs_pqi_service() const;
-		virtual void setInterfaces(RsPlugInInterfaces& interfaces);
-	private:
-		mutable RsPluginHandler *mPlugInHandler;
-		mutable MainPage* mainpage ;
-		mutable QIcon* mIcon ;
-                mutable RsPeers* m_peers;
-                OrderBook * m_asks;
-                OrderBook * m_bids;
-                mutable p3ZeroReserveRS * m_ZeroReserve;
+    virtual std::string getShortPluginDescription() const ;
+    virtual std::string getPluginName() const;
+    virtual RsPQIService * rs_pqi_service() const;
+    virtual void setInterfaces(RsPlugInInterfaces& interfaces);
+private:
+    mutable RsPluginHandler *mPlugInHandler;
+    mutable MainPage* mainpage ;
+    mutable QIcon* mIcon ;
+    mutable RsPeers* m_peers;
+    OrderBook * m_asks;
+    OrderBook * m_bids;
+    mutable p3ZeroReserveRS * m_ZeroReserve;
 };
+
+extern ZeroReservePlugin * g_ZeroReservePlugin;
+
 
 #endif
 

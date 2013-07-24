@@ -30,11 +30,16 @@ class PaymentDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PaymentDialog(QWidget *parent = 0, const std::string & peername = "Error, no friend selected");
+    explicit PaymentDialog( const std::string & payee, QWidget *parent = 0,
+                           const std::string & peername = "Error, no friend selected" );
     ~PaymentDialog();
+
+private slots:
+    void payTo();
 
 private:
     Ui::PaymentDialog *ui;
+    const std::string m_payee;
 };
 
 #endif // PAYMENTDIALOG_H
