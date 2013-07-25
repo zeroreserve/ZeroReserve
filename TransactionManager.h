@@ -44,11 +44,16 @@ public:
         ABORT,
         ACK
     };
+    enum Role {
+         Manager = 0,
+         Payee,
+         Hop
+    };
 
     TransactionManager();
     ~TransactionManager();
 
-    bool initCoordinator( const std::string & payee, const std::string & amount );
+    bool initCoordinator( const std::string & payee, const std::string & amount, const std::string & currency );
     bool initCohort( RsZeroReserveInitTxItem * item );
 
     static bool handleTxItem( RsZeroReserveTxItem * item );
@@ -56,12 +61,6 @@ public:
 private:
     bool processItem( RsZeroReserveTxItem * item );
     static void abortTx( RsZeroReserveTxItem * item );
-
-    enum Role {
-         Manager = 0,
-         Payee,
-         Hop
-    };
 
     Role role;
     std::string coordinator;

@@ -21,6 +21,7 @@
 
 #include "serialiser/rsserial.h"
 #include "OrderBook.h"
+#include "TransactionManager.h"
 
 
 const uint8_t QOS_PRIORITY_RS_ZERORESERVE = 3;
@@ -58,7 +59,7 @@ public:
         RsZeroReserveItem( (uint8_t)zeroreserve_subtype ) {}
 
     RsZeroReserveTxItem(void *data,uint32_t size, RS_PKT_SUBTYPE zeroreserve_subtype = ZERORESERVE_TX_ITEM );
-    RsZeroReserveTxItem( uint8_t phase, RS_PKT_SUBTYPE subtype = ZERORESERVE_TX_ITEM );
+    RsZeroReserveTxItem( TransactionManager::TxPhase phase, RS_PKT_SUBTYPE subtype = ZERORESERVE_TX_ITEM );
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
@@ -66,10 +67,10 @@ public:
     virtual ~RsZeroReserveTxItem() {}
     virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
 
-    uint8_t getTxPhase();
+    TransactionManager::TxPhase getTxPhase() { return m_TxPhase; }
 
 protected:
-    uint8_t m_TxPhase;
+    TransactionManager::TxPhase m_TxPhase;
     uint32_t m_offset;
 
 };
@@ -80,7 +81,7 @@ class RsZeroReserveInitTxItem: public RsZeroReserveTxItem
     RsZeroReserveInitTxItem();
 public:
     RsZeroReserveInitTxItem(void *data,uint32_t size) ;
-    RsZeroReserveInitTxItem( uint8_t phase, const std::string & amount );
+    RsZeroReserveInitTxItem( TransactionManager::TxPhase phase, const std::string & amount, const std::string & currency );
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
@@ -90,10 +91,10 @@ public:
 
     std::string getAmount(){ return m_amount; }
     std::string getCurrency(){ return m_currency; }
-    uint8_t getRole();
+    TransactionManager::Role getRole() { return m_Role; }
 
 private:
-    uint8_t m_Role;
+    TransactionManager::Role m_Role;
     std::string m_amount;
     std::string m_currency;
 };

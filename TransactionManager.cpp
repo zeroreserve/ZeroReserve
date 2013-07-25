@@ -21,8 +21,13 @@
 #include "p3ZeroReserverRS.h"
 
 
+
+TransactionManager::TxManagers TransactionManager::currentTX;
+
+
 bool TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
 {
+    std::cerr << "Zero Reserve: TX Manger handling incoming item" << std::endl;
     std::string id = item->PeerId();
     TxManagers::iterator it = currentTX.find( id );
     if( it == currentTX.end() ){
@@ -51,19 +56,25 @@ TransactionManager::TransactionManager()
 
 bool TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
 {
+    std::cerr << "Zero Reserve: Payment request for " << item->getAmount() << " "
+              << item->getCurrency() << " received" <<
+                 "Setting TX manager up as cohorte" << std::endl;
     role = (Role)item->getRole();
     coordinator = item->PeerId();
     // TODO: multi hop
     RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( ACK );
+    reply->PeerId( coordinator );
     p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     p3zs->sendItem( reply ); // TODO: error  handling
     return true;
 }
 
-bool TransactionManager::initCoordinator( const std::string & payee, const std::string & amount )
+bool TransactionManager::initCoordinator( const std::string & payee, const std::string & amount, const std::string & currency )
 {
+    std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
     role = Manager;
-    RsZeroReserveInitTxItem * initItem = new RsZeroReserveInitTxItem( INIT, amount);
+    RsZeroReserveInitTxItem * initItem = new RsZeroReserveInitTxItem( INIT, amount, currency);
+    initItem->PeerId( payee );
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     p3zr->sendItem( initItem );
     return true;
@@ -83,6 +94,7 @@ bool TransactionManager::processItem( RsZeroReserveTxItem * item )
     case COMMIT:
         break;
     case ACK:
+        std::cerr << "Zero Reserve: TX Manager: Received Acknowledgement" << std::endl;
         break;
     case ABORT:
         break;

@@ -44,6 +44,10 @@ void p3ZeroReserveRS::processIncoming()
         case RsZeroReserveItem::ZERORESERVE_ORDERBOOK_ITEM:
             handleOrder( dynamic_cast<RsZeroReserveOrderBookItem*>( item ) );
             break;
+        case RsZeroReserveItem::ZERORESERVE_TX_INIT_ITEM:
+        case RsZeroReserveItem::ZERORESERVE_TX_ITEM:
+            TransactionManager::handleTxItem( dynamic_cast<RsZeroReserveTxItem*>( item ) );
+            break;
         default:
             std::cerr << "Zero Reserve: Received Item unknown" << std::endl;
         }

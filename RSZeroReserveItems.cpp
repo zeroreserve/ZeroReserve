@@ -32,9 +32,7 @@ const uint32_t CONFIG_TYPE_ZERORESERVE_PLUGIN     = 0xDEADBEEF;
 
 RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
 {
-#ifdef ZERORESERVE_DEBUG
-    std::cerr << "RsVoipSerialiser::deserialise()" << std::endl;
-#endif
+    std::cerr << "Zero Reserve: deserialise()" << std::endl;
 
     /* get the type and size */
     uint32_t rstype = getRsItemId(data);
@@ -43,7 +41,20 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
         return NULL ;
 
     try{
-        return new RsZeroReserveOrderBookItem(data, *pktsize);
+        switch(getRsItemSubType(rstype))
+        {
+        case RsZeroReserveItem::ZERORESERVE_ORDERBOOK_ITEM:
+            return new RsZeroReserveOrderBookItem(data, *pktsize);
+            break;
+        case RsZeroReserveItem::ZERORESERVE_TX_INIT_ITEM:
+            return new RsZeroReserveInitTxItem(data, *pktsize);
+            break;
+        case RsZeroReserveItem::ZERORESERVE_TX_ITEM:
+            return new RsZeroReserveTxItem(data, *pktsize);
+            break;
+        default:
+            return NULL;
+        }
     }
     catch(std::exception& e){
         std::cerr << "RsZeroReserveSerialiser: deserialization error: " << e.what() << std::endl;
@@ -179,6 +190,13 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem( OrderBook::Order * order
 //// Begin TX Items  /////
 
 
+
+RsZeroReserveTxItem::RsZeroReserveTxItem( TransactionManager::TxPhase phase, RS_PKT_SUBTYPE subtype ) :
+    RsZeroReserveItem( (uint8_t)subtype ),
+    m_TxPhase(phase)
+{}
+
+
 RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SUBTYPE zeroreserve_subtype )
         : RsZeroReserveItem( zeroreserve_subtype )
 {
@@ -197,7 +215,9 @@ RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SU
     m_offset = 8;
     bool ok = true;
 
-    ok &= getRawUInt8(data, rssize, &m_offset, &m_TxPhase );
+    uint8_t txPhase;
+    ok &= getRawUInt8(data, rssize, &m_offset, &txPhase );
+    m_TxPhase = (TransactionManager::TxPhase) txPhase;
 
     if ( !ok )
         throw std::runtime_error("Deserialisation error!") ;
@@ -253,7 +273,7 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
     uint32_t rstype = getRsItemId(data);
     uint32_t rssize = getRsItemSize(data);
 
-    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_TX_ITEM != getRsItemSubType(rstype)))
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_TX_INIT_ITEM != getRsItemSubType(rstype)))
         throw std::runtime_error("Wrong packet type!") ;
 
     if (pktsize < rssize)    /* check size */
@@ -261,7 +281,9 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
 
     bool ok = true;
 
-    ok &= getRawUInt8(data, rssize, &m_offset, &m_Role );
+    uint8_t role;
+    ok &= getRawUInt8(data, rssize, &m_offset, &role );
+    m_Role = (TransactionManager::Role) role;
     ok &= getRawString(data, rssize, &m_offset, m_amount );
     ok &= getRawString(data, rssize, &m_offset, m_currency );
 
@@ -273,7 +295,7 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
 uint32_t RsZeroReserveInitTxItem::serial_size() const
 {
     return RsZeroReserveTxItem::serial_size()
-            + sizeof(uint8_t);  // Role
+            + sizeof(uint8_t)                          // Role
             + CURRENCY_STRLEN + HOLLERITH_LEN_SPEC     // currency
             + m_amount.length() + HOLLERITH_LEN_SPEC;  // amount
 }
@@ -287,15 +309,14 @@ bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
 
     uint32_t tlvsize = serial_size() ;
 
-    if (m_offset != tlvsize){
-        ok = false;
-        std::cerr << "RsZeroReserveInitTxItem::serialise() Size Error! " << std::endl;
-    }
-
     ok &= setRawUInt8( data, tlvsize, &m_offset, m_Role );
     ok &= setRawString( data, tlvsize, &m_offset, m_amount );
     ok &= setRawString( data, tlvsize, &m_offset, m_currency );
 
+    if (m_offset != tlvsize){
+        ok = false;
+        std::cerr << "RsZeroReserveInitTxItem::serialise() Size Error! " << std::endl;
+    }
     return ok;
 }
 
@@ -316,3 +337,8 @@ std::ostream& RsZeroReserveInitTxItem::print(std::ostream &out, uint16_t indent)
     return out;
 }
 
+RsZeroReserveInitTxItem::RsZeroReserveInitTxItem( TransactionManager::TxPhase phase, const std::string & amount, const std::string & currency ) :
+    RsZeroReserveTxItem( phase, ZERORESERVE_TX_INIT_ITEM ),
+    m_amount( amount ),
+    m_currency( currency )
+{}

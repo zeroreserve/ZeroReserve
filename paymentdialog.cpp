@@ -43,5 +43,6 @@ PaymentDialog::~PaymentDialog()
 void PaymentDialog::payTo()
 {
     TransactionManager * tm = new TransactionManager();
-    tm->initCoordinator( m_payee, ui->amount->text().toStdString() );
+    Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
+    tm->initCoordinator( m_payee, ui->amount->text().toStdString(), Currency::currencySymbols[ sym ] );
 }
