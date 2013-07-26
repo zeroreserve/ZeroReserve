@@ -48,6 +48,9 @@ public:
     void peerRecordExists(){ m_peer_record_exists = true; }
     void setPeerCredit( const std::string & credit ) { m_credit->credit = credit; }
 
+    std::string getConfig( const std::string & key );
+    void setConfig( const std::string & key, const std::string & value );
+
     // TODO void logPayment() const;
     // TODO: void replayPaymentLog();
     // TODO: void backup() const;
