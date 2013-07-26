@@ -20,6 +20,7 @@
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 
+#include <stdexcept>
 
 
 TransactionManager::TxManagers TransactionManager::currentTX;
@@ -31,39 +32,61 @@ bool TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
     std::string id = item->PeerId();
     TxManagers::iterator it = currentTX.find( id );
     if( it == currentTX.end() ){
-        if( item->getTxPhase() == INIT ){  // a new request to receive or forward payment
+        if( item->getTxPhase() == QUERY ){  // a new request to receive or forward payment
             RsZeroReserveInitTxItem * initItem = dynamic_cast<RsZeroReserveInitTxItem *>( item );
             if(!initItem) return false;
 
-            TransactionManager *tm = new TransactionManager();
+            TransactionManager *tm = new TransactionManager( );
             currentTX[ id ] = tm;
             return tm->initCohort( initItem );
         }
         else {
-            abortTx( item );
+            std::cerr << "Zero Reserve: TX Manger: Error: Received first TX item but is not phase QUERY" << std::endl;
             return false;
         }
     }
     TransactionManager *tm = (*it).second;
-    return tm->processItem( item );
+    bool end_tx = true;
+    try{
+        end_tx = tm->processItem( item );
+    }
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: TX Manger: Error: " << e.what() << std::endl;
+        currentTX.erase( id );
+        delete tm;
+        return false;
+    }
+
+// TODO:   delete item;
+    if( end_tx ){
+        currentTX.erase( id );
+        delete tm;
+    }
+    return true;
 }
 
 
 
 TransactionManager::TransactionManager()
 {
+    // TODO: QTimer
+}
+
+TransactionManager::~TransactionManager()
+{
+    std::cerr << "Zero Reserve: TX Manager: Cleaning up." << std::endl;
 }
 
 bool TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
 {
-    std::cerr << "Zero Reserve: Payment request for " << item->getAmount() << " "
-              << item->getCurrency() << " received" <<
-                 "Setting TX manager up as cohorte" << std::endl;
-    role = (Role)item->getRole();
-    coordinator = item->PeerId();
+    std::cerr << "Zero Reserve: TX Manager: Payment request for " << item->getAmount() << " "
+              << item->getCurrency()
+              << " received - Setting TX manager up as cohorte" << std::endl;
+    m_role = (Role)item->getRole();
+    m_coordinator = item->PeerId();
     // TODO: multi hop
-    RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( ACK );
-    reply->PeerId( coordinator );
+    RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( VOTE_YES );  // TODO: VOTE_NO
+    reply->PeerId( m_coordinator );
     p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     p3zs->sendItem( reply ); // TODO: error  handling
     return true;
@@ -72,8 +95,10 @@ bool TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
 bool TransactionManager::initCoordinator( const std::string & payee, const std::string & amount, const std::string & currency )
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
-    role = Manager;
-    RsZeroReserveInitTxItem * initItem = new RsZeroReserveInitTxItem( INIT, amount, currency);
+    m_role = Coordinator;
+    currentTX[ payee ] = this;
+    m_payee = payee;
+    RsZeroReserveInitTxItem * initItem = new RsZeroReserveInitTxItem( QUERY, amount, currency);
     initItem->PeerId( payee );
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     p3zr->sendItem( initItem );
@@ -82,29 +107,47 @@ bool TransactionManager::initCoordinator( const std::string & payee, const std::
 
 bool TransactionManager::processItem( RsZeroReserveTxItem * item )
 {
+    RsZeroReserveTxItem * reply;
+    p3ZeroReserveRS * p3zs;
+
     switch( item->getTxPhase() )
     {
-    case INIT:
-        abortTx( item ); // we should never get here
-        break;
+
     case QUERY:
-        break;
-    case VOTE:
+        abortTx( item ); // we should never get here
+        throw std::runtime_error( "Dit not expect QUERY" );
+    case VOTE_YES:
+        if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect VOTE (YES)");
+        std::cerr << "Zero Reserve: TX Coordinator: Received Vote: YES" << std::endl;
+        reply = new RsZeroReserveTxItem( COMMIT );
+        reply->PeerId( m_payee );
+        p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+        p3zs->sendItem( reply );
+        return false;
+    case VOTE_NO:
         break;
     case COMMIT:
-        break;
-    case ACK:
-        std::cerr << "Zero Reserve: TX Manager: Received Acknowledgement" << std::endl;
-        break;
+        if( m_role != Payee ) throw std::runtime_error( "Dit not expect COMMIT" ); // TODO: Hop
+        std::cerr << "Zero Reserve: TX Cohorte: Received Command: COMMIT" << std::endl;
+        reply = new RsZeroReserveTxItem( ACK_COMMIT );
+        reply->PeerId( m_coordinator );
+        p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+        p3zs->sendItem( reply );
+        return true;
+    case ACK_COMMIT:
+        if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect ACK_COMMIT");
+        std::cerr << "Zero Reserve: TX Coordinator: Received Acknowledgement" << std::endl;
+        return true;
     case ABORT:
-        break;
+        abortTx( item );
+        return true;
     default:
-        return false;
+        throw std::runtime_error( "Unknown Transaction Phase");
     }
     return true;
 }
 
 void TransactionManager::abortTx( RsZeroReserveTxItem * item )
 {
-    // TODO
+    std::cerr << "Zero Reserve: TX Manger: Error happened. Aborting." << std::endl;
 }

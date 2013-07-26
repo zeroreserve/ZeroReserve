@@ -36,16 +36,15 @@ class TransactionManager
 public:
     typedef std::map< std::string, TransactionManager *> TxManagers;
     enum TxPhase {
-        INIT = 0,
         QUERY,
-        VOTE,
+        VOTE_YES,
+        VOTE_NO,
         COMMIT,
         ACK_COMMIT,
-        ABORT,
-        ACK
+        ABORT
     };
     enum Role {
-         Manager = 0,
+         Coordinator = 0,
          Payee,
          Hop
     };
@@ -54,16 +53,17 @@ public:
     ~TransactionManager();
 
     bool initCoordinator( const std::string & payee, const std::string & amount, const std::string & currency );
-    bool initCohort( RsZeroReserveInitTxItem * item );
 
     static bool handleTxItem( RsZeroReserveTxItem * item );
 
 private:
+    bool initCohort( RsZeroReserveInitTxItem * item );
     bool processItem( RsZeroReserveTxItem * item );
-    static void abortTx( RsZeroReserveTxItem * item );
+    void abortTx( RsZeroReserveTxItem * item );
 
-    Role role;
-    std::string coordinator;
+    Role m_role;
+    std::string m_coordinator;
+    std::string m_payee;
 
     static TxManagers currentTX;
 };
