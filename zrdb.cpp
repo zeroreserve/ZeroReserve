@@ -91,15 +91,7 @@ void ZrDB::init()
         return;
     }
     std::string db_name = pathname + "/zeroreserve.db";
-
-    std::vector < std::string > tables;
-
-    tables.push_back( "create table if not exists peers ( id varchar(32), currency varchar(3), our_credit decimal(12,8), credit decimal(12,8) balance decimal(12,8) )");
-    tables.push_back( "create table if not exists config ( key varchar(32), value varchar(160) )");
-    tables.push_back( "create table if not exists payments ( payee varchar(32), currency varchar(3), amount decimal(12,8) )");
-    tables.push_back( "create unique index if not exists id_curr on peers ( id, currency)");
-    //        tables.push_back( std::string( "insert into config values( 'TXLOG', '" ) + txlog + "')" );
-
+    bool db_exists = QFile::exists(db_name.c_str() );
 
     std::cerr << "Opening or creating DB " << db_name << std::endl;
     rc = sqlite3_open( db_name.c_str(), &m_db);
@@ -109,34 +101,42 @@ void ZrDB::init()
         throw  std::runtime_error("SQL Error: Cannot open database");
 
     }
-
-    for(std::vector < std::string >::const_iterator it = tables.begin(); it != tables.end(); it++ ){
-        rc = sqlite3_exec(m_db, (*it).c_str(), noop_callback, 0, &zErrMsg);
-        if( rc!=SQLITE_OK ){
-            std::cerr << "SQL error: " << zErrMsg << std::endl;
-            sqlite3_free(zErrMsg);
-            throw std::runtime_error("SQL Error: Cannot create table");
-        }
-    }
-
     std::string txlog;
-    if( QFile::exists(db_name.c_str()) ){
+    if( db_exists ){
         txlog = getConfig( "TXLOG" );
     }
     else {
+        std::cerr << "Populating " << db_name << std::endl;
+        std::vector < std::string > tables;
+        tables.push_back( "create table if not exists peers ( id varchar(32), currency varchar(3), our_credit decimal(12,8), credit decimal(12,8), balance decimal(12,8) )");
+        tables.push_back( "create table if not exists config ( key varchar(32), value varchar(160) )");
+        tables.push_back( "create table if not exists payments ( payee varchar(32), currency varchar(3), amount decimal(12,8) )");
+        tables.push_back( "create unique index if not exists id_curr on peers ( id, currency)");
+        for(std::vector < std::string >::const_iterator it = tables.begin(); it != tables.end(); it++ ){
+            rc = sqlite3_exec(m_db, (*it).c_str(), noop_callback, 0, &zErrMsg);
+            if( rc!=SQLITE_OK ){
+                std::cerr << "SQL error: " << zErrMsg << std::endl;
+                sqlite3_free(zErrMsg);
+                throw std::runtime_error("SQL Error: Cannot create table");
+            }
+        }
+
         txlog = QFileDialog::getExistingDirectory( 0, "Select directory for Transaction log", QString::fromStdString( pathname ) ).toStdString()
                 + "/zeroreserve.tx";
         setConfig( "TXLOG", txlog );
     }
+    // TODO: Do something with the tx log
 }
 
 void ZrDB::setConfig( const std::string & key, const std::string & value )
 {
-
+ // TODO:
+     std::string insert =  "insert into config values( 'TXLOG', '" + value + "')";
 }
 
 std::string ZrDB::getConfig( const std::string & key )
 {
+    // TODO
     return "";
 }
 
@@ -157,12 +157,13 @@ void ZrDB::storePeer( const ZrDB::Credit & peer_in )
     }
     if(m_peer_record_exists) {
         std::cerr << "Zero Reserve: Updating peer record" << std::endl;
+        // TODO
     }
     else {
         std::cerr << "Zero Reserve: Creating new peer record" << std::endl;
         std::ostringstream insert;
-        insert << "insert into peers (id, currency, credit, balance) values( '"
-               << peer_in.id << "', '" << peer_in.currency << "', "
+        insert << "insert into peers (id, currency, our_credit, credit, balance) values( '"
+               << peer_in.id << "', '" << peer_in.currency << "', 0, "
                << peer_in.credit << ", 0 )";
         int rc = sqlite3_exec(m_db, insert.str().c_str(), noop_callback, 0, &zErrMsg);
         if( rc!=SQLITE_OK ){
