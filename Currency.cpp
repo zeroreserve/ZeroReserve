@@ -217,6 +217,7 @@ const char * const Currency::currencySymbols[] =
         "AOA",
         "ARS",
         "AUD",
+        "AUR",
         "AWG",
         "AZN",
         "BAM",
