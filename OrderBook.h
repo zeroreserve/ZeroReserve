@@ -18,11 +18,13 @@
 #ifndef ORDERBOOK_H
 #define ORDERBOOK_H
 
+#include "zrtypes.h"
+#include "Currency.h"
+
 #include <QAbstractItemModel>
 #include <QDateTime>
 #include <QList>
 
-#include "Currency.h"
 
 
 /**
@@ -46,7 +48,7 @@ public:
         OrderType m_orderType;
         QString m_amount;
         QString m_price;      // a string of the form "77.123" - any length. For printing
-        double m_price_d;     // the amount as a double for sorting
+        ZR_Number m_price_d;     // the amount as number for sorting
         Currency::CurrencySymbols m_currency;
         time_t m_timeStamp;   // no more than 1 order / second
         bool sent;            //
