@@ -19,6 +19,7 @@
 #define FRIENDDETAILSDIALOG_H
 
 #include <QDialog>
+#include <QString>
 #include <string>
 
 namespace Ui {
@@ -39,6 +40,7 @@ private:
 
 protected slots:
     void editFriend();
+    void loadPeer( QString currency  = "" );
 };
 
 #endif // FRIENDDETAILSDIALOG_H
