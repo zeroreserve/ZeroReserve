@@ -31,7 +31,8 @@ HEADERS = ZeroReserveDialog.h \
     RSZeroReserveItems.h \
     Payment.h \
     TransactionManager.h \
-    zrdb.h
+    zrdb.h \
+    zrtypes.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
