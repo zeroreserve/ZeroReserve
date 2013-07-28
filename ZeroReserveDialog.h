@@ -19,10 +19,12 @@
 #ifndef ZERORESERVEDIALOG_H
 #define ZERORESERVEDIALOG_H
 
-#include <QPoint>
 
 #include "retroshare-gui/mainpage.h"
 #include "ui_ZeroReserveDialog.h"
+
+#include <QPoint>
+#include <QString>
 
 class OrderBook;
 
@@ -42,6 +44,7 @@ private slots:
     void contextMenuFriendList(QPoint);
     void friendDetails();
     void payTo();
+    void loadGrandTotal( QString currency = "" );
 
 private:
     Ui::ZeroReserveDialog ui;

@@ -21,6 +21,7 @@
 #include "OrderBook.h"
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
+#include "zrdb.h"
 
 #include <QMenu>
 #include <QStandardItem>
@@ -46,6 +47,10 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
         }
         index++;
     }
+#ifdef ZR_TESTNET
+    ui.testnet_warning->setText( "TestNet" );
+    ui.testnet_warning->setStyleSheet( "QLabel { background-color : red; }" );
+#endif
 
     ui.ask_price->setValidator( new QDoubleValidator(0) );
     ui.ask_amount->setValidator( new QDoubleValidator(0) );
@@ -56,6 +61,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     connect(ui.friendSelectionWidget, SIGNAL(doubleClicked(int,QString)), this, SLOT(friendDetails()));
     connect(ui.askButton, SIGNAL(clicked()), this, SLOT(addAsk()));
     connect(ui.bidButton, SIGNAL(clicked()), this, SLOT(addBid()));
+    connect(ui.currencySelector2, SIGNAL(currentIndexChanged(QString)), this, SLOT(loadGrandTotal(QString) ) );
 
     ui.asksTableView->setModel( asks );
     ui.bidsTableView->setModel( bids );
@@ -66,6 +72,19 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.friendSelectionWidget->setShowType(FriendSelectionWidget::SHOW_GROUP | FriendSelectionWidget::SHOW_SSL);
     ui.friendSelectionWidget->start();
 
+    loadGrandTotal();
+}
+
+void ZeroReserveDialog::loadGrandTotal(QString)
+{
+    Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui.currencySelector2->currentText().toStdString() );
+    std::string currencySym = Currency::currencySymbols[ sym ];
+    const ZrDB::GrandTotal & gt = ZrDB::Instance()->loadGrandTotal( currencySym );
+    ui.lcdTotalCredit->display( gt.our_credit );
+    ui.lcdTotalDebt->display( gt.debt );
+    ui.lcdtotalOutstanding->display( gt.outstanding );
+    ui.lcdBalance->display( gt.balance );
+    ui.lcdTheirCredit->display( gt.credit );
 }
 
 void ZeroReserveDialog::contextMenuFriendList(QPoint)
