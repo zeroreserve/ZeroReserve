@@ -76,10 +76,8 @@ QVariant OrderBook::data( const QModelIndex& index, int role ) const
         switch(index.column()){
             case 0:
                 return QVariant(order->m_amount);
-                break;
             case 1:
                 return QVariant(order->m_price);
-                break;
             default:
                 return QVariant();
         }

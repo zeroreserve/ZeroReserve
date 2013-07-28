@@ -19,6 +19,7 @@
 #include "frienddetailsdialog.h"
 #include "paymentdialog.h"
 #include "OrderBook.h"
+#include "MyOrders.h"
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 #include "zrdb.h"
@@ -65,6 +66,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     ui.asksTableView->setModel( asks );
     ui.bidsTableView->setModel( bids );
+    ui.myOrders->setModel( new MyOrders() );
 
     /* initialize friends list */
     ui.friendSelectionWidget->setHeaderText(tr("Friend List:"));
@@ -130,6 +132,8 @@ void ZeroReserveDialog::payTo()
 void ZeroReserveDialog::addBid()
 {
     OrderBook * bids = static_cast<OrderBook*>(ui.bidsTableView->model());
+    MyOrders * myOrders = static_cast<MyOrders*>(ui.myOrders->model());
+
     OrderBook::Order * bid = new OrderBook::Order();
     p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     bid->setPrice( ui.bid_price->text() );
@@ -140,12 +144,15 @@ void ZeroReserveDialog::addBid()
     bid->m_timeStamp = time(0);
     bid->m_trader_id = p3zs->getOwnId();
     bids->addOrder( bid );
+    myOrders->addOrder( bid );
     p3zs->publishOrder( bid );
 }
 
 void ZeroReserveDialog::addAsk()
 {
     OrderBook * asks = static_cast<OrderBook*>(ui.asksTableView->model());
+    MyOrders * myOrders = static_cast<MyOrders*>(ui.myOrders->model());
+
     OrderBook::Order * ask = new OrderBook::Order();
     p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     ask->setPrice( ui.ask_price->text() );
@@ -156,6 +163,7 @@ void ZeroReserveDialog::addAsk()
     ask->m_timeStamp = time(0);
     ask->m_trader_id = p3zs->getOwnId();
     asks->addOrder( ask );
+    myOrders->addOrder( ask );
     p3zs->publishOrder( ask );
 }
 
