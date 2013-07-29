@@ -132,38 +132,28 @@ void ZeroReserveDialog::payTo()
 void ZeroReserveDialog::addBid()
 {
     OrderBook * bids = static_cast<OrderBook*>(ui.bidsTableView->model());
-    MyOrders * myOrders = static_cast<MyOrders*>(ui.myOrders->model());
-
-    OrderBook::Order * bid = new OrderBook::Order();
-    p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    bid->setPrice( ui.bid_price->text() );
-    bid->m_currency = Currency::getCurrencyByName( ui.currencySelector1->currentText().toStdString() );
-    bid->m_amount = ui.bid_amount->text();
-    bid->m_orderType = OrderBook::Order::BID;
-    bid->sent = false;
-    bid->m_timeStamp = time(0);
-    bid->m_trader_id = p3zs->getOwnId();
-    bids->addOrder( bid );
-    myOrders->addOrder( bid );
-    p3zs->publishOrder( bid );
+    doOrder( bids, OrderBook::Order::BID, ui.bid_price->text(), ui.bid_amount->text() );
 }
 
 void ZeroReserveDialog::addAsk()
 {
     OrderBook * asks = static_cast<OrderBook*>(ui.asksTableView->model());
-    MyOrders * myOrders = static_cast<MyOrders*>(ui.myOrders->model());
-
-    OrderBook::Order * ask = new OrderBook::Order();
-    p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    ask->setPrice( ui.ask_price->text() );
-    ask->m_currency = Currency::getCurrencyByName( ui.currencySelector1->currentText().toStdString() );
-    ask->m_amount = ui.ask_amount->text();
-    ask->m_orderType = OrderBook::Order::ASK;
-    ask->sent = false;
-    ask->m_timeStamp = time(0);
-    ask->m_trader_id = p3zs->getOwnId();
-    asks->addOrder( ask );
-    myOrders->addOrder( ask );
-    p3zs->publishOrder( ask );
+    doOrder( asks, OrderBook::Order::ASK, ui.ask_price->text(), ui.ask_amount->text() );
 }
 
+void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType type, QString price, QString amount )
+{
+    OrderBook::Order * order = new OrderBook::Order();
+    MyOrders * myOrders = static_cast<MyOrders*>(ui.myOrders->model());
+    p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    order->setPrice( price );
+    order->m_currency = Currency::getCurrencyByName( ui.currencySelector1->currentText().toStdString() );
+    order->m_amount = amount;
+    order->m_orderType = type;
+    order->sent = false;
+    order->m_timeStamp = time(0);
+    order->m_trader_id = p3zs->getOwnId();
+    book->addOrder( order );
+    myOrders->addOrder( order );
+    p3zs->publishOrder( order );
+}

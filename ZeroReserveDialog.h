@@ -22,11 +22,11 @@
 
 #include "retroshare-gui/mainpage.h"
 #include "ui_ZeroReserveDialog.h"
+#include "OrderBook.h"
 
 #include <QPoint>
 #include <QString>
 
-class OrderBook;
 
 class ZeroReserveDialog : public MainPage
 {
@@ -47,6 +47,8 @@ private slots:
     void loadGrandTotal( QString currency = "" );
 
 private:
+    void doOrder( OrderBook * book, OrderBook::Order::OrderType type, QString price, QString amount );
+
     Ui::ZeroReserveDialog ui;
 
 };
