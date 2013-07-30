@@ -52,8 +52,8 @@ static int store_peer_callback(void *, int, char **, char **)
 
 static int peer_credit_callback(void *, int argc, char ** argv, char ** )
 {
-    if(argc == 1){
-        ZrDB::Instance()->setPeerCredit( argv[0] );
+    if(argc == 3){
+        ZrDB::Instance()->setPeerCredit( argv[0], argv[1], argv[2] );
     }
     else {
         return SQLITE_ERROR;
@@ -157,30 +157,18 @@ void ZrDB::init()
 
 void ZrDB::setConfig( const std::string & key, const std::string & value )
 {
-    char *zErrMsg = 0;
     RsMutex configMutex( m_config_mutex );
     std::string insert =  "insert into config values( '";
     insert += key + "', '" + value + "' )";
-    int rc = sqlite3_exec(m_db, insert.c_str(), noop_callback, 0, &zErrMsg);
-    if( rc!=SQLITE_OK ){
-        std::cerr << "SQL error: " << zErrMsg << std::endl;
-        sqlite3_free(zErrMsg);
-        throw std::runtime_error( "SQL Error: Cannot store config data" );
-    }
+    runQuery( insert );
 }
 
 void ZrDB::updateConfig( const std::string & key, const std::string & value )
 {
-    char *zErrMsg = 0;
     RsMutex configMutex( m_config_mutex );
     std::string update =  "update config set value= '";
     update += value +"' where key = '" + key + "'";
-    int rc = sqlite3_exec(m_db, update.c_str(), noop_callback, 0, &zErrMsg);
-    if( rc!=SQLITE_OK ){
-        std::cerr << "SQL error: " << zErrMsg << std::endl;
-        sqlite3_free(zErrMsg);
-        throw std::runtime_error( "SQL Error: Cannot update config data" );
-    }
+    runQuery( update );
 }
 
 std::string ZrDB::getConfig( const std::string & key )
@@ -233,58 +221,66 @@ void ZrDB::addToGrandTotal( char ** cols )
 }
 
 
-void ZrDB::storePeer( const ZrDB::Credit & peer_in )
+bool ZrDB::peerExists( const Credit & peer_in )
 {
     char *zErrMsg = 0;
     RsMutex peerMutex( m_peer_mutex );
     m_peer_record_exists = false;
     std::ostringstream select;
-    select << "select * from peers where id = '" << peer_in.id
-           << "' and currency = '" << peer_in.currency << "'";
+    select << "select * from peers where id = '" << peer_in.m_id
+           << "' and currency = '" << peer_in.m_currency << "'";
     int rc = sqlite3_exec(m_db, select.str().c_str(), store_peer_callback, 0, &zErrMsg);
     if( rc!=SQLITE_OK ){
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot store peer data" );
     }
-    if(m_peer_record_exists) {
-        std::cerr << "Zero Reserve: Updating peer record " << peer_in.id << std::endl;
-        std::ostringstream update;
-        update << "update peers set" <<
-                  " credit = " << peer_in.credit <<
-                  " where id = '" << peer_in.id << "'" <<
-                  " and currency = '" << peer_in.currency << "'";
-        int rc = sqlite3_exec(m_db, update.str().c_str(), noop_callback, 0, &zErrMsg);
-        if( rc != SQLITE_OK ){
-            std::cerr << "SQL error: " << zErrMsg << std::endl;
-            sqlite3_free(zErrMsg);
-            throw std::runtime_error( "SQL Error: Cannot update peer data" );
-        }
-    }
-    else {
-        std::cerr << "Zero Reserve: Creating new peer record " << peer_in.id << std::endl;
-        std::ostringstream insert;
-        insert << "insert into peers (id, currency, our_credit, credit, balance) values( '"
-               << peer_in.id << "', '" << peer_in.currency << "', 0, "
-               << peer_in.credit << ", 0 )";
-        int rc = sqlite3_exec(m_db, insert.str().c_str(), noop_callback, 0, &zErrMsg);
-        if( rc != SQLITE_OK ){
-            std::cerr << "SQL error: " << zErrMsg << std::endl;
-            sqlite3_free(zErrMsg);
-            throw std::runtime_error( "SQL Error: Cannot store peer data" );
-        }
+    return m_peer_record_exists;
+}
+
+void ZrDB::updatePeerCredit( const Credit & peer_in )
+{
+    std::cerr << "Zero Reserve: Updating peer credit " << peer_in.m_id << std::endl;
+    std::ostringstream update;
+    update << "update peers set" <<
+              " credit = " << peer_in.m_credit <<
+              " where id = '" << peer_in.m_id << "'" <<
+              " and currency = '" << peer_in.m_currency << "'";
+    runQuery( update.str() );
+}
+
+void ZrDB::runQuery( const std::string sql )
+{
+    char *zErrMsg = 0;
+    int rc = sqlite3_exec(m_db, sql.c_str(), noop_callback, 0, &zErrMsg);
+    if( rc != SQLITE_OK ){
+        std::cerr << "SQL error: " << zErrMsg << std::endl;
+        sqlite3_free(zErrMsg);
+        throw std::runtime_error( "SQL Error: Cannot update peer data" );
     }
 }
 
+void ZrDB::createPeerRecord( const Credit & peer_in )
+{
+    std::cerr << "Zero Reserve: Updating peer credit " << peer_in.m_id << std::endl;
+    std::ostringstream insert;
+    insert << "insert into peers (id, currency, our_credit, credit, balance) values( '"
+           << peer_in.m_id << "', '" << peer_in.m_currency << "', 0, 0, 0 )";
 
-void ZrDB::loadPeer( const std::string & id, ZrDB::Credit & peer_out )
+    runQuery( insert.str() );
+}
+
+
+
+
+void ZrDB::loadPeer( Credit & peer_out )
 {
     RsMutex peerMutex( m_peer_mutex );
     m_credit = &peer_out;
     char *zErrMsg = 0;
     std::ostringstream select;
-    select << "select credit from peers where id = '"
-           << id << "' and currency = '" << peer_out.currency << "'";
+    select << "select credit, our_credit, balance from peers where id = '"
+           << peer_out.m_id << "' and currency = '" << peer_out.m_currency << "'";
     std::string selectstr = select.str();
     int rc = sqlite3_exec(m_db, selectstr.c_str(), peer_credit_callback, 0, &zErrMsg);
     if( rc!=SQLITE_OK ){
@@ -293,6 +289,14 @@ void ZrDB::loadPeer( const std::string & id, ZrDB::Credit & peer_out )
         throw std::runtime_error( "SQL Error: Cannot load peer data" );
     }
 }
+
+void ZrDB::setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance )
+{
+    m_credit->m_credit = credit;
+    m_credit->m_our_credit = our_credit;
+    m_credit->m_balance = balance;
+}
+
 
 void ZrDB::close()
 {

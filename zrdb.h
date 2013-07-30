@@ -19,6 +19,7 @@
 #define ZRDB_H
 
 #include "zrtypes.h"
+#include "Credit.h"
 
 #include "util/rsthreads.h"
 
@@ -37,14 +38,6 @@ class ZrDB
     void init();
 public:
 
-    typedef struct  {
-        std::string id;
-        std::string currency;
-        std::string our_credit; // our credit with peer
-        std::string credit;     // their credit with us
-        std::string balance;    // negative means we owe them money
-    } Credit;
-
     typedef struct {
         std::string currency;
         ZR_Number our_credit;  // credit with all peers
@@ -55,18 +48,22 @@ public:
     } GrandTotal;
 
     static ZrDB * Instance();
-    void storePeer( const Credit & peer_in );
-    void loadPeer( const std::string & id, Credit & peer_out );
+    void createPeerRecord( const Credit & peer_in );
+    void updatePeerCredit( const Credit & peer_in );
+    void loadPeer( Credit & peer_out );
+    bool peerExists( const Credit & peer_in );
     const GrandTotal & loadGrandTotal( const std::string & currency );
-
-    void close();
-    void peerRecordExists(){ m_peer_record_exists = true; }
-    void setPeerCredit( const std::string & credit ) { m_credit->credit = credit; }
-    void setConfigValue( const std::string & val ) { m_config_value = val; }
-    void addToGrandTotal( char ** cols );
 
     std::string getConfig( const std::string & key );
     void updateConfig( const std::string & key, const std::string & value );
+
+    void close();
+
+// TODO: make these functios private by making callbacks private static members
+    void peerRecordExists(){ m_peer_record_exists = true; }
+    void setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance );
+    void setConfigValue( const std::string & val ) { m_config_value = val; }
+    void addToGrandTotal( char ** cols );
 
     // TODO void logPayment() const;
     // TODO: void replayPaymentLog();
@@ -74,6 +71,8 @@ public:
     // TODO: void restore() const;
 private:
     void setConfig( const std::string & key, const std::string & value );
+    void runQuery( const std::string sql );
+
 
 private:
     RsMutex m_peer_mutex;
