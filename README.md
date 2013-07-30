@@ -16,3 +16,5 @@ To install on Linux, drop the resulting shared object into
 ~/.retroshare/extensions
 
 
+This is experimental software. Use at your own risk. At this stage, leave TestNet
+on. Don't enable real currencies.
