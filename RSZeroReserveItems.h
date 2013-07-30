@@ -21,6 +21,7 @@
 
 #include "serialiser/rsserial.h"
 #include "OrderBook.h"
+#include "Credit.h"
 #include "TransactionManager.h"
 
 
@@ -40,7 +41,8 @@ public:
     enum RS_PKT_SUBTYPE {
         ZERORESERVE_ORDERBOOK_ITEM = 0x01,
         ZERORESERVE_TX_ITEM,
-        ZERORESERVE_TX_INIT_ITEM
+        ZERORESERVE_TX_INIT_ITEM,
+        ZERORESERVE_CREDIT_ITEM
     };
 
     virtual ~RsZeroReserveItem() {};
@@ -117,6 +119,25 @@ public:
 private:
     OrderBook::Order * m_order;
     uint32_t m_data_size ;
+};
+
+
+class RsZeroReserveCreditItem: public RsZeroReserveItem
+{
+public:
+    RsZeroReserveCreditItem() :RsZeroReserveItem( ZERORESERVE_CREDIT_ITEM ) {}
+    RsZeroReserveCreditItem(void *data,uint32_t size) ;
+    RsZeroReserveCreditItem( Credit * credit) ;
+
+    virtual bool serialise(void *data,uint32_t& size) ;
+    virtual uint32_t serial_size() const ;
+
+    virtual ~RsZeroReserveCreditItem() {}
+    virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
+    Credit * getCredit(){ return m_credit; }
+
+private:
+    Credit * m_credit;
 };
 
 

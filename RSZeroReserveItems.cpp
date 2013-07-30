@@ -45,13 +45,12 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
         {
         case RsZeroReserveItem::ZERORESERVE_ORDERBOOK_ITEM:
             return new RsZeroReserveOrderBookItem(data, *pktsize);
-            break;
         case RsZeroReserveItem::ZERORESERVE_TX_INIT_ITEM:
             return new RsZeroReserveInitTxItem(data, *pktsize);
-            break;
         case RsZeroReserveItem::ZERORESERVE_TX_ITEM:
             return new RsZeroReserveTxItem(data, *pktsize);
-            break;
+        case RsZeroReserveItem::ZERORESERVE_CREDIT_ITEM:
+            return new RsZeroReserveCreditItem(data, *pktsize);
         default:
             return NULL;
         }
@@ -62,6 +61,8 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
     }
 }
 
+
+//// Begin OrderBook Item  /////
 
 
 std::ostream& RsZeroReserveOrderBookItem::print(std::ostream &out, uint16_t indent)
@@ -185,6 +186,99 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem( OrderBook::Order * order
 {
 
 }
+
+
+//// Begin Credit Item  /////
+
+
+
+std::ostream& RsZeroReserveCreditItem::print(std::ostream &out, uint16_t indent)
+{
+        printRsItemBase(out, "RsZeroReserveCreditItem", indent);
+        uint16_t int_Indent = indent + 2;
+        printIndent(out, int_Indent);
+        out << "Credit: " << m_credit->m_credit << std::endl;
+
+        printIndent(out, int_Indent);
+        out << "Balance : " << m_credit->m_balance << std::endl;
+
+        printRsItemEnd(out, "RsZeroReserveCreditItem", indent);
+        return out;
+}
+
+uint32_t RsZeroReserveCreditItem::serial_size() const
+{
+        uint32_t s = 8; /* header */
+        s += CURRENCY_STRLEN + HOLLERITH_LEN_SPEC;
+        s += m_credit->m_credit.length() + HOLLERITH_LEN_SPEC;
+        s += m_credit->m_balance.length() + HOLLERITH_LEN_SPEC;
+
+        return s;
+}
+
+bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
+{
+        uint32_t tlvsize = serial_size() ;
+
+        if (pktsize < tlvsize)
+                return false; /* not enough space */
+
+        pktsize = tlvsize;
+
+        bool ok = true;
+
+        ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
+
+        uint32_t offset = 8;  // skip header
+
+        ok &= setRawString( data, tlvsize, &offset, m_credit->m_currency );
+        ok &= setRawString( data, tlvsize, &offset, m_credit->m_credit );
+        ok &= setRawString( data, tlvsize, &offset, m_credit->m_balance );
+
+        if (offset != tlvsize){
+                ok = false;
+                std::cerr << "RsZeroReserveCreditItem::serialise() Size Error! " << std::endl;
+        }
+
+        return ok;
+}
+
+RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
+        : RsZeroReserveItem( ZERORESERVE_ORDERBOOK_ITEM )
+{
+    /* get the type and size */
+    uint32_t rstype = getRsItemId(data);
+    uint32_t rssize = getRsItemSize(data);
+
+    uint32_t offset = 8;
+
+
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_ORDERBOOK_ITEM != getRsItemSubType(rstype)))
+        throw std::runtime_error("Wrong packet type!") ;
+
+    if (pktsize < rssize)    /* check size */
+        throw std::runtime_error("Not enough size!") ;
+
+    bool ok = true;
+    std::string id;
+    std::string currency;
+
+    id = this->PeerId();
+    ok &= getRawString( data, rssize, &offset, currency );
+    m_credit = new Credit( id, currency );
+
+    ok &= getRawString( data, rssize, &offset, m_credit->m_credit );
+    ok &= getRawString( data, rssize, &offset, m_credit->m_balance );
+
+    if (offset != rssize || !ok )
+        throw std::runtime_error("Deserialisation error!") ;
+}
+
+RsZeroReserveCreditItem::RsZeroReserveCreditItem( Credit * credit )
+        : RsZeroReserveItem( ZERORESERVE_ORDERBOOK_ITEM ),
+        m_credit( credit )
+{}
+
 
 
 //// Begin TX Items  /////
