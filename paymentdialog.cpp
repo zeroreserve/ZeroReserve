@@ -19,12 +19,20 @@
 #include "ui_paymentdialog.h"
 #include "Currency.h"
 #include "TransactionManager.h"
+#include "Credit.h"
+#include "zrtypes.h"
 
-PaymentDialog::PaymentDialog( const std::string & payee, QWidget *parent, const std::string & peername ) :
+#include "retroshare/rspeers.h"
+
+#include <QMessageBox>
+
+PaymentDialog::PaymentDialog( const std::string & payee, QWidget *parent ) :
     QDialog( parent ),
     ui( new Ui::PaymentDialog ),
     m_payee( payee )
 {
+    const std::string peername = rsPeers->getPeerName( payee );
+
     ui->setupUi(this);
     ui->label->setText( QString::fromUtf8( peername.c_str() ) );
     int index = 0;
@@ -32,7 +40,8 @@ PaymentDialog::PaymentDialog( const std::string & payee, QWidget *parent, const 
         ui->currencySelector->addItem( Currency::currencyNames[ index ] );
         index++;
     }
-    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT( payTo()));
+    connect( ui->buttonBox, SIGNAL(accepted()), this, SLOT( payTo() ) );
+    connect( ui->currencySelector, SIGNAL(currentIndexChanged(QString)), this, SLOT(loadAvailableFunds( QString ) ) );
 }
 
 PaymentDialog::~PaymentDialog()
@@ -45,4 +54,27 @@ void PaymentDialog::payTo()
     TransactionManager * tm = new TransactionManager();
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
     tm->initCoordinator( m_payee, ui->amount->text().toStdString(), Currency::currencySymbols[ sym ] );
+}
+
+void PaymentDialog::loadAvailableFunds( QString )
+{
+    ui->lcdAvailableFunds->display( availableFunds() );
+}
+
+
+ZR_Number PaymentDialog::availableFunds()
+{
+    Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
+    Credit peerCredit( m_payee, Currency::currencySymbols[ sym ] );
+    try {
+        peerCredit.loadPeer();
+    }
+    catch( std::exception e ) {
+        QMessageBox::critical(0, "Error reading credit", e.what() );
+    }
+    ZR_Number our_credit, balance, funds;
+    our_credit = atof( peerCredit.m_our_credit.c_str() );
+    balance = atof( peerCredit.m_balance.c_str() );
+    funds = our_credit + balance;
+    return funds;
 }

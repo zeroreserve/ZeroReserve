@@ -19,11 +19,14 @@
 #ifndef TRANSACTIONMANAGER_H
 #define TRANSACTIONMANAGER_H
 
+#include <zrtypes.h>
+
 #include <map>
 #include <string>
 
 class RsZeroReserveTxItem;
 class RsZeroReserveInitTxItem;
+class Credit;
 
 /**
   Manage multi hop transaction. The payer is the coordiantor, all in between
@@ -57,13 +60,15 @@ public:
     static bool handleTxItem( RsZeroReserveTxItem * item );
 
 private:
+    void commitCoordinator();
+    void commitCohort();
+
     bool initCohort( RsZeroReserveInitTxItem * item );
     bool processItem( RsZeroReserveTxItem * item );
     void abortTx( RsZeroReserveTxItem * item );
 
     Role m_role;
-    std::string m_coordinator;
-    std::string m_payee;
+    Credit * m_credit;
 
     static TxManagers currentTX;
 };

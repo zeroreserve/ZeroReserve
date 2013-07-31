@@ -18,7 +18,11 @@
 #ifndef PAYMENTDIALOG_H
 #define PAYMENTDIALOG_H
 
+#include "zrtypes.h"
+
 #include <QDialog>
+#include <QString>
+
 #include <string>
 
 namespace Ui {
@@ -30,14 +34,16 @@ class PaymentDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PaymentDialog( const std::string & payee, QWidget *parent = 0,
-                           const std::string & peername = "Error, no friend selected" );
+    explicit PaymentDialog( const std::string & payee, QWidget *parent = 0 );
     ~PaymentDialog();
 
 private slots:
     void payTo();
+    void loadAvailableFunds( QString );
 
 private:
+    ZR_Number availableFunds();
+
     Ui::PaymentDialog *ui;
     const std::string m_payee;
 };

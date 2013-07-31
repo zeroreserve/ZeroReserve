@@ -19,6 +19,7 @@
 #include "RSZeroReserveItems.h"
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
+#include "zrdb.h"
 
 #include <stdexcept>
 
@@ -83,10 +84,10 @@ bool TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
               << item->getCurrency()
               << " received - Setting TX manager up as cohorte" << std::endl;
     m_role = (Role)item->getRole();
-    m_coordinator = item->PeerId();
+    m_credit->m_id = item->PeerId();
     // TODO: multi hop
     RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( VOTE_YES );  // TODO: VOTE_NO
-    reply->PeerId( m_coordinator );
+    reply->PeerId( m_credit->m_id );
     p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     p3zs->sendItem( reply ); // TODO: error  handling
     return true;
@@ -97,7 +98,7 @@ bool TransactionManager::initCoordinator( const std::string & payee, const std::
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
     m_role = Coordinator;
     currentTX[ payee ] = this;
-    m_payee = payee;
+    m_credit->m_id = payee;
     RsZeroReserveInitTxItem * initItem = new RsZeroReserveInitTxItem( QUERY, amount, currency);
     initItem->PeerId( payee );
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
@@ -110,6 +111,7 @@ bool TransactionManager::processItem( RsZeroReserveTxItem * item )
     RsZeroReserveTxItem * reply;
     p3ZeroReserveRS * p3zs;
 
+    // TODO: Timeout
     switch( item->getTxPhase() )
     {
 
@@ -120,7 +122,7 @@ bool TransactionManager::processItem( RsZeroReserveTxItem * item )
         if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect VOTE (YES)");
         std::cerr << "Zero Reserve: TX Coordinator: Received Vote: YES" << std::endl;
         reply = new RsZeroReserveTxItem( COMMIT );
-        reply->PeerId( m_payee );
+        reply->PeerId( m_credit->m_id );
         p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
         p3zs->sendItem( reply );
         return false;
@@ -130,13 +132,15 @@ bool TransactionManager::processItem( RsZeroReserveTxItem * item )
         if( m_role != Payee ) throw std::runtime_error( "Dit not expect COMMIT" ); // TODO: Hop
         std::cerr << "Zero Reserve: TX Cohorte: Received Command: COMMIT" << std::endl;
         reply = new RsZeroReserveTxItem( ACK_COMMIT );
-        reply->PeerId( m_coordinator );
+        reply->PeerId( m_credit->m_id );
         p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
         p3zs->sendItem( reply );
+        commitCohort();
         return true;
     case ACK_COMMIT:
         if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect ACK_COMMIT");
-        std::cerr << "Zero Reserve: TX Coordinator: Received Acknowledgement" << std::endl;
+        std::cerr << "Zero Reserve: TX Coordinator: Received Acknowledgement, Committing" << std::endl;
+        commitCoordinator();
         return true;
     case ABORT:
         abortTx( item );
@@ -151,3 +155,16 @@ void TransactionManager::abortTx( RsZeroReserveTxItem * item )
 {
     std::cerr << "Zero Reserve: TX Manger: Error happened. Aborting." << std::endl;
 }
+
+
+void TransactionManager::commitCoordinator()
+{
+    ZrDB::Instance()->updatePeerCredit( *m_credit, "balance", m_credit->m_balance );
+}
+
+
+void TransactionManager::commitCohort()
+{
+
+}
+

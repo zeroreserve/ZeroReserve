@@ -123,9 +123,7 @@ void ZeroReserveDialog::payTo()
 {
     FriendSelectionWidget::IdType id = FriendSelectionWidget::IDTYPE_NONE;
     const std::string uid = ui.friendSelectionWidget->selectedId( id );
-    const std::string peername = rsPeers->getPeerName( uid );
-
-    PaymentDialog d( uid, this, peername );
+    PaymentDialog d( uid, this );
     d.exec();
 }
 

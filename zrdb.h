@@ -52,6 +52,7 @@ public:
     void updatePeerCredit( const Credit & peer_in, const std::string & column, const std::string & value );
     void loadPeer( Credit & peer_out );
     bool peerExists( const Credit & peer_in );
+
     const GrandTotal & loadGrandTotal( const std::string & currency );
 
     std::string getConfig( const std::string & key );

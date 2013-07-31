@@ -67,7 +67,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="lcdNumber">
+  <widget class="QLCDNumber" name="lcdAvailableFunds">
    <property name="geometry">
     <rect>
      <x>215</x>
@@ -95,7 +95,7 @@
     <string>Amount</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_2">
+  <widget class="QLabel" name="availableFundsLabel">
    <property name="geometry">
     <rect>
      <x>60</x>
@@ -109,8 +109,11 @@
      <pointsize>11</pointsize>
     </font>
    </property>
+   <property name="toolTip">
+    <string>Your credit + balance. </string>
+   </property>
    <property name="text">
-    <string>Available Credit</string>
+    <string>Available Funds</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_4">
