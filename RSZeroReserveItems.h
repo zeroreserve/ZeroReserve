@@ -132,7 +132,7 @@ public:
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
 
-    virtual ~RsZeroReserveCreditItem() {}
+    virtual ~RsZeroReserveCreditItem();
     virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
     Credit * getCredit(){ return m_credit; }
 

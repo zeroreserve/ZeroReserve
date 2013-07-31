@@ -37,6 +37,7 @@ public:
 
     virtual int tick();
     bool sendOrder( const std::string& peer_id, OrderBook::Order * order );
+    bool sendCredit( Credit * credit );
     void publishOrder( OrderBook::Order * order );
     std::string getOwnId(){ return m_peers->getOwnId(); }
 
@@ -44,7 +45,8 @@ private:
 
     void processIncoming();
     void sendPackets();
-    void handleOrder(RsZeroReserveOrderBookItem *item);
+    void handleOrder( RsZeroReserveOrderBookItem *item );
+    void handleCredit( RsZeroReserveCreditItem *item );
 
 private:
     OrderBook * m_bids;

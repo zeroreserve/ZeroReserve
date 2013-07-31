@@ -8,8 +8,13 @@ class Credit
     Credit();
 public:
     Credit( const std::string & id, const std::string & currencySym );
+
     void updateCredit();
     void loadPeer();
+    void publish();
+    void updateOurCredit();
+    void updateBalance();
+
 
 public:
     std::string m_id;

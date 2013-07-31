@@ -70,9 +70,11 @@ void FriendDetailsDialog::editFriend()
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
     Credit peerCredit( m_id, Currency::currencySymbols[ sym ] );
+    peerCredit.loadPeer();
     peerCredit.m_credit = ui->creditSpinBox->text().toStdString();
     try {
         peerCredit.updateCredit();
+        peerCredit.publish();
     }
     catch( std::exception e ) {
         QMessageBox::critical( 0, "Error inserting credit", e.what() );

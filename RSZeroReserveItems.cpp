@@ -197,7 +197,13 @@ std::ostream& RsZeroReserveCreditItem::print(std::ostream &out, uint16_t indent)
         printRsItemBase(out, "RsZeroReserveCreditItem", indent);
         uint16_t int_Indent = indent + 2;
         printIndent(out, int_Indent);
+        out << "Currency: " << m_credit->m_currency << std::endl;
+
+        printIndent(out, int_Indent);
         out << "Credit: " << m_credit->m_credit << std::endl;
+
+        printIndent(out, int_Indent);
+        out << "Our Credit : " << m_credit->m_our_credit << std::endl;
 
         printIndent(out, int_Indent);
         out << "Balance : " << m_credit->m_balance << std::endl;
@@ -211,6 +217,7 @@ uint32_t RsZeroReserveCreditItem::serial_size() const
         uint32_t s = 8; /* header */
         s += CURRENCY_STRLEN + HOLLERITH_LEN_SPEC;
         s += m_credit->m_credit.length() + HOLLERITH_LEN_SPEC;
+        s += m_credit->m_our_credit.length() + HOLLERITH_LEN_SPEC;
         s += m_credit->m_balance.length() + HOLLERITH_LEN_SPEC;
 
         return s;
@@ -233,6 +240,7 @@ bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
 
         ok &= setRawString( data, tlvsize, &offset, m_credit->m_currency );
         ok &= setRawString( data, tlvsize, &offset, m_credit->m_credit );
+        ok &= setRawString( data, tlvsize, &offset, m_credit->m_our_credit );
         ok &= setRawString( data, tlvsize, &offset, m_credit->m_balance );
 
         if (offset != tlvsize){
@@ -244,30 +252,28 @@ bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
 }
 
 RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
-        : RsZeroReserveItem( ZERORESERVE_ORDERBOOK_ITEM )
+        : RsZeroReserveItem( ZERORESERVE_CREDIT_ITEM )
 {
     /* get the type and size */
     uint32_t rstype = getRsItemId(data);
     uint32_t rssize = getRsItemSize(data);
 
+    bool ok = true;
     uint32_t offset = 8;
 
+    std::string currency;
 
-    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_ORDERBOOK_ITEM != getRsItemSubType(rstype)))
+    ok &= getRawString( data, rssize, &offset, currency );
+    m_credit = new Credit( "", currency );  // FIXME: We can't give an ID here - add it later. Bad
+
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_CREDIT_ITEM != getRsItemSubType(rstype)))
         throw std::runtime_error("Wrong packet type!") ;
 
     if (pktsize < rssize)    /* check size */
         throw std::runtime_error("Not enough size!") ;
 
-    bool ok = true;
-    std::string id;
-    std::string currency;
-
-    id = this->PeerId();
-    ok &= getRawString( data, rssize, &offset, currency );
-    m_credit = new Credit( id, currency );
-
-    ok &= getRawString( data, rssize, &offset, m_credit->m_credit );
+    ok &= getRawString( data, rssize, &offset, m_credit->m_our_credit ); // these 2 need to interchange
+    ok &= getRawString( data, rssize, &offset, m_credit->m_credit );     // because credit at peer is our_credit here
     ok &= getRawString( data, rssize, &offset, m_credit->m_balance );
 
     if (offset != rssize || !ok )
@@ -275,11 +281,16 @@ RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
 }
 
 RsZeroReserveCreditItem::RsZeroReserveCreditItem( Credit * credit )
-        : RsZeroReserveItem( ZERORESERVE_ORDERBOOK_ITEM ),
-        m_credit( credit )
-{}
+        : RsZeroReserveItem( ZERORESERVE_CREDIT_ITEM )
+{
+    m_credit = new Credit( *credit );
+    PeerId( credit->m_id );
+}
 
-
+RsZeroReserveCreditItem::~RsZeroReserveCreditItem()
+{
+    delete m_credit;
+}
 
 //// Begin TX Items  /////
 

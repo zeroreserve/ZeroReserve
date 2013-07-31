@@ -49,7 +49,7 @@ public:
 
     static ZrDB * Instance();
     void createPeerRecord( const Credit & peer_in );
-    void updatePeerCredit( const Credit & peer_in );
+    void updatePeerCredit( const Credit & peer_in, const std::string & column, const std::string & value );
     void loadPeer( Credit & peer_out );
     bool peerExists( const Credit & peer_in );
     const GrandTotal & loadGrandTotal( const std::string & currency );

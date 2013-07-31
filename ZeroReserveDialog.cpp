@@ -50,7 +50,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     }
 #ifdef ZR_TESTNET
     ui.testnet_warning->setText( "TestNet" );
-    ui.testnet_warning->setStyleSheet( "QLabel { background-color : red; }" );
+    ui.testnet_warning->setStyleSheet( "QLabel { background-color : red; qproperty-alignment: AlignCenter; }" );
 #endif
 
     ui.ask_price->setValidator( new QDoubleValidator(0) );

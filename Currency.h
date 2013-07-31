@@ -15,6 +15,9 @@
     along with Zero Reserve.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef CURRENCY_H
+#define CURRENCY_H
+
 #include <string>
 
 class Currency
@@ -210,3 +213,4 @@ public:
 
 };
 
+#endif // CURRENCY_H

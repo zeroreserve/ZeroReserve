@@ -16,6 +16,8 @@
 */
 
 #include "p3ZeroReserverRS.h"
+
+#include <QMessageBox>
 #include <iostream>
 
 
@@ -48,6 +50,9 @@ void p3ZeroReserveRS::processIncoming()
         case RsZeroReserveItem::ZERORESERVE_TX_ITEM:
             TransactionManager::handleTxItem( dynamic_cast<RsZeroReserveTxItem*>( item ) );
             break;
+        case RsZeroReserveItem::ZERORESERVE_CREDIT_ITEM:
+            handleCredit( dynamic_cast<RsZeroReserveCreditItem*>( item ) );
+            break;
         default:
             std::cerr << "Zero Reserve: Received Item unknown" << std::endl;
         }
@@ -58,7 +63,7 @@ void p3ZeroReserveRS::processIncoming()
 
 void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
 {
-    std::cerr << "Zero Reserve: Received Item" << std::endl;
+    std::cerr << "Zero Reserve: Received Orderbook Item" << std::endl;
     OrderBook::Order * order = item->getOrder();
     bool newOrder;
     if( order->m_orderType == OrderBook::Order::ASK ){
@@ -70,6 +75,37 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
     if( newOrder == true ){
         publishOrder( order ); // republish incoming orders we didn't have yet
     }
+}
+
+void p3ZeroReserveRS::handleCredit(RsZeroReserveCreditItem *item)
+{
+    std::cerr << "Zero Reserve: Received Credit Item" << std::endl;
+    Credit * otherCredit = item->getCredit();
+    otherCredit->m_id = item->PeerId();
+    Credit ourCredit( otherCredit->m_id, otherCredit->m_currency );
+    if( ourCredit.m_our_credit != otherCredit->m_our_credit ){
+        otherCredit->updateOurCredit();
+    }
+    if( ourCredit.m_balance != otherCredit->m_balance ){
+        std::string message;
+        message += "Different balance: " + otherCredit->m_id + " has " + otherCredit->m_balance
+                + " we have " + ourCredit.m_balance;
+        std::cerr << "Zero Reserve: " << message << std::endl;
+ //       QMessageBox::critical( 0, "Balance", QString::fromStdString( message ) );
+    }
+}
+
+bool p3ZeroReserveRS::sendCredit( Credit * credit )
+{
+    std::cerr << "Zero Reserve: Sending Credit item to " << credit->m_id << std::endl;
+    RsZeroReserveCreditItem * item = new RsZeroReserveCreditItem( credit );
+    if(!item){
+            std::cerr << "Cannot allocate RsZeroReserveCreditItem !" << std::endl;
+            return false ;
+    }
+    sendItem( item );
+    item->print( std::cerr, 16 );
+    return true;
 }
 
 bool p3ZeroReserveRS::sendOrder( const std::string& peer_id, OrderBook::Order * order )

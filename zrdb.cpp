@@ -238,12 +238,12 @@ bool ZrDB::peerExists( const Credit & peer_in )
     return m_peer_record_exists;
 }
 
-void ZrDB::updatePeerCredit( const Credit & peer_in )
+void ZrDB::updatePeerCredit( const Credit & peer_in, const std::string & column, const std::string & value )
 {
     std::cerr << "Zero Reserve: Updating peer credit " << peer_in.m_id << std::endl;
     std::ostringstream update;
-    update << "update peers set" <<
-              " credit = " << peer_in.m_credit <<
+    update << "update peers set " <<
+              column << " = " << value <<
               " where id = '" << peer_in.m_id << "'" <<
               " and currency = '" << peer_in.m_currency << "'";
     runQuery( update.str() );
