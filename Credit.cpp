@@ -1,15 +1,23 @@
 #include "Credit.h"
 
 #include "zrdb.h"
+#include "Currency.h"
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
+
+#include <stdexcept>
 
 Credit::Credit( const std::string & id, const std::string & currencySym ) :
     m_id( id ),
     m_currency( currencySym )
-{}
+{
+    if( Currency::getCurrencyBySymbol( currencySym) == Currency::INVALID ){
+        throw std::runtime_error( "Credit::Credit(): Invalid currency symbol" );
+    }
+}
 
 
+// TODO: Check for SQL injection
 
 void Credit::updateCredit()
 {
