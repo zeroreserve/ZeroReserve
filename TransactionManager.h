@@ -60,8 +60,8 @@ public:
     static bool handleTxItem( RsZeroReserveTxItem * item );
 
 private:
-    void commitCoordinator();
-    void commitCohort();
+    void commit();
+    bool newBalance( const std::string & s_amount );
 
     bool initCohort( RsZeroReserveInitTxItem * item );
     bool processItem( RsZeroReserveTxItem * item );
@@ -69,6 +69,7 @@ private:
 
     Role m_role;
     Credit * m_credit;
+    ZR_Number m_newBalance;
 
     static TxManagers currentTX;
 };

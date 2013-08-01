@@ -22,6 +22,8 @@
 #include "zrdb.h"
 
 #include <stdexcept>
+#include <sstream>
+
 
 
 TransactionManager::TxManagers TransactionManager::currentTX;
@@ -39,7 +41,15 @@ bool TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
 
             TransactionManager *tm = new TransactionManager( );
             currentTX[ id ] = tm;
-            return tm->initCohort( initItem );
+            try {
+                return tm->initCohort( initItem );
+            }
+            catch( std::runtime_error e ){
+                std::cerr << "Zero Reserve: TX Manger: Error: " << e.what() << std::endl;
+                currentTX.erase( id );
+                delete tm;
+                return false;
+            }
         }
         else {
             std::cerr << "Zero Reserve: TX Manger: Error: Received first TX item but is not phase QUERY" << std::endl;
@@ -76,6 +86,7 @@ TransactionManager::TransactionManager()
 TransactionManager::~TransactionManager()
 {
     std::cerr << "Zero Reserve: TX Manager: Cleaning up." << std::endl;
+    delete m_credit;
 }
 
 bool TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
@@ -83,9 +94,14 @@ bool TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
     std::cerr << "Zero Reserve: TX Manager: Payment request for " << item->getAmount() << " "
               << item->getCurrency()
               << " received - Setting TX manager up as cohorte" << std::endl;
-    m_role = (Role)item->getRole();
-    m_credit->m_id = item->PeerId();
+    m_credit = new Credit( item->PeerId(), item->getCurrency() );
+    m_credit->loadPeer();
     // TODO: multi hop
+// TODO    m_role = (Role)item->getRole();
+    m_role = Payee; // FIXME
+    if( !newBalance( item->getAmount() ) ){
+        std::cerr << "Zero Reserve: initCohort(): Insufficient Credit" << std::endl;
+    }
     RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( VOTE_YES );  // TODO: VOTE_NO
     reply->PeerId( m_credit->m_id );
     p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
@@ -98,7 +114,9 @@ bool TransactionManager::initCoordinator( const std::string & payee, const std::
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
     m_role = Coordinator;
     currentTX[ payee ] = this;
-    m_credit->m_id = payee;
+    m_credit = new Credit( payee, currency );
+    m_credit->loadPeer();
+    newBalance( amount );
     RsZeroReserveInitTxItem * initItem = new RsZeroReserveInitTxItem( QUERY, amount, currency);
     initItem->PeerId( payee );
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
@@ -135,12 +153,12 @@ bool TransactionManager::processItem( RsZeroReserveTxItem * item )
         reply->PeerId( m_credit->m_id );
         p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
         p3zs->sendItem( reply );
-        commitCohort();
+        commit();
         return true;
     case ACK_COMMIT:
         if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect ACK_COMMIT");
         std::cerr << "Zero Reserve: TX Coordinator: Received Acknowledgement, Committing" << std::endl;
-        commitCoordinator();
+        commit();
         return true;
     case ABORT:
         abortTx( item );
@@ -153,18 +171,34 @@ bool TransactionManager::processItem( RsZeroReserveTxItem * item )
 
 void TransactionManager::abortTx( RsZeroReserveTxItem * item )
 {
-    std::cerr << "Zero Reserve: TX Manger: Error happened. Aborting." << std::endl;
+     std::cerr << "Zero Reserve: TX Manger:Error happened. Aborting." << std::endl;
 }
 
 
-void TransactionManager::commitCoordinator()
+void TransactionManager::commit()
 {
+    std::ostringstream balance;
+    balance << m_newBalance;
+    m_credit->m_balance = balance.str();
+
     ZrDB::Instance()->updatePeerCredit( *m_credit, "balance", m_credit->m_balance );
 }
 
 
-void TransactionManager::commitCohort()
+bool TransactionManager::newBalance( const std::string & s_amount )
 {
-
+    ZR_Number amount = atof( s_amount.c_str() );
+    ZR_Number balance = atof( m_credit->m_balance.c_str() );
+    if(m_role == Coordinator ){
+        ZR_Number our_credit = atof( m_credit->m_our_credit.c_str() );
+        m_newBalance = balance - amount;
+        if( m_newBalance < -our_credit ) return false;
+    }
+    else {
+        ZR_Number credit = atof( m_credit->m_credit.c_str() );
+        m_newBalance = balance + amount;
+        if( m_newBalance > credit ) return false;
+    }
+    std::cerr << "Zero Reserve: TX Manger: New Balance: " << m_newBalance << std::endl;
+    return true;
 }
-
