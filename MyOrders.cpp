@@ -50,8 +50,8 @@ QVariant MyOrders::headerData(int section, Qt::Orientation orientation, int role
 
 QVariant MyOrders::data( const QModelIndex& index, int role ) const
 {
-    if (role == Qt::DisplayRole && index.row() < orders.size()){
-        Order * order = orders[index.row()];
+    if (role == Qt::DisplayRole && index.row() < m_filteredOrders.size()){
+        Order * order = m_filteredOrders[index.row()];
         switch(index.column())
         {
         case 0:

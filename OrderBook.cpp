@@ -45,7 +45,7 @@ OrderBook::OrderBook()
 
 OrderBook::~OrderBook()
 {
-    for( QList<OrderBook::Order*>::iterator it = orders.begin(); it != orders.end(); it++) delete *it;
+    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++) delete *it;
 }
 
 QModelIndex OrderBook::index(int x, int y, const QModelIndex&) const
@@ -60,7 +60,7 @@ QModelIndex OrderBook::parent(const QModelIndex&) const
 
 int OrderBook::rowCount(const QModelIndex&) const
 {
-    return orders.size();
+    return m_filteredOrders.size();
 }
 
 int OrderBook::columnCount(const QModelIndex&) const
@@ -71,8 +71,8 @@ int OrderBook::columnCount(const QModelIndex&) const
 
 QVariant OrderBook::data( const QModelIndex& index, int role ) const
 {
-    if (role == Qt::DisplayRole && index.row() < orders.size()){
-        Order * order = orders[index.row()];
+    if (role == Qt::DisplayRole && index.row() < m_filteredOrders.size()){
+        Order * order = m_filteredOrders[index.row()];
         switch(index.column()){
             case 0:
                 return QVariant(order->m_amount);
@@ -103,16 +103,40 @@ QVariant OrderBook::headerData(int section, Qt::Orientation orientation, int rol
     return QVariant();
 }
 
+void OrderBook::setCurrency( const QString & currency )
+{
+    m_currency = Currency::getCurrencyByName( currency.toStdString() );
+    filterOrders();
+}
+
+void OrderBook::filterOrders()
+{
+    beginResetModel();
+    m_filteredOrders.clear();
+    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+        if( (*it)->m_currency == m_currency )
+            m_filteredOrders.append( *it );
+    }
+    endResetModel();
+}
+
+
+
 bool OrderBook::addOrder( Order * order )
 {
     // do not insert an order that already exists
-    for(QList<Order*>::iterator it = orders.begin(); it != orders.end(); it++){
+    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
         if( *order == *(*it) ) return false;
     }
-    std::cerr << "Zero Reserve: Inserting Type: " << (int)order->m_orderType << std::endl;
-    beginInsertRows( QModelIndex(), orders.size(), orders.size());
-    orders.append(order);
-    qSort(orders.begin(), orders.end(), compareOrder);
+    std::cerr << "Zero Reserve: Inserting Type: " << (int)order->m_orderType <<
+                 " Currency: " << order->m_currency << std::endl;
+
+    m_orders.append(order);
+    if( order->m_currency != m_currency ) return true;
+
+    beginInsertRows( QModelIndex(), m_filteredOrders.size(), m_filteredOrders.size());
+    filterOrders();
+    qSort(m_filteredOrders.begin(), m_filteredOrders.end(), compareOrder);
     endInsertRows();
     return true;
 }

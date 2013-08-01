@@ -58,15 +58,25 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.bid_price->setValidator( new QDoubleValidator(0) );
     ui.bid_amount->setValidator( new QDoubleValidator(0) );
 
+    MyOrders * myOrders = new MyOrders();
+
     connect(ui.friendSelectionWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuFriendList(QPoint)));
     connect(ui.friendSelectionWidget, SIGNAL(doubleClicked(int,QString)), this, SLOT(friendDetails()));
     connect(ui.askButton, SIGNAL(clicked()), this, SLOT(addAsk()));
     connect(ui.bidButton, SIGNAL(clicked()), this, SLOT(addBid()));
     connect(ui.currencySelector2, SIGNAL(currentIndexChanged(QString)), this, SLOT(loadGrandTotal(QString) ) );
+    connect(ui.currencySelector1, SIGNAL(currentIndexChanged(QString)), bids, SLOT(setCurrency(QString) ) );
+    connect(ui.currencySelector1, SIGNAL(currentIndexChanged(QString)), asks, SLOT(setCurrency(QString) ) );
+    connect(ui.currencySelector1, SIGNAL(currentIndexChanged(QString)), myOrders, SLOT(setCurrency(QString) ) );
 
     ui.asksTableView->setModel( asks );
     ui.bidsTableView->setModel( bids );
-    ui.myOrders->setModel( new MyOrders() );
+    ui.myOrders->setModel( myOrders );
+
+    bids->setCurrency( ui.currencySelector2->currentText() );
+    asks->setCurrency( ui.currencySelector2->currentText() );
+    myOrders->setCurrency( ui.currencySelector2->currentText() );
+
 
     /* initialize friends list */
     ui.friendSelectionWidget->setHeaderText(tr("Friend List:"));

@@ -72,15 +72,21 @@ public:
 
 
 protected:
-    QList < Order* > orders;
+    typedef QList<Order*>::iterator OrderIterator;
+
+    QList < Order* > m_orders;
+    QList < Order* > m_filteredOrders;
+    Currency::CurrencySymbols m_currency;
 
 signals:
 
 public slots:
+    void setCurrency( const QString & currency );
 
 private:
     static bool compareOrder( const Order * left, const Order * right );
 
+    void filterOrders();
 };
 
 #endif // ORDERBOOK_H
