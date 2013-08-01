@@ -43,6 +43,12 @@ public:
     {
     public:
         enum OrderType { BID = 0, ASK };
+        enum Purpose { NEW = 0,         // new order
+                       CANCEL,          // tell everyone I changed my mind
+                       EXECUTED,        // tell everyone this order is gone
+                       PARTLY_EXECUTED, // everybody update the order book
+                       SELL             // tell the buyer through a tunnel that there is a match
+                     };
 
         std::string m_trader_id;
         OrderType m_orderType;
@@ -52,6 +58,7 @@ public:
         Currency::CurrencySymbols m_currency;
         time_t m_timeStamp;   // no more than 1 order / second
         bool sent;            //
+        OrderBook::Order::Purpose m_purpose;
 
         bool setPrice( QString price );
         bool operator == (const Order & other);

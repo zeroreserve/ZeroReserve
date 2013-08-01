@@ -90,7 +90,8 @@ uint32_t RsZeroReserveOrderBookItem::serial_size() const
         s += sizeof(uint8_t); // the type (BID / ASK)
         s += CURRENCY_STRLEN + HOLLERITH_LEN_SPEC;
         s += sizeof(uint64_t);
-        s+= m_order->m_trader_id.length() + HOLLERITH_LEN_SPEC;
+        s += m_order->m_trader_id.length() + HOLLERITH_LEN_SPEC;
+        s += sizeof( uint8_t );  // purpose
 
         return s;
 }
@@ -123,6 +124,7 @@ bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
 
         ok &= setRawUInt64( data, tlvsize, &offset, m_order->m_timeStamp );
         ok &= setRawString( data, tlvsize, &offset, m_order->m_trader_id );
+        ok &= setRawUInt8( data, tlvsize, &offset, m_order->m_purpose );
 
         if (offset != tlvsize){
                 ok = false;
@@ -175,6 +177,10 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
     std::string trader_id;
     ok &= getRawString(data, rssize, &offset, trader_id);
     m_order->m_trader_id = trader_id;
+
+    uint8_t order_purpose;
+    ok &= getRawUInt8(data, rssize, &offset, &order_purpose );
+    m_order->m_purpose = (OrderBook::Order::Purpose) order_purpose;
 
     if (offset != rssize || !ok )
         throw std::runtime_error("Deserialisation error!") ;
