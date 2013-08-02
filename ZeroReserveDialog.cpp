@@ -58,7 +58,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.bid_price->setValidator( new QDoubleValidator(0) );
     ui.bid_amount->setValidator( new QDoubleValidator(0) );
 
-    MyOrders * myOrders = new MyOrders();
+    MyOrders * myOrders = new MyOrders( bids, asks );
 
     connect(ui.friendSelectionWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuFriendList(QPoint)));
     connect(ui.friendSelectionWidget, SIGNAL(doubleClicked(int,QString)), this, SLOT(friendDetails()));
@@ -152,16 +152,14 @@ void ZeroReserveDialog::addAsk()
 void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType type, QString price, QString amount )
 {
     OrderBook::Order * order = new OrderBook::Order();
-    MyOrders * myOrders = static_cast<MyOrders*>(ui.myOrders->model());
-    p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     order->setPrice( price );
     order->m_currency = Currency::getCurrencyByName( ui.currencySelector1->currentText().toStdString() );
     order->m_amount = amount;
     order->m_orderType = type;
     order->sent = false;
     order->m_timeStamp = time(0);
-    order->m_trader_id = p3zs->getOwnId();
-    book->addOrder( order );
-    myOrders->addOrder( order );
-    p3zs->publishOrder( order );
+    order->m_trader_id = p3zr->getOwnId();
+    book->processOrder( order );
+    p3zr->publishOrder( order );
 }

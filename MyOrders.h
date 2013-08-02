@@ -22,13 +22,29 @@
 #include "OrderBook.h"
 
 
+/**
+ * @brief Holds pointers to all orders from myself
+ */
+
 class MyOrders : public OrderBook
 {
     Q_OBJECT
-public:
     MyOrders();
+
+public:
+    MyOrders(OrderBook *bids, OrderBook *asks);
     virtual int columnCount(const QModelIndex&) const;
     virtual QVariant data(const QModelIndex&, int role = Qt::DisplayRole) const;
-    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;};
+    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+
+    /** Matches our new orders with all others */
+    void match(Order *order);
+    virtual bool addOrder( Order * order );
+
+
+private:
+    OrderBook * m_bids;
+    OrderBook * m_asks;
+};
 
 #endif // MYORDERS_H

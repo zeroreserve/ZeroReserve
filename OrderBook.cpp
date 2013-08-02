@@ -41,6 +41,7 @@ bool OrderBook::compareOrder( const Order * left, const Order * right ){
 
 OrderBook::OrderBook()
 {
+    m_myOrders = NULL;
 }
 
 OrderBook::~OrderBook()
@@ -106,18 +107,27 @@ QVariant OrderBook::headerData(int section, Qt::Orientation orientation, int rol
 void OrderBook::setCurrency( const QString & currency )
 {
     m_currency = Currency::getCurrencyByName( currency.toStdString() );
-    filterOrders();
+    beginResetModel();
+    filterOrders( m_filteredOrders, m_currency );
+    endResetModel();
 }
 
-void OrderBook::filterOrders()
+void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym )
 {
-    beginResetModel();
-    m_filteredOrders.clear();
+    filteredOrders.clear();
     for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
-        if( (*it)->m_currency == m_currency )
-            m_filteredOrders.append( *it );
+        if( (*it)->m_currency == currencySym )
+            filteredOrders.append( *it );
     }
-    endResetModel();
+    qSort( filteredOrders.begin(), filteredOrders.end(), compareOrder);
+}
+
+
+bool OrderBook::processOrder( Order* order )
+{
+    bool ok = addOrder( order );
+    ok &= m_myOrders->addOrder( order );
+    return ok;
 }
 
 
@@ -135,8 +145,7 @@ bool OrderBook::addOrder( Order * order )
     if( order->m_currency != m_currency ) return true;
 
     beginInsertRows( QModelIndex(), m_filteredOrders.size(), m_filteredOrders.size());
-    filterOrders();
-    qSort(m_filteredOrders.begin(), m_filteredOrders.end(), compareOrder);
+    filterOrders( m_filteredOrders, m_currency );
     endInsertRows();
     return true;
 }

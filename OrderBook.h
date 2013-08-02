@@ -48,6 +48,8 @@ public:
                        EXECUTED,        // tell everyone this order is gone
                        PARTLY_EXECUTED, // everybody update the order book
                        SELL             // tell the buyer through a tunnel that there is a match
+                                        // an ask market order will not be published
+                                        // bid market orders go to execution right away.
                      };
 
         std::string m_trader_id;
@@ -57,7 +59,7 @@ public:
         ZR_Number m_price_d;     // the amount as number for sorting
         Currency::CurrencySymbols m_currency;
         time_t m_timeStamp;   // no more than 1 order / second
-        bool sent;            //
+        bool sent;
         OrderBook::Order::Purpose m_purpose;
 
         bool setPrice( QString price );
@@ -65,6 +67,9 @@ public:
     };
 
 public:
+    typedef QList<Order*>::iterator OrderIterator;
+    typedef QList<Order*> OrderList;
+
     explicit OrderBook();
     virtual ~OrderBook();
 
@@ -75,15 +80,23 @@ public:
     virtual QVariant data(const QModelIndex&, int role = Qt::DisplayRole) const;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
-    bool addOrder( Order* order );
+    OrderIterator begin(){ return m_orders.begin(); }
+    OrderIterator end() { return m_orders.end(); }
+
+    void setMyOrders( OrderBook * myOrders ){ m_myOrders = myOrders; }
+
+    virtual bool processOrder( Order* order );
+    void filterOrders(OrderList & filteredOrders , const Currency::CurrencySymbols currencySym);
 
 
 protected:
-    typedef QList<Order*>::iterator OrderIterator;
-
-    QList < Order* > m_orders;
-    QList < Order* > m_filteredOrders;
+    OrderList m_orders;
+    OrderList m_filteredOrders;
     Currency::CurrencySymbols m_currency;
+    OrderBook * m_myOrders;
+
+protected:
+    virtual bool addOrder( Order* order );
 
 signals:
 
@@ -92,8 +105,6 @@ public slots:
 
 private:
     static bool compareOrder( const Order * left, const Order * right );
-
-    void filterOrders();
 };
 
 #endif // ORDERBOOK_H

@@ -67,10 +67,10 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
     OrderBook::Order * order = item->getOrder();
     bool newOrder;
     if( order->m_orderType == OrderBook::Order::ASK ){
-        newOrder = m_asks->addOrder( order );
+        newOrder = m_asks->processOrder( order );
     }
     else{
-        newOrder = m_bids->addOrder( order );
+        newOrder = m_bids->processOrder( order );
     }
     if( newOrder == true ){
         publishOrder( order ); // republish incoming orders we didn't have yet
