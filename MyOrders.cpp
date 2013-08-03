@@ -89,7 +89,7 @@ void MyOrders::match( Order * order )
         m_bids->filterOrders( bids, order->m_currency );
         for( OrderIterator bidIt = bids.begin(); bidIt != bids.end(); bidIt++ ){
             if( (*bidIt)->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
-            if( order->m_price_d < (*bidIt)->m_price_d ) break;    // no need to try and find matches beyond
+            if( order->m_price_d > (*bidIt)->m_price_d ) break;    // no need to try and find matches beyond
             std::cerr << "Zero Reserve: Match at ask price " << (*bidIt)->m_price.toStdString() << std::endl;
         }
     }
