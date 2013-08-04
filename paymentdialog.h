@@ -39,7 +39,7 @@ public:
 
 private slots:
     void payTo();
-    void loadAvailableFunds( QString );
+    void loadAvailableFunds( QString arg = "" );
 
 private:
     ZR_Number availableFunds();

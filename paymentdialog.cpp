@@ -42,6 +42,7 @@ PaymentDialog::PaymentDialog( const std::string & payee, QWidget *parent ) :
     }
     connect( ui->buttonBox, SIGNAL(accepted()), this, SLOT( payTo() ) );
     connect( ui->currencySelector, SIGNAL(currentIndexChanged(QString)), this, SLOT(loadAvailableFunds( QString ) ) );
+    loadAvailableFunds();
 }
 
 PaymentDialog::~PaymentDialog()
@@ -56,7 +57,7 @@ void PaymentDialog::payTo()
     tm->initCoordinator( m_payee, ui->amount->text().toStdString(), Currency::currencySymbols[ sym ] );
 }
 
-void PaymentDialog::loadAvailableFunds( QString )
+void PaymentDialog::loadAvailableFunds(QString arg)
 {
     ui->lcdAvailableFunds->display( availableFunds() );
 }
