@@ -18,17 +18,73 @@
 #ifndef PAYMENT_H
 #define PAYMENT_H
 
-#include "TransactionManager.h"
+#include "zrtypes.h"
+#include "Credit.h"
+
+#include <string>
+
 
 /**
-  3 phase commit protocol for payments between peers.
+  * Take care of the actual payment on behalf of the @TransactionManager
   */
 
 class Payment
 {
-    friend class TransactionManager;
-public:
     Payment();
+public:
+    enum Category {
+        PAYMENT,      // generic payment where the other leg of the deal is outside the system
+        DEBT_CANCEL,  // triangle payments with the aim to cancel out debt
+        BITCOIN
+    };
+
+    Payment( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category);
+    virtual ~Payment(){}
+
+    virtual ZR_Number newBalance( const Credit * credit ) const = 0;
+    virtual void init() = 0;
+    virtual void commit() = 0;
+
+    const std::string & getCounterparty(){ return m_counterparty; }
+    void setCounterparty( const std::string & counterparty ){ m_counterparty = counterparty; }
+    const std::string & getCurrency(){ return m_currency; }
+    const std::string & getAmount(){ return m_amount; }
+    Category getCategory(){ return m_category; }
+
+protected:
+    std::string m_counterparty;
+    std::string m_amount;
+    std::string m_currency;
+    Category m_category;
+    std::string text;  // this is freeform data which is the category
+
+
 };
+
+
+class PaymentReceiver : public Payment
+{
+public:
+    PaymentReceiver( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category);
+    virtual ~PaymentReceiver(){}
+
+    virtual ZR_Number newBalance(const Credit * credit ) const;
+    virtual void init();
+    virtual void commit();
+};
+
+
+class PaymentSpender : public Payment
+{
+public:
+    PaymentSpender( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category);
+    virtual ~PaymentSpender(){}
+
+    virtual ZR_Number newBalance( const Credit * credit ) const;
+    virtual void init();
+    virtual void commit();
+};
+
+
 
 #endif // PAYMENT_H

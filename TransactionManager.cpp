@@ -20,6 +20,7 @@
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 #include "zrdb.h"
+#include "Payment.h"
 
 #include <stdexcept>
 #include <sstream>
@@ -87,19 +88,21 @@ TransactionManager::~TransactionManager()
 {
     std::cerr << "Zero Reserve: TX Manager: Cleaning up." << std::endl;
     delete m_credit;
+    delete m_payment;
 }
 
 bool TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
 {
-    std::cerr << "Zero Reserve: TX Manager: Payment request for " << item->getAmount() << " "
-              << item->getCurrency()
+    m_payment = item->getPayment();
+    std::cerr << "Zero Reserve: TX Manager: Payment request for " << m_payment->getAmount() << " "
+              << m_payment->getCurrency()
               << " received - Setting TX manager up as cohorte" << std::endl;
-    m_credit = new Credit( item->PeerId(), item->getCurrency() );
+    m_credit = new Credit( item->PeerId(), m_payment->getCurrency() );
     m_credit->loadPeer();
     // TODO: multi hop
 // TODO    m_role = (Role)item->getRole();
     m_role = Payee; // FIXME
-    if( !newBalance( item->getAmount() ) ){
+    if ( atoi( m_credit->m_credit.c_str()) < m_payment->newBalance( m_credit ) ){
         std::cerr << "Zero Reserve: initCohort(): Insufficient Credit" << std::endl;
     }
     RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( VOTE_YES );  // TODO: VOTE_NO
@@ -109,16 +112,19 @@ bool TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
     return true;
 }
 
-bool TransactionManager::initCoordinator( const std::string & payee, const std::string & amount, const std::string & currency )
+bool TransactionManager::initCoordinator( Payment * payment )
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
+    m_payment = payment;
     m_role = Coordinator;
-    currentTX[ payee ] = this;
-    m_credit = new Credit( payee, currency );
+    currentTX[ m_payment->getCounterparty() ] = this;
+    m_credit = new Credit( m_payment->getCounterparty(), m_payment->getCurrency() );
     m_credit->loadPeer();
-    newBalance( amount );
-    RsZeroReserveInitTxItem * initItem = new RsZeroReserveInitTxItem( QUERY, amount, currency);
-    initItem->PeerId( payee );
+    if ( atoi( m_credit->m_our_credit.c_str()) - m_payment->newBalance( m_credit ) < 0 ){
+        std::cerr << "Zero Reserve: Error, not enough Credit " << std::endl;
+        return false;
+    }
+    RsZeroReserveInitTxItem * initItem = new RsZeroReserveInitTxItem( m_payment );
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     p3zr->sendItem( initItem );
     return true;
@@ -132,7 +138,6 @@ bool TransactionManager::processItem( RsZeroReserveTxItem * item )
     // TODO: Timeout
     switch( item->getTxPhase() )
     {
-
     case QUERY:
         abortTx( item ); // we should never get here
         throw std::runtime_error( "Dit not expect QUERY" );
@@ -178,27 +183,11 @@ void TransactionManager::abortTx( RsZeroReserveTxItem * item )
 void TransactionManager::commit()
 {
     std::ostringstream balance;
-    balance << m_newBalance;
+    balance << m_payment->newBalance( m_credit );
     m_credit->m_balance = balance.str();
 
     ZrDB::Instance()->updatePeerCredit( *m_credit, "balance", m_credit->m_balance );
 }
 
 
-bool TransactionManager::newBalance( const std::string & s_amount )
-{
-    ZR_Number amount = atof( s_amount.c_str() );
-    ZR_Number balance = atof( m_credit->m_balance.c_str() );
-    if(m_role == Coordinator ){
-        ZR_Number our_credit = atof( m_credit->m_our_credit.c_str() );
-        m_newBalance = balance - amount;
-        if( m_newBalance < -our_credit ) return false;
-    }
-    else {
-        ZR_Number credit = atof( m_credit->m_credit.c_str() );
-        m_newBalance = balance + amount;
-        if( m_newBalance > credit ) return false;
-    }
-    std::cerr << "Zero Reserve: TX Manger: New Balance: " << m_newBalance << std::endl;
-    return true;
-}
+

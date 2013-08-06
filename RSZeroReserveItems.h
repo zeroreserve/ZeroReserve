@@ -83,22 +83,20 @@ class RsZeroReserveInitTxItem: public RsZeroReserveTxItem
     RsZeroReserveInitTxItem();
 public:
     RsZeroReserveInitTxItem(void *data,uint32_t size) ;
-    RsZeroReserveInitTxItem( TransactionManager::TxPhase phase, const std::string & amount, const std::string & currency );
+    RsZeroReserveInitTxItem( Payment * payment );
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
 
-    virtual ~RsZeroReserveInitTxItem() {}
+    virtual ~RsZeroReserveInitTxItem();
     virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
 
-    std::string getAmount(){ return m_amount; }
-    std::string getCurrency(){ return m_currency; }
+    Payment * getPayment();
     TransactionManager::Role getRole() { return m_Role; }
 
 private:
     TransactionManager::Role m_Role;
-    std::string m_amount;
-    std::string m_currency;
+    Payment * m_payment;
 };
 
 

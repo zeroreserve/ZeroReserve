@@ -88,18 +88,28 @@ void MyOrders::match( Order * order )
         OrderList bids;
         m_bids->filterOrders( bids, order->m_currency );
         for( OrderIterator bidIt = bids.begin(); bidIt != bids.end(); bidIt++ ){
-            if( (*bidIt)->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
-            if( order->m_price_d > (*bidIt)->m_price_d ) break;    // no need to try and find matches beyond
-            std::cerr << "Zero Reserve: Match at ask price " << (*bidIt)->m_price.toStdString() << std::endl;
+            Order * other = *bidIt;
+            if( other->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
+            if( order->m_price_d > other->m_price_d ) break;    // no need to try and find matches beyond
+            std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
+            if( order->m_amount > other->m_amount ){
+                // TODO: execute order and continue
+
+            }
+            else {
+                // TODO: execute order and break
+                break;
+            }
         }
     }
     else {
         OrderList asks;
         m_asks->filterOrders( asks, order->m_currency );
         for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){
-            if( (*askIt)->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
-            if( order->m_price_d < (*askIt)->m_price_d ) break;    // no need to try and find matches beyond
-            std::cerr << "Zero Reserve: Match at ask price " << (*askIt)->m_price.toStdString() << std::endl;
+            Order * other = *askIt;
+            if( other->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
+            if( order->m_price_d < other->m_price_d ) break;    // no need to try and find matches beyond
+            std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
         }
     }
 }
@@ -108,7 +118,7 @@ bool MyOrders::addOrder( Order * order )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     if( order->m_trader_id != p3zr->getOwnId() ) return true;
-
+// TODO: if this is an incoming order, we need to match all our orders against it.
     match( order );
 
     return OrderBook::addOrder( order );

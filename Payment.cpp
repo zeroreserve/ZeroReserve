@@ -17,6 +17,56 @@
 
 #include "Payment.h"
 
-Payment::Payment()
+#include <stdlib.h>
+
+
+Payment::Payment( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category) :
+    m_counterparty( counterparty ),
+    m_amount( amount ),
+    m_currency( currency ),
+    m_category( category )
 {
 }
+
+
+/////// PaymentReceiver
+
+PaymentReceiver::PaymentReceiver( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category) :
+    Payment( counterparty, amount, currency, category)
+{}
+
+
+ZR_Number PaymentReceiver::newBalance( const Credit * credit ) const
+{
+    ZR_Number amount = atof( m_amount.c_str() );
+    ZR_Number balance = atof( credit->m_balance.c_str() );
+    return balance + amount;
+}
+
+
+void PaymentReceiver::init()
+{}
+
+void PaymentReceiver::commit()
+{}
+
+
+/////// PaymentSpender
+
+PaymentSpender::PaymentSpender( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category) :
+    Payment( counterparty, amount, currency, category)
+{}
+
+ZR_Number PaymentSpender::newBalance( const Credit * credit ) const
+{
+    ZR_Number amount = atof( m_amount.c_str() );
+    ZR_Number balance = atof( credit->m_balance.c_str() );
+    return balance - amount;
+}
+
+void PaymentSpender::init()
+{}
+
+void PaymentSpender::commit()
+{}
+

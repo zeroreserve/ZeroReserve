@@ -19,6 +19,7 @@
 #include "RSZeroReserveItems.h"
 #include "OrderBook.h"
 #include "serialiser/rsbaseserial.h"
+#include "Payment.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -395,11 +396,24 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
     uint8_t role;
     ok &= getRawUInt8(data, rssize, &m_offset, &role );
     m_Role = (TransactionManager::Role) role;
-    ok &= getRawString(data, rssize, &m_offset, m_amount );
-    ok &= getRawString(data, rssize, &m_offset, m_currency );
+    std::string amount;
+    ok &= getRawString(data, rssize, &m_offset, amount );
+    std::string currency;
+    ok &= getRawString(data, rssize, &m_offset, currency );
+    uint8_t category;
+    ok &= getRawUInt8(data, rssize, &m_offset, &category );
+
+    m_payment = new PaymentReceiver( "", amount, currency, (Payment::Category)category );
 
     if ( !ok )
         throw std::runtime_error("Deserialisation error!") ;
+}
+
+
+Payment * RsZeroReserveInitTxItem::getPayment()
+{
+    m_payment->setCounterparty( PeerId() );
+    return m_payment;
 }
 
 
@@ -408,7 +422,8 @@ uint32_t RsZeroReserveInitTxItem::serial_size() const
     return RsZeroReserveTxItem::serial_size()
             + sizeof(uint8_t)                          // Role
             + CURRENCY_STRLEN + HOLLERITH_LEN_SPEC     // currency
-            + m_amount.length() + HOLLERITH_LEN_SPEC;  // amount
+            + m_payment->getAmount().length() + HOLLERITH_LEN_SPEC  // amount
+            + sizeof(uint8_t);                         // Category
 }
 
 
@@ -421,8 +436,9 @@ bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
     uint32_t tlvsize = serial_size() ;
 
     ok &= setRawUInt8( data, tlvsize, &m_offset, m_Role );
-    ok &= setRawString( data, tlvsize, &m_offset, m_amount );
-    ok &= setRawString( data, tlvsize, &m_offset, m_currency );
+    ok &= setRawString( data, tlvsize, &m_offset, m_payment->getAmount() );
+    ok &= setRawString( data, tlvsize, &m_offset, m_payment->getCurrency() );
+    ok &= setRawUInt8( data, tlvsize, &m_offset, m_payment->getCategory() );
 
     if (m_offset != tlvsize){
         ok = false;
@@ -439,17 +455,24 @@ std::ostream& RsZeroReserveInitTxItem::print(std::ostream &out, uint16_t indent)
     out << "Role     : " << m_Role << std::endl;
 
     printIndent(out, int_Indent);
-    out << "Amount   : " << m_amount << std::endl;
+    out << "Amount   : " << m_payment->getAmount() << std::endl;
 
     printIndent(out, int_Indent);
-    out << "Currency : " << m_currency << std::endl;
+    out << "Currency : " << m_payment->getCurrency() << std::endl;
 
     printRsItemEnd(out, "RsZeroReserveInitTxItem", indent);
     return out;
 }
 
-RsZeroReserveInitTxItem::RsZeroReserveInitTxItem( TransactionManager::TxPhase phase, const std::string & amount, const std::string & currency ) :
-    RsZeroReserveTxItem( phase, ZERORESERVE_TX_INIT_ITEM ),
-    m_amount( amount ),
-    m_currency( currency )
-{}
+RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(Payment *payment) :
+    RsZeroReserveTxItem( TransactionManager::QUERY, ZERORESERVE_TX_INIT_ITEM ),
+    m_payment( payment )
+{
+    this->PeerId( m_payment->getCounterparty() );
+}
+
+
+RsZeroReserveInitTxItem::~RsZeroReserveInitTxItem()
+{
+}
+

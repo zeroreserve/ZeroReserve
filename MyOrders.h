@@ -37,7 +37,7 @@ public:
     virtual QVariant data(const QModelIndex&, int role = Qt::DisplayRole) const;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
-    /** Matches our new orders with all others */
+    /** Matches our new order with all others  */
     void match(Order *order);
     virtual bool addOrder( Order * order );
 

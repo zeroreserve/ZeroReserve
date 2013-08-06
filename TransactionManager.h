@@ -27,6 +27,7 @@
 class RsZeroReserveTxItem;
 class RsZeroReserveInitTxItem;
 class Credit;
+class Payment;
 
 /**
   Manage multi hop transaction. The payer is the coordiantor, all in between
@@ -55,13 +56,12 @@ public:
     TransactionManager();
     ~TransactionManager();
 
-    bool initCoordinator( const std::string & payee, const std::string & amount, const std::string & currency );
+    bool initCoordinator( Payment * payment );
 
     static bool handleTxItem( RsZeroReserveTxItem * item );
 
 private:
     void commit();
-    bool newBalance( const std::string & s_amount );
 
     bool initCohort( RsZeroReserveInitTxItem * item );
     bool processItem( RsZeroReserveTxItem * item );
@@ -69,7 +69,8 @@ private:
 
     Role m_role;
     Credit * m_credit;
-    ZR_Number m_newBalance;
+    Payment * m_payment;
+
 
     static TxManagers currentTX;
 };

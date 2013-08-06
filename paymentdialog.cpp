@@ -21,6 +21,7 @@
 #include "TransactionManager.h"
 #include "Credit.h"
 #include "zrtypes.h"
+#include "Payment.h"
 
 #include "retroshare/rspeers.h"
 
@@ -54,7 +55,8 @@ void PaymentDialog::payTo()
 {
     TransactionManager * tm = new TransactionManager();
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
-    tm->initCoordinator( m_payee, ui->amount->text().toStdString(), Currency::currencySymbols[ sym ] );
+    Payment * payment = new PaymentSpender( m_payee, ui->amount->text().toStdString(), Currency::currencySymbols[ sym ], Payment::PAYMENT );
+    if( ! tm->initCoordinator( payment ) ) delete tm;
 }
 
 void PaymentDialog::loadAvailableFunds(QString arg)
