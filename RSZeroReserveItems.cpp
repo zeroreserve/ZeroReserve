@@ -436,8 +436,10 @@ bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
     uint32_t tlvsize = serial_size() ;
 
     ok &= setRawUInt8( data, tlvsize, &m_offset, m_Role );
-    ok &= setRawString( data, tlvsize, &m_offset, m_payment->getAmount() );
-    ok &= setRawString( data, tlvsize, &m_offset, m_payment->getCurrency() );
+    std::string amount = m_payment->getAmount();
+    ok &= setRawString( data, tlvsize, &m_offset, amount );
+    std::string currency = m_payment->getCurrency();
+    ok &= setRawString( data, tlvsize, &m_offset, currency );
     ok &= setRawUInt8( data, tlvsize, &m_offset, m_payment->getCategory() );
 
     if (m_offset != tlvsize){
