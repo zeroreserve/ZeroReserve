@@ -148,9 +148,9 @@ void ZrDB::init()
             }
         }
 
-        txlog = QFileDialog::getExistingDirectory( 0, "Select directory for Transaction log", QString::fromStdString( pathname ) ).toStdString()
-                + "/zeroreserve.tx";
-        setConfig( "TXLOG", txlog );
+//        txlog = QFileDialog::getExistingDirectory( 0, "Select directory for Transaction log", QString::fromStdString( pathname ) ).toStdString()
+//                + "/zeroreserve.tx";
+//        setConfig( "TXLOG", txlog );
     }
     // TODO: Do something with the tx log
 }
