@@ -402,11 +402,13 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
     ok &= getRawString(data, rssize, &m_offset, currency );
     uint8_t category;
     ok &= getRawUInt8(data, rssize, &m_offset, &category );
-
-    m_payment = new PaymentReceiver( "", amount, currency, (Payment::Category)category );
+    std::string freeformText;
 
     if ( !ok )
         throw std::runtime_error("Deserialisation error!") ;
+
+    m_payment = new PaymentReceiver( "", amount, currency, (Payment::Category)category );
+    m_payment->setText( freeformText );
 }
 
 
@@ -423,7 +425,8 @@ uint32_t RsZeroReserveInitTxItem::serial_size() const
             + sizeof(uint8_t)                          // Role
             + CURRENCY_STRLEN + HOLLERITH_LEN_SPEC     // currency
             + m_payment->getAmount().length() + HOLLERITH_LEN_SPEC  // amount
-            + sizeof(uint8_t);                         // Category
+            + sizeof(uint8_t)                          // Category
+            + m_payment->getText().length() + HOLLERITH_LEN_SPEC; // freeform data
 }
 
 
@@ -436,11 +439,17 @@ bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
     uint32_t tlvsize = serial_size() ;
 
     ok &= setRawUInt8( data, tlvsize, &m_offset, m_Role );
+
     std::string amount = m_payment->getAmount();
     ok &= setRawString( data, tlvsize, &m_offset, amount );
+
     std::string currency = m_payment->getCurrency();
     ok &= setRawString( data, tlvsize, &m_offset, currency );
+
     ok &= setRawUInt8( data, tlvsize, &m_offset, m_payment->getCategory() );
+
+    std::string freeformText = m_payment->getText();
+    ok &= setRawString( data, tlvsize, &m_offset, freeformText );
 
     if (m_offset != tlvsize){
         ok = false;

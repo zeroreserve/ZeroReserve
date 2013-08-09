@@ -18,12 +18,21 @@
 #include "MyOrders.h"
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
+#include "Payment.h"
+#include "TransactionManager.h"
 
 #include <iostream>
+#include <sstream>
+
+MyOrders * MyOrders::me = NULL;
+
+MyOrders * MyOrders::Instance(){ return me; }
 
 
 MyOrders::MyOrders()
-{}
+{
+    me = this;
+}
 
 MyOrders::MyOrders( OrderBook * bids, OrderBook * asks ) :
     m_bids( bids ),
@@ -81,10 +90,10 @@ QVariant MyOrders::data( const QModelIndex& index, int role ) const
 }
 
 
-void MyOrders::match( Order * order )
+int MyOrders::match( Order * order )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    if( order->m_orderType == Order::ASK ){  // compare with bids
+    if( order->m_orderType == Order::ASK ){  // we are selling - compare with the bids
         OrderList bids;
         m_bids->filterOrders( bids, order->m_currency );
         for( OrderIterator bidIt = bids.begin(); bidIt != bids.end(); bidIt++ ){
@@ -92,13 +101,13 @@ void MyOrders::match( Order * order )
             if( other->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
             if( order->m_price_d > other->m_price_d ) break;    // no need to try and find matches beyond
             std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
-            if( order->m_amount > other->m_amount ){
-                // TODO: execute order and continue
-
+            bool ok;
+            if( order->m_amount.toDouble( &ok ) > other->m_amount.toDouble( &ok ) ){
+               sell( other, other->m_amount );
             }
             else {
-                // TODO: execute order and break
-                break;
+                sell( other, order->m_amount );
+                return ZR::ZR_SUCCESS;
             }
         }
     }
@@ -110,16 +119,53 @@ void MyOrders::match( Order * order )
             if( other->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
             if( order->m_price_d < other->m_price_d ) break;    // no need to try and find matches beyond
             std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
+            bool ok;
+            ZR::ZR_Number myAmount = order->m_amount.toDouble( &ok );
+            ZR::ZR_Number otherAmount = other->m_amount.toDouble( &ok );
+            if( myAmount > otherAmount ){
+                buy( other, other->m_amount );
+                order->m_amount = QString::number( myAmount - otherAmount );
+            }
+            else {
+                buy( other, order->m_amount );
+                order->m_amount = "";
+                return ZR::ZR_FINISH;
+            }
         }
     }
+    return ZR::ZR_SUCCESS;
 }
 
-bool MyOrders::addOrder( Order * order )
+
+void MyOrders::buy( Order * order, QString amount )
 {
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    if( order->m_trader_id != p3zr->getOwnId() ) return true;
-// TODO: if this is an incoming order, we need to match all our orders against it.
-    match( order );
+    TransactionManager * tm = new TransactionManager();
+    std::ostringstream s_amountToPay;
+    s_amountToPay << amount.toDouble() * order->m_price_d;
 
-    return OrderBook::addOrder( order );
+    Payment * payment = new PaymentSpender( order->m_trader_id, s_amountToPay.str(), Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
+    std::ostringstream timestamp;
+    timestamp << order->m_timeStamp;
+    payment->setText( timestamp.str() );
+    if( ZR::ZR_FAILURE == tm->initCoordinator( payment ) ) delete tm;
 }
+
+
+void MyOrders::sell( Order * order, QString amount )
+{
+
+}
+
+
+int MyOrders::startExecute()
+{
+    return ZR::ZR_SUCCESS;
+}
+
+
+int MyOrders::finishExecute( Payment * payment )
+{
+    std::cerr << "Zero Reserve: Finishing Order execution for " << payment->getText() << std::endl;
+    return ZR::ZR_SUCCESS;
+}
+

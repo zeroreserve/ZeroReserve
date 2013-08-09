@@ -20,10 +20,12 @@
 #define MYORDERS_H
 
 #include "OrderBook.h"
+#include "Payment.h"
 
 
 /**
- * @brief Holds pointers to all orders from myself
+ * @brief Holds pointers to all orders from myself.
+ * Matches oders and controls execution
  */
 
 class MyOrders : public OrderBook
@@ -37,14 +39,36 @@ public:
     virtual QVariant data(const QModelIndex&, int role = Qt::DisplayRole) const;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
-    /** Matches our new order with all others  */
-    void match(Order *order);
-    virtual bool addOrder( Order * order );
 
+    /** Seller side: start executing the deal - initiate Bitcoin payment */
+    int startExecute();
+
+    /** Seller side: remove Order from the book, if partly filled, publish
+     * a new order, finish Bitcoin payment
+     */
+    int finishExecute( Payment *payment );
+
+protected:
+    /** Matches our new order with all others  */
+    virtual int match(Order *order);
+
+    /** Buyer side: start buying Bitcoins */
+    void buy( Order * order, QString amount );
+
+    /** Seller side: informs the buyer of the intention to sell */
+    void sell( Order * order, QString amount );
 
 private:
     OrderBook * m_bids;
     OrderBook * m_asks;
+
+private:
+    // FIXME: ugly hack - this class is not supposed to be a singleton.
+    // but I have no idea how PaymentReceiver can have a reference to this.
+    // since there is only ever one object we get away with it for now.
+    friend class PaymentReceiver;
+    static MyOrders * Instance();
+    static MyOrders * me;
 };
 
 #endif // MYORDERS_H

@@ -56,7 +56,7 @@ public:
         OrderType m_orderType;
         QString m_amount;
         QString m_price;      // a string of the form "77.123" - any length. For printing
-        ZR_Number m_price_d;     // the amount as number for sorting
+        ZR::ZR_Number m_price_d;     // the amount as number for sorting
         Currency::CurrencySymbols m_currency;
         time_t m_timeStamp;   // no more than 1 order / second
         bool sent;
@@ -85,7 +85,8 @@ public:
 
     void setMyOrders( OrderBook * myOrders ){ m_myOrders = myOrders; }
 
-    virtual bool processOrder( Order* order );
+    /** @return ZR::ZR_FINISH if this order has been completed */
+    virtual int processOrder( Order* order );
     void filterOrders(OrderList & filteredOrders , const Currency::CurrencySymbols currencySym);
 
 
@@ -96,7 +97,10 @@ protected:
     OrderBook * m_myOrders;
 
 protected:
-    virtual bool addOrder( Order* order );
+    virtual int addOrder( Order* order );
+    bool isOwnOrder( Order * order );
+    /** Matches our new order with all others  */
+    virtual int match( Order * ){ return ZR::ZR_FAILURE; }
 
 signals:
 

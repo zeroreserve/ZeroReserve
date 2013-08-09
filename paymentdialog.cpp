@@ -65,7 +65,7 @@ void PaymentDialog::loadAvailableFunds(QString arg)
 }
 
 
-ZR_Number PaymentDialog::availableFunds()
+ZR::ZR_Number PaymentDialog::availableFunds()
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
     Credit peerCredit( m_payee, Currency::currencySymbols[ sym ] );
@@ -75,7 +75,7 @@ ZR_Number PaymentDialog::availableFunds()
     catch( std::exception e ) {
         QMessageBox::critical(0, "Error reading credit", e.what() );
     }
-    ZR_Number our_credit, balance, funds;
+    ZR::ZR_Number our_credit, balance, funds;
     our_credit = atof( peerCredit.m_our_credit.c_str() );
     balance = atof( peerCredit.m_balance.c_str() );
     funds = our_credit + balance;

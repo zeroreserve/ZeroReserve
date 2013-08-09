@@ -214,7 +214,7 @@ void ZrDB::addToGrandTotal( char ** cols )
 {
     grandTotal.our_credit += atof( cols[0] );
     grandTotal.credit     += atof( cols[1] );
-    ZR_Number peerbalance = atof ( cols[2] );
+    ZR::ZR_Number peerbalance = atof ( cols[2] );
     grandTotal.balance    += peerbalance;
     if( peerbalance > 0 ) grandTotal.outstanding += peerbalance;
     if( peerbalance < 0 ) grandTotal.debt        += peerbalance;

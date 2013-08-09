@@ -56,15 +56,15 @@ public:
     TransactionManager();
     ~TransactionManager();
 
-    bool initCoordinator( Payment * payment );
+    int initCoordinator( Payment * payment );
 
-    static bool handleTxItem( RsZeroReserveTxItem * item );
+    static int handleTxItem( RsZeroReserveTxItem * item );
 
 private:
     void commit();
 
-    bool initCohort( RsZeroReserveInitTxItem * item );
-    bool processItem( RsZeroReserveTxItem * item );
+    int initCohort( RsZeroReserveInitTxItem * item );
+    int processItem( RsZeroReserveTxItem * item );
     void abortTx( RsZeroReserveTxItem * item );
 
     Role m_role;

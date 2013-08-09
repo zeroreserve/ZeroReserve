@@ -40,11 +40,11 @@ public:
 
     typedef struct {
         std::string currency;
-        ZR_Number our_credit;  // credit with all peers
-        ZR_Number credit;      // their credit with us
-        ZR_Number outstanding; // their debt with us
-        ZR_Number debt;        // our debt with them
-        ZR_Number balance;
+        ZR::ZR_Number our_credit;  // credit with all peers
+        ZR::ZR_Number credit;      // their credit with us
+        ZR::ZR_Number outstanding; // their debt with us
+        ZR::ZR_Number debt;        // our debt with them
+        ZR::ZR_Number balance;
     } GrandTotal;
 
     static ZrDB * Instance();

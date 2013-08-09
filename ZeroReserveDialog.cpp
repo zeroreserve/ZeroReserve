@@ -160,6 +160,7 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
     order->sent = false;
     order->m_timeStamp = time(0);
     order->m_trader_id = p3zr->getOwnId();
-    book->processOrder( order );
-    p3zr->publishOrder( order );
+    if( ZR::ZR_FINISH != book->processOrder( order ) ){
+        p3zr->publishOrder( order );
+    }
 }

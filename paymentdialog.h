@@ -42,7 +42,7 @@ private slots:
     void loadAvailableFunds( QString arg = "" );
 
 private:
-    ZR_Number availableFunds();
+    ZR::ZR_Number availableFunds();
 
     Ui::PaymentDialog *ui;
     const std::string m_payee;

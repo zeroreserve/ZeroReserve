@@ -16,6 +16,8 @@
 */
 
 #include "OrderBook.h"
+#include "ZeroReservePlugin.h"
+#include "p3ZeroReserverRS.h"
 
 #include <iostream>
 
@@ -123,16 +125,26 @@ void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::Curren
 }
 
 
-bool OrderBook::processOrder( Order* order )
+int OrderBook::processOrder( Order* order )
 {
-    bool ok = addOrder( order );
+    int result;
+    if( isOwnOrder( order) ){
+        result = m_myOrders->match( order );
+    }
+    else{
+        // TODO: match the other way round
+    }
+
+    if( ZR::ZR_FINISH == result ) return ZR::ZR_FINISH; // completely executed - do not add
+
+    int ok = addOrder( order );
     ok &= m_myOrders->addOrder( order );
     return ok;
 }
 
 
 
-bool OrderBook::addOrder( Order * order )
+int OrderBook::addOrder( Order * order )
 {
     // do not insert an order that already exists
     for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
@@ -147,7 +159,7 @@ bool OrderBook::addOrder( Order * order )
     beginInsertRows( QModelIndex(), m_filteredOrders.size(), m_filteredOrders.size());
     filterOrders( m_filteredOrders, m_currency );
     endInsertRows();
-    return true;
+    return ZR::ZR_SUCCESS;
 }
 
 bool OrderBook::Order::setPrice(QString price)
@@ -173,3 +185,10 @@ bool OrderBook::Order::operator == ( const OrderBook::Order & other )
 }
 
 
+bool OrderBook::isOwnOrder( Order * order )
+{
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    if( order->m_trader_id != p3zr->getOwnId() ) return false;
+
+    return true;
+}

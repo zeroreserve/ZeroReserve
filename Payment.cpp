@@ -16,6 +16,8 @@
 */
 
 #include "Payment.h"
+#include "MyOrders.h"
+#include "zrtypes.h"
 
 #include <stdlib.h>
 
@@ -36,19 +38,39 @@ PaymentReceiver::PaymentReceiver( const std::string & counterparty, const std::s
 {}
 
 
-ZR_Number PaymentReceiver::newBalance( const Credit * credit ) const
+ZR::ZR_Number PaymentReceiver::newBalance( const Credit * credit ) const
 {
-    ZR_Number amount = atof( m_amount.c_str() );
-    ZR_Number balance = atof( credit->m_balance.c_str() );
+    ZR::ZR_Number amount = atof( m_amount.c_str() );
+    ZR::ZR_Number balance = atof( credit->m_balance.c_str() );
     return balance + amount;
 }
 
 
-void PaymentReceiver::init()
-{}
+int PaymentReceiver::init()
+{
+    switch( m_category )
+    {
+    case BITCOIN:
+        return MyOrders::Instance()->startExecute();
+    case PAYMENT:
+        return ZR::ZR_SUCCESS;
+    default:
+        return ZR::ZR_FAILURE;
+    }
+}
 
-void PaymentReceiver::commit()
-{}
+int PaymentReceiver::commit()
+{
+    switch( m_category )
+    {
+    case BITCOIN:
+        return MyOrders::Instance()->finishExecute( this );
+    case PAYMENT:
+        return ZR::ZR_SUCCESS;
+    default:
+        return ZR::ZR_FAILURE;
+    }
+}
 
 
 /////// PaymentSpender
@@ -57,16 +79,20 @@ PaymentSpender::PaymentSpender( const std::string & counterparty, const std::str
     Payment( counterparty, amount, currency, category)
 {}
 
-ZR_Number PaymentSpender::newBalance( const Credit * credit ) const
+ZR::ZR_Number PaymentSpender::newBalance( const Credit * credit ) const
 {
-    ZR_Number amount = atof( m_amount.c_str() );
-    ZR_Number balance = atof( credit->m_balance.c_str() );
+    ZR::ZR_Number amount = atof( m_amount.c_str() );
+    ZR::ZR_Number balance = atof( credit->m_balance.c_str() );
     return balance - amount;
 }
 
-void PaymentSpender::init()
-{}
+int PaymentSpender::init()
+{
+    return ZR::ZR_SUCCESS;
+}
 
-void PaymentSpender::commit()
-{}
+int PaymentSpender::commit()
+{
+    return ZR::ZR_SUCCESS;
+}
 

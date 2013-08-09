@@ -21,6 +21,7 @@
 #include "p3ZeroReserverRS.h"
 #include "zrdb.h"
 #include "Payment.h"
+#include "zrtypes.h"
 
 #include <stdexcept>
 #include <sstream>
@@ -30,7 +31,7 @@
 TransactionManager::TxManagers TransactionManager::currentTX;
 
 
-bool TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
+int TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
 {
     std::cerr << "Zero Reserve: TX Manger handling incoming item" << std::endl;
     std::string id = item->PeerId();
@@ -43,38 +44,43 @@ bool TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
             TransactionManager *tm = new TransactionManager( );
             currentTX[ id ] = tm;
             try {
-                return tm->initCohort( initItem );
+                int result = tm->initCohort( initItem );
+                if( ZR::ZR_FAILURE == result ){
+                    currentTX.erase( id );
+                    delete tm;
+                }
+                return result;
             }
             catch( std::runtime_error e ){
-                std::cerr << "Zero Reserve: TX Manger: Error: " << e.what() << std::endl;
+                std::cerr << "Zero Reserve: TX Manager: Error: " << e.what() << std::endl;
                 currentTX.erase( id );
                 delete tm;
-                return false;
+                return ZR::ZR_FAILURE;
             }
         }
         else {
-            std::cerr << "Zero Reserve: TX Manger: Error: Received first TX item but is not phase QUERY" << std::endl;
+            std::cerr << "Zero Reserve: TX Manager: Error: Received first TX item but is not phase QUERY" << std::endl;
             return false;
         }
     }
     TransactionManager *tm = (*it).second;
-    bool end_tx = true;
+    int result;
     try{
-        end_tx = tm->processItem( item );
+        result = tm->processItem( item );
     }
     catch( std::runtime_error e ){
-        std::cerr << "Zero Reserve: TX Manger: Error: " << e.what() << std::endl;
+        std::cerr << "Zero Reserve: TX Manager: Error: " << e.what() << std::endl;
         currentTX.erase( id );
         delete tm;
-        return false;
+        return ZR::ZR_FAILURE;
     }
 
 // TODO:   delete item;
-    if( end_tx ){
+    if( ZR::ZR_FINISH == result ){
         currentTX.erase( id );
         delete tm;
     }
-    return true;
+    return ZR::ZR_SUCCESS;
 }
 
 
@@ -91,7 +97,7 @@ TransactionManager::~TransactionManager()
     delete m_payment;
 }
 
-bool TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
+int TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
 {
     m_payment = item->getPayment();
     std::cerr << "Zero Reserve: TX Manager: Payment request for " << m_payment->getAmount() << " "
@@ -102,17 +108,24 @@ bool TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
     // TODO: multi hop
 // TODO    m_role = (Role)item->getRole();
     m_role = Payee; // FIXME
-    if ( atoi( m_credit->m_credit.c_str()) < m_payment->newBalance( m_credit ) ){
-        std::cerr << "Zero Reserve: initCohort(): Insufficient Credit" << std::endl;
+    RsZeroReserveTxItem * reply;
+    int retval;
+    if ( ( atof( m_credit->m_credit.c_str()) - m_payment->newBalance( m_credit ) ) < 0 ){
+        std::cerr << "Zero Reserve: initCohort(): Insufficient Credit - voting no" << std::endl;
+        reply = new RsZeroReserveTxItem( VOTE_NO );
+        retval = ZR::ZR_FAILURE;
     }
-    RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( VOTE_YES );  // TODO: VOTE_NO
+    else {
+        reply = new RsZeroReserveTxItem( VOTE_YES );
+        retval = ZR::ZR_SUCCESS;
+    }
     reply->PeerId( m_credit->m_id );
     p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     p3zs->sendItem( reply ); // TODO: error  handling
-    return true;
+    return retval;
 }
 
-bool TransactionManager::initCoordinator( Payment * payment )
+int TransactionManager::initCoordinator( Payment * payment )
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
     m_payment = payment;
@@ -120,17 +133,17 @@ bool TransactionManager::initCoordinator( Payment * payment )
     currentTX[ m_payment->getCounterparty() ] = this;
     m_credit = new Credit( m_payment->getCounterparty(), m_payment->getCurrency() );
     m_credit->loadPeer();
-    if ( atoi( m_credit->m_our_credit.c_str()) - m_payment->newBalance( m_credit ) < 0 ){
+    if ( ( atof( m_credit->m_our_credit.c_str()) + m_payment->newBalance( m_credit ) ) < 0 ){
         std::cerr << "Zero Reserve: Error, not enough Credit " << std::endl;
-        return false;
+        return ZR::ZR_FAILURE;
     }
     RsZeroReserveInitTxItem * initItem = new RsZeroReserveInitTxItem( m_payment );
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     p3zr->sendItem( initItem );
-    return true;
+    return ZR::ZR_SUCCESS;
 }
 
-bool TransactionManager::processItem( RsZeroReserveTxItem * item )
+int TransactionManager::processItem( RsZeroReserveTxItem * item )
 {
     RsZeroReserveTxItem * reply;
     p3ZeroReserveRS * p3zs;
@@ -148,9 +161,10 @@ bool TransactionManager::processItem( RsZeroReserveTxItem * item )
         reply->PeerId( m_credit->m_id );
         p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
         p3zs->sendItem( reply );
-        return false;
+        return ZR::ZR_SUCCESS;
     case VOTE_NO:
-        break;
+        abortTx( item );
+        return ZR::ZR_FAILURE;
     case COMMIT:
         if( m_role != Payee ) throw std::runtime_error( "Dit not expect COMMIT" ); // TODO: Hop
         std::cerr << "Zero Reserve: TX Cohorte: Received Command: COMMIT" << std::endl;
@@ -159,19 +173,19 @@ bool TransactionManager::processItem( RsZeroReserveTxItem * item )
         p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
         p3zs->sendItem( reply );
         commit();
-        return true;
+        return ZR::ZR_FINISH;
     case ACK_COMMIT:
         if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect ACK_COMMIT");
         std::cerr << "Zero Reserve: TX Coordinator: Received Acknowledgement, Committing" << std::endl;
         commit();
-        return true;
+        return ZR::ZR_FINISH;
     case ABORT:
         abortTx( item );
-        return true;
+        return ZR::ZR_FAILURE;
     default:
         throw std::runtime_error( "Unknown Transaction Phase");
     }
-    return true;
+    return ZR::ZR_SUCCESS;
 }
 
 void TransactionManager::abortTx( RsZeroReserveTxItem * item )
@@ -185,6 +199,8 @@ void TransactionManager::commit()
     std::ostringstream balance;
     balance << m_payment->newBalance( m_credit );
     m_credit->m_balance = balance.str();
+
+    m_payment->commit();
 
     ZrDB::Instance()->updatePeerCredit( *m_credit, "balance", m_credit->m_balance );
 }
