@@ -158,7 +158,7 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
     order->m_amount = amount;
     order->m_orderType = type;
     order->sent = false;
-    order->m_timeStamp = time(0);
+    order->m_timeStamp = QDateTime::currentMSecsSinceEpoch();
     order->m_trader_id = p3zr->getOwnId();
     if( ZR::ZR_FINISH != book->processOrder( order ) ){
         p3zr->publishOrder( order );

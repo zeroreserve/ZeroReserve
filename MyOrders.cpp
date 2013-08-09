@@ -166,6 +166,20 @@ int MyOrders::startExecute()
 int MyOrders::finishExecute( Payment * payment )
 {
     std::cerr << "Zero Reserve: Finishing Order execution for " << payment->getText() << std::endl;
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    Order order;
+    std::stringstream s_timestamp( payment->getText() );
+    s_timestamp >> order.m_timeStamp;
+    order.m_trader_id = p3zr->getOwnId();
+    remove( &order );
+    Order * oldOrder = m_asks->remove( &order );
+    // TODO: publish delete order and possibly updated order
+    if( oldOrder ){
+        delete oldOrder;
+    }
+    else {
+        std::cerr << "Zero Reserve: Could not find order" << std::endl;
+    }
     return ZR::ZR_SUCCESS;
 }
 

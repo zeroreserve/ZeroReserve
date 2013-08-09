@@ -174,11 +174,7 @@ bool OrderBook::Order::setPrice(QString price)
 bool OrderBook::Order::operator == ( const OrderBook::Order & other )
 {
     if(m_trader_id == other.m_trader_id &&
-       m_amount == other.m_amount &&
-       m_price == other.m_price &&
-       m_currency == other.m_currency &&
-       m_timeStamp == other.m_timeStamp
-       )
+       m_timeStamp == other.m_timeStamp )
         return true;
     else
         return false;
@@ -192,3 +188,19 @@ bool OrderBook::isOwnOrder( Order * order )
 
     return true;
 }
+
+OrderBook::Order * OrderBook::remove( Order * order )
+{
+    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+        if( *order == *(*it) ){
+            m_orders.erase( it );
+            beginResetModel();
+            filterOrders( m_filteredOrders, m_currency );
+            endResetModel();
+            return *it;
+        }
+    }
+    return NULL;
+}
+
+

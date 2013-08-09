@@ -403,6 +403,7 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
     uint8_t category;
     ok &= getRawUInt8(data, rssize, &m_offset, &category );
     std::string freeformText;
+    ok &= getRawString(data, rssize, &m_offset, freeformText );
 
     if ( !ok )
         throw std::runtime_error("Deserialisation error!") ;

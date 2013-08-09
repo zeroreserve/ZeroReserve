@@ -58,7 +58,7 @@ public:
         QString m_price;      // a string of the form "77.123" - any length. For printing
         ZR::ZR_Number m_price_d;     // the amount as number for sorting
         Currency::CurrencySymbols m_currency;
-        time_t m_timeStamp;   // no more than 1 order / second
+        qint64 m_timeStamp;   // no more than 1 order / millisecond
         bool sent;
         OrderBook::Order::Purpose m_purpose;
 
@@ -88,6 +88,10 @@ public:
     /** @return ZR::ZR_FINISH if this order has been completed */
     virtual int processOrder( Order* order );
     void filterOrders(OrderList & filteredOrders , const Currency::CurrencySymbols currencySym);
+
+    /** remove an order from the book
+     *  @return a pointer to the removed order */
+    virtual Order * remove( Order * order );
 
 
 protected:
