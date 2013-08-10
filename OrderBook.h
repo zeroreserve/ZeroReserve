@@ -45,8 +45,8 @@ public:
         enum OrderType { BID = 0, ASK };
         enum Purpose { NEW = 0,         // new order
                        CANCEL,          // tell everyone I changed my mind
-                       EXECUTED,        // tell everyone this order is gone
-                       PARTLY_EXECUTED, // everybody update the order book
+                       FILLED,          // tell everyone this order is gone
+                       PARTLY_FILLED,   // everybody update the order book
                        SELL             // tell the buyer through a tunnel that there is a match
                                         // an ask market order will not be published
                                         // bid market orders go to execution right away.
@@ -90,6 +90,7 @@ public:
     void filterOrders(OrderList & filteredOrders , const Currency::CurrencySymbols currencySym);
 
     /** remove an order from the book
+     *  @param order Template for the order to match. Relevant fields: Id, timestamp and currency
      *  @return a pointer to the removed order */
     virtual Order * remove( Order * order );
 

@@ -127,10 +127,31 @@ void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::Curren
 
 int OrderBook::processOrder( Order* order )
 {
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
     if( currentTime - order->m_timeStamp >  172800000        // older than two days
             || order->m_timeStamp - currentTime > 3600000){  // or more than an hour in the future
         return ZR::ZR_FAILURE;
+    }
+
+    if( Order::FILLED == order->m_purpose || Order::CANCEL == order->m_purpose ){
+        Order * oldOrder = remove( order );
+        if( oldOrder ){
+            p3zr->publishOrder( order );
+            delete oldOrder;
+            return ZR::ZR_SUCCESS;
+        }
+        return ZR::ZR_FINISH;
+    }
+
+    if( Order::PARTLY_FILLED == order->m_purpose ){
+        for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+            if( *order == *(*it) ){
+                if( order->m_amount == (*it)->m_amount )
+                    return ZR::ZR_FINISH; // we have it already - do nothing
+            }
+        }
+        remove( order );  // remove so it gets reinserted with the updates values below.
     }
 
     // do not insert an order that already exists
@@ -145,10 +166,14 @@ int OrderBook::processOrder( Order* order )
         m_myOrders->addOrder( order );
     }
     else{
-        // TODO: match the other way round
+        // TODO: match the other way round ( corner case )
     }
 
-    return addOrder( order );
+    if( ZR::ZR_FINISH != addOrder( order ) ){
+        p3zr->publishOrder( order );
+    }
+
+    return ZR::ZR_SUCCESS;
 }
 
 
@@ -179,7 +204,8 @@ bool OrderBook::Order::setPrice(QString price)
 bool OrderBook::Order::operator == ( const OrderBook::Order & other )
 {
     if(m_trader_id == other.m_trader_id &&
-       m_timeStamp == other.m_timeStamp )
+       m_timeStamp == other.m_timeStamp &&
+       m_currency == other.m_currency )
         return true;
     else
         return false;

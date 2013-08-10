@@ -173,11 +173,24 @@ int MyOrders::finishExecute( Payment * payment )
     std::stringstream s_timestamp( payment->getText() );
     s_timestamp >> order.m_timeStamp;
     order.m_trader_id = p3zr->getOwnId();
+    order.m_currency = Currency::getCurrencyBySymbol( payment->getCurrency() );
     remove( &order );
     Order * oldOrder = m_asks->remove( &order );
     // TODO: publish delete order and possibly updated order
-    if( oldOrder ){
-        delete oldOrder;
+    if( NULL != oldOrder ){
+        bool ok;
+        ZR::ZR_Number payAmount = atof( payment->getAmount().c_str() );
+        ZR::ZR_Number bitcoinAmount = oldOrder->m_amount.toDouble( &ok);
+        if( bitcoinAmount * oldOrder->m_price_d > payAmount ){ // order only partly filled
+            oldOrder->m_purpose = Order::PARTLY_FILLED;
+            std::ostringstream newAmount;
+            newAmount << bitcoinAmount - payAmount / oldOrder->m_price_d;
+            oldOrder->m_amount = QString::fromStdString( newAmount.str() );
+        }
+        else {  // completely filled
+            oldOrder->m_purpose = Order::FILLED;
+        }
+        p3zr->publishOrder( oldOrder );
     }
     else {
         std::cerr << "Zero Reserve: Could not find order" << std::endl;
