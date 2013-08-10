@@ -65,14 +65,17 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
 {
     std::cerr << "Zero Reserve: Received Orderbook Item" << std::endl;
     OrderBook::Order * order = item->getOrder();
-    bool newOrder;
+    int newOrder;
     if( order->m_orderType == OrderBook::Order::ASK ){
         newOrder = m_asks->processOrder( order );
     }
     else{
         newOrder = m_bids->processOrder( order );
     }
-    if( newOrder == true ){
+    if( ZR::ZR_FAILURE != newOrder ){
+        return;
+    }
+    if( ZR::ZR_FINISH != newOrder ){
         publishOrder( order ); // republish incoming orders we didn't have yet
     }
 }

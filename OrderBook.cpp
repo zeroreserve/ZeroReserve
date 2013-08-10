@@ -127,29 +127,34 @@ void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::Curren
 
 int OrderBook::processOrder( Order* order )
 {
-    int result;
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    if( currentTime - order->m_timeStamp >  172800000        // older than two days
+            || order->m_timeStamp - currentTime > 3600000){  // or more than an hour in the future
+        return ZR::ZR_FAILURE;
+    }
+
+    // do not insert an order that already exists
+    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+        if( *order == *(*it) ) return ZR::ZR_FINISH;
+    }
+
     if( isOwnOrder( order) ){
-        result = m_myOrders->match( order );
+        if( ZR::ZR_FINISH == m_myOrders->match( order ) ){
+            return ZR::ZR_FINISH; // completely executed - do not add
+        }
+        m_myOrders->addOrder( order );
     }
     else{
         // TODO: match the other way round
     }
 
-    if( ZR::ZR_FINISH == result ) return ZR::ZR_FINISH; // completely executed - do not add
-
-    int ok = addOrder( order );
-    ok &= m_myOrders->addOrder( order );
-    return ok;
+    return addOrder( order );
 }
 
 
 
 int OrderBook::addOrder( Order * order )
 {
-    // do not insert an order that already exists
-    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
-        if( *order == *(*it) ) return false;
-    }
     std::cerr << "Zero Reserve: Inserting Type: " << (int)order->m_orderType <<
                  " Currency: " << order->m_currency << std::endl;
 

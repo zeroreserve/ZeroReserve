@@ -40,6 +40,8 @@ MyOrders::MyOrders( OrderBook * bids, OrderBook * asks ) :
 {
     m_bids->setMyOrders( this );
     m_asks->setMyOrders( this );
+
+    me = this;
 }
 
 int MyOrders::columnCount(const QModelIndex&) const
