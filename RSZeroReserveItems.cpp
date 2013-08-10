@@ -195,6 +195,88 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem( OrderBook::Order * order
 }
 
 
+//// Begin Msg Item  /////
+
+
+std::ostream& RsZeroReserveMsgItem::print(std::ostream &out, uint16_t indent)
+{
+        printRsItemBase(out, "RsZeroReserveMsgItem", indent);
+        uint16_t int_Indent = indent + 2;
+        printIndent(out, int_Indent);
+        out << "MsgType : " << m_msgType << std::endl;
+
+        printIndent(out, int_Indent);
+        out << "Message : " << m_msg << std::endl;
+
+        printRsItemEnd(out, "RsZeroReserveMsgItem", indent);
+        return out;
+}
+
+uint32_t RsZeroReserveMsgItem::serial_size() const
+{
+        uint32_t s = 8; /* header */
+        s += sizeof(uint8_t); // the type
+        s += m_msg.length() + HOLLERITH_LEN_SPEC;
+
+        return s;
+}
+
+bool RsZeroReserveMsgItem::serialise(void *data, uint32_t& pktsize)
+{
+        uint32_t tlvsize = serial_size() ;
+
+        if (pktsize < tlvsize)
+                return false; /* not enough space */
+
+        pktsize = tlvsize;
+
+        bool ok = true;
+
+        ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
+
+        uint32_t offset = 8;  // skip header
+
+
+
+        if (offset != tlvsize){
+                ok = false;
+                std::cerr << "RsZeroReserveMsgItem::serialise() Size Error! " << std::endl;
+        }
+
+        return ok;
+}
+
+RsZeroReserveMsgItem::RsZeroReserveMsgItem(void *data, uint32_t pktsize)
+        : RsZeroReserveItem( ZERORESERVE_MSG_ITEM )
+{
+    /* get the type and size */
+    uint32_t rstype = getRsItemId(data);
+    uint32_t rssize = getRsItemSize(data);
+
+    uint32_t offset = 8;
+
+
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_MSG_ITEM != getRsItemSubType(rstype)))
+        throw std::runtime_error("Wrong packet type!") ;
+
+    if (pktsize < rssize)    /* check size */
+        throw std::runtime_error("Not enough size!") ;
+
+    bool ok = true;
+
+
+
+    if (offset != rssize || !ok )
+        throw std::runtime_error("Deserialisation error!") ;
+}
+
+RsZeroReserveMsgItem::RsZeroReserveMsgItem( uint8_t msgType, const std::string & msg )
+        : RsZeroReserveItem( ZERORESERVE_MSG_ITEM ),
+        m_msgType( msgType ),
+        m_msg( msg )
+{}
+
+
 //// Begin Credit Item  /////
 
 
