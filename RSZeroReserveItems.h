@@ -42,7 +42,8 @@ public:
         ZERORESERVE_ORDERBOOK_ITEM = 0x01,
         ZERORESERVE_TX_ITEM,
         ZERORESERVE_TX_INIT_ITEM,
-        ZERORESERVE_CREDIT_ITEM
+        ZERORESERVE_CREDIT_ITEM,
+        ZERORESERVE_MSG_ITEM
     };
 
     virtual ~RsZeroReserveItem() {};
@@ -52,6 +53,31 @@ public:
     virtual bool serialise(void *data,uint32_t& size) = 0 ;
     virtual uint32_t serial_size() const = 0 ;
 };
+
+
+class RsZeroReserveMsgItem: public RsZeroReserveItem
+{
+public:
+    enum MsgTypes {
+        SELL,
+        INVALID
+    };
+
+    RsZeroReserveMsgItem() :RsZeroReserveItem( ZERORESERVE_MSG_ITEM ) {}
+    RsZeroReserveMsgItem(void *data,uint32_t size) ;
+    RsZeroReserveMsgItem( uint8_t msgType, const std::string & msg );
+
+    virtual bool serialise(void *data,uint32_t& size) ;
+    virtual uint32_t serial_size() const ;
+
+    virtual ~RsZeroReserveMsgItem() {}
+    virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
+
+private:
+    uint8_t m_msgType;
+    std::string m_msg;
+};
+
 
 class RsZeroReserveTxItem: public RsZeroReserveItem
 {
