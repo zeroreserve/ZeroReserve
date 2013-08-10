@@ -331,6 +331,8 @@ RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SU
     ok &= getRawUInt8(data, rssize, &m_offset, &txPhase );
     m_TxPhase = (TransactionManager::TxPhase) txPhase;
 
+    ok &= getRawString(data, rssize, &m_offset, m_txId );
+
     if ( !ok )
         throw std::runtime_error("Deserialisation error!") ;
 }
@@ -338,7 +340,8 @@ RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SU
 uint32_t RsZeroReserveTxItem::serial_size() const
 {
     return 8                    //  header
-            + sizeof(uint8_t);  // TX Phase
+            + sizeof(uint8_t)   // TX Phase
+            + m_txId.length() + HOLLERITH_LEN_SPEC;
 }
 
 
@@ -359,6 +362,7 @@ bool RsZeroReserveTxItem::serialise(void *data, uint32_t& pktsize)
     m_offset = 8;  // skip header
 
     ok &= setRawUInt8( data, tlvsize, &m_offset, m_TxPhase );
+    ok &= setRawString(data, tlvsize, &m_offset, m_txId );
 
     return ok;
 }
@@ -369,6 +373,7 @@ std::ostream& RsZeroReserveTxItem::print(std::ostream &out, uint16_t indent)
     uint16_t int_Indent = indent + 2;
     printIndent(out, int_Indent);
     out << "TX Phase : " << m_TxPhase << std::endl;
+    out << "TX ID    : " << m_txId    << std::endl;
 
     printRsItemEnd(out, "RsZeroReserveTxItem", indent);
     return out;

@@ -29,31 +29,33 @@
 
 
 TransactionManager::TxManagers TransactionManager::currentTX;
+unsigned int TransactionManager::sequence = 1;
 
 
 int TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
 {
-    std::cerr << "Zero Reserve: TX Manger handling incoming item" << std::endl;
-    std::string id = item->PeerId();
-    TxManagers::iterator it = currentTX.find( id );
+    std::cerr << "Zero Reserve: TX Manger handling incoming item id = " << item->getTxId() << std::endl;
+    std::string txId = item->getTxId();
+    TxManagers::iterator it = currentTX.find( txId );
     if( it == currentTX.end() ){
         if( item->getTxPhase() == QUERY ){  // a new request to receive or forward payment
             RsZeroReserveInitTxItem * initItem = dynamic_cast<RsZeroReserveInitTxItem *>( item );
             if(!initItem) return false;
 
             TransactionManager *tm = new TransactionManager( );
-            currentTX[ id ] = tm;
+            tm->setTxId( txId );
+            currentTX[ txId ] = tm;
             try {
                 int result = tm->initCohort( initItem );
                 if( ZR::ZR_FAILURE == result ){
-                    currentTX.erase( id );
+                    currentTX.erase( txId );
                     delete tm;
                 }
                 return result;
             }
             catch( std::runtime_error e ){
                 std::cerr << "Zero Reserve: TX Manager: Error: " << e.what() << std::endl;
-                currentTX.erase( id );
+                currentTX.erase( txId );
                 delete tm;
                 return ZR::ZR_FAILURE;
             }
@@ -70,14 +72,14 @@ int TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: TX Manager: Error: " << e.what() << std::endl;
-        currentTX.erase( id );
+        currentTX.erase( txId );
         delete tm;
         return ZR::ZR_FAILURE;
     }
 
 // TODO:   delete item;
     if( ZR::ZR_FINISH == result ){
-        currentTX.erase( id );
+        currentTX.erase( txId );
         delete tm;
     }
     return ZR::ZR_SUCCESS;
@@ -120,6 +122,8 @@ int TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
         retval = ZR::ZR_SUCCESS;
     }
     reply->PeerId( m_credit->m_id );
+    reply->setTxId( m_TxId );
+
     p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     p3zs->sendItem( reply ); // TODO: error  handling
     return retval;
@@ -128,9 +132,18 @@ int TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
 int TransactionManager::initCoordinator( Payment * payment )
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+
     m_payment = payment;
     m_role = Coordinator;
-    currentTX[ m_payment->getCounterparty() ] = this;
+
+    std::ostringstream txId;
+    txId << p3zr->getOwnId() << ":" << ++sequence;
+    m_TxId = txId.str();
+
+    std::cerr << "Zero Reserve: Id = " << m_TxId << std::endl;
+
+    currentTX[ m_TxId ] = this;
     m_credit = new Credit( m_payment->getCounterparty(), m_payment->getCurrency() );
     m_credit->loadPeer();
     if ( ( atof( m_credit->m_our_credit.c_str()) + m_payment->newBalance( m_credit ) ) < 0 ){
@@ -138,7 +151,7 @@ int TransactionManager::initCoordinator( Payment * payment )
         return ZR::ZR_FAILURE;
     }
     RsZeroReserveInitTxItem * initItem = new RsZeroReserveInitTxItem( m_payment );
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    initItem->setTxId( m_TxId );
     p3zr->sendItem( initItem );
     return ZR::ZR_SUCCESS;
 }
@@ -159,6 +172,7 @@ int TransactionManager::processItem( RsZeroReserveTxItem * item )
         std::cerr << "Zero Reserve: TX Coordinator: Received Vote: YES" << std::endl;
         reply = new RsZeroReserveTxItem( COMMIT );
         reply->PeerId( m_credit->m_id );
+        reply->setTxId( m_TxId );
         p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
         p3zs->sendItem( reply );
         return ZR::ZR_SUCCESS;
@@ -170,6 +184,7 @@ int TransactionManager::processItem( RsZeroReserveTxItem * item )
         std::cerr << "Zero Reserve: TX Cohorte: Received Command: COMMIT" << std::endl;
         reply = new RsZeroReserveTxItem( ACK_COMMIT );
         reply->PeerId( m_credit->m_id );
+        reply->setTxId( m_TxId );
         p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
         p3zs->sendItem( reply );
         commit();

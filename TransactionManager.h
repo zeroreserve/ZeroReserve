@@ -62,6 +62,7 @@ public:
 
 private:
     void commit();
+    void setTxId( const std::string & id ){ m_TxId = id; }
 
     int initCohort( RsZeroReserveInitTxItem * item );
     int processItem( RsZeroReserveTxItem * item );
@@ -70,9 +71,11 @@ private:
     Role m_role;
     Credit * m_credit;
     Payment * m_payment;
+    std::string m_TxId;
 
 
     static TxManagers currentTX;
+    static unsigned int sequence;
 };
 
 #endif // TRANSACTIONMANAGER_H

@@ -62,6 +62,8 @@ public:
 
     RsZeroReserveTxItem(void *data,uint32_t size, RS_PKT_SUBTYPE zeroreserve_subtype = ZERORESERVE_TX_ITEM );
     RsZeroReserveTxItem( TransactionManager::TxPhase phase, RS_PKT_SUBTYPE subtype = ZERORESERVE_TX_ITEM );
+    void setTxId( const std::string & id ){ m_txId = id; }
+    const std::string & getTxId(){ return m_txId; }
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
@@ -74,6 +76,7 @@ public:
 protected:
     TransactionManager::TxPhase m_TxPhase;
     uint32_t m_offset;
+    std::string m_txId;
 
 };
 
