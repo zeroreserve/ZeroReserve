@@ -100,7 +100,7 @@ int MyOrders::matchOther( Order * other )
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     if( other->m_trader_id == p3zr->getOwnId() ) return ZR::ZR_FAILURE; // don't fill own orders
 
-    Order * order;
+    Order * order = NULL;
     for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
         order = *it;
         if( order->m_price_d < other->m_price_d ) break;    // no need to try and find matches beyond
@@ -122,8 +122,10 @@ int MyOrders::matchOther( Order * other )
         }
     }
     // FIXME - wait until deal closed
-    order->m_purpose = Order::PARTLY_FILLED;
-    p3zr->publishOrder( order );
+    if( order ){
+        order->m_purpose = Order::PARTLY_FILLED;
+        p3zr->publishOrder( order );
+    }
     return ZR::ZR_SUCCESS;
 }
 
