@@ -166,7 +166,9 @@ int OrderBook::processOrder( Order* order )
         m_myOrders->addOrder( order );
     }
     else{
-        // TODO: match the other way round ( corner case )
+        if( ZR::ZR_FINISH == m_myOrders->matchOther( order ) ){
+            return ZR::ZR_FINISH; // completely executed - do not add
+        }
     }
 
     if( ZR::ZR_FINISH != addOrder( order ) ){

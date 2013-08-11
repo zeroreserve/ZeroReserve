@@ -53,6 +53,8 @@ void p3ZeroReserveRS::processIncoming()
         case RsZeroReserveItem::ZERORESERVE_CREDIT_ITEM:
             handleCredit( dynamic_cast<RsZeroReserveCreditItem*>( item ) );
             break;
+        case RsZeroReserveItem::ZERORESERVE_MSG_ITEM:
+            handleMessage( dynamic_cast<RsZeroReserveMsgItem*>( item ) );
         default:
             std::cerr << "Zero Reserve: Received Item unknown" << std::endl;
         }
@@ -60,10 +62,16 @@ void p3ZeroReserveRS::processIncoming()
     }
 }
 
+void p3ZeroReserveRS::handleMessage( RsZeroReserveMsgItem *item )
+{
+    std::cerr << "Zero Reserve: Received Message Item" << std::endl;
+}
+
 
 void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
 {
     std::cerr << "Zero Reserve: Received Orderbook Item" << std::endl;
+    item->print( std::cerr );
     OrderBook::Order * order = item->getOrder();
     if( order->m_orderType == OrderBook::Order::ASK ){
         m_asks->processOrder( order );

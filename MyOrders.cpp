@@ -92,49 +92,70 @@ QVariant MyOrders::data( const QModelIndex& index, int role ) const
 }
 
 
+int MyOrders::matchOther( Order * other )
+{
+    if( other->m_orderType == Order::BID ){
+        return ZR::ZR_FAILURE; // TODO
+    }
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    if( other->m_trader_id == p3zr->getOwnId() ) return ZR::ZR_FAILURE; // don't fill own orders
+
+    Order * order;
+    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
+        order = *it;
+        if( order->m_price_d < other->m_price_d ) break;    // no need to try and find matches beyond
+        std::cerr << "Zero Reserve: Match at ask price " << order->m_price.toStdString() << std::endl;
+        bool ok;
+        ZR::ZR_Number myAmount = order->m_amount.toDouble( &ok );
+        ZR::ZR_Number otherAmount = other->m_amount.toDouble( &ok );
+        if( myAmount > otherAmount ){
+            buy( other, other->m_amount );
+            order->m_amount = QString::number( myAmount - otherAmount );
+        }
+        else {
+            buy( other, order->m_amount );
+            order->m_amount = "";
+            // FIXME - wait until deal closed
+            order->m_purpose = Order::FILLED;
+            p3zr->publishOrder( order );
+            return ZR::ZR_FINISH;
+        }
+    }
+    // FIXME - wait until deal closed
+    order->m_purpose = Order::PARTLY_FILLED;
+    p3zr->publishOrder( order );
+    return ZR::ZR_SUCCESS;
+}
+
+
 int MyOrders::match( Order * order )
 {
+    if( order->m_orderType == Order::ASK ){
+        return ZR::ZR_FAILURE; // throw?
+    }
+
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    if( order->m_orderType == Order::ASK ){  // we are selling - compare with the bids
-        OrderList bids;
-        m_bids->filterOrders( bids, order->m_currency );
-        for( OrderIterator bidIt = bids.begin(); bidIt != bids.end(); bidIt++ ){
-            Order * other = *bidIt;
-            if( other->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
-            if( order->m_price_d > other->m_price_d ) break;    // no need to try and find matches beyond
-            std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
-            bool ok;
-            if( order->m_amount.toDouble( &ok ) > other->m_amount.toDouble( &ok ) ){
-               sell( other, other->m_amount );
-            }
-            else {
-                sell( other, order->m_amount );
-                return ZR::ZR_SUCCESS;
-            }
+    OrderList asks;
+    m_asks->filterOrders( asks, order->m_currency );
+    for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){
+        Order * other = *askIt;
+        if( other->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
+        if( order->m_price_d < other->m_price_d ) break;    // no need to try and find matches beyond
+        std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
+        bool ok;
+        ZR::ZR_Number myAmount = order->m_amount.toDouble( &ok );
+        ZR::ZR_Number otherAmount = other->m_amount.toDouble( &ok );
+        if( myAmount > otherAmount ){
+            buy( other, other->m_amount );
+            order->m_amount = QString::number( myAmount - otherAmount );
+        }
+        else {
+            buy( other, order->m_amount );
+            order->m_amount = "";
+            return ZR::ZR_FINISH;
         }
     }
-    else {
-        OrderList asks;
-        m_asks->filterOrders( asks, order->m_currency );
-        for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){
-            Order * other = *askIt;
-            if( other->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
-            if( order->m_price_d < other->m_price_d ) break;    // no need to try and find matches beyond
-            std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
-            bool ok;
-            ZR::ZR_Number myAmount = order->m_amount.toDouble( &ok );
-            ZR::ZR_Number otherAmount = other->m_amount.toDouble( &ok );
-            if( myAmount > otherAmount ){
-                buy( other, other->m_amount );
-                order->m_amount = QString::number( myAmount - otherAmount );
-            }
-            else {
-                buy( other, order->m_amount );
-                order->m_amount = "";
-                return ZR::ZR_FINISH;
-            }
-        }
-    }
+
     return ZR::ZR_SUCCESS;
 }
 

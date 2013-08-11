@@ -47,6 +47,7 @@ private:
     void sendPackets();
     void handleOrder( RsZeroReserveOrderBookItem *item );
     void handleCredit( RsZeroReserveCreditItem *item );
+    void handleMessage( RsZeroReserveMsgItem *item );
 
 private:
     OrderBook * m_bids;

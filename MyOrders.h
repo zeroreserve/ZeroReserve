@@ -52,6 +52,10 @@ protected:
     /** Matches our new order with all others  */
     virtual int match(Order *order);
 
+    /** Matches incoming new order with ours */
+    virtual int matchOther( Order * other );
+
+
     /** Buyer side: start buying Bitcoins */
     void buy( Order * order, QString amount );
 

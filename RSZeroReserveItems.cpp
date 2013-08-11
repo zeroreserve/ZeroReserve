@@ -52,6 +52,8 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
             return new RsZeroReserveTxItem(data, *pktsize);
         case RsZeroReserveItem::ZERORESERVE_CREDIT_ITEM:
             return new RsZeroReserveCreditItem(data, *pktsize);
+        case RsZeroReserveItem::ZERORESERVE_MSG_ITEM:
+            return new RsZeroReserveMsgItem(data, *pktsize);
         default:
             return NULL;
         }
@@ -71,14 +73,21 @@ std::ostream& RsZeroReserveOrderBookItem::print(std::ostream &out, uint16_t inde
         printRsItemBase(out, "RsZeroReserveOrderBookItem", indent);
         uint16_t int_Indent = indent + 2;
         printIndent(out, int_Indent);
-        out << "Amount: " << m_order->m_amount.toStdString() << std::endl;
+        out << "Amount  : " << m_order->m_amount.toStdString() << std::endl;
 
         printIndent(out, int_Indent);
-        out << "Price : " << m_order->m_price_d << std::endl;
+        out << "ID      : " << m_order->m_trader_id << std::endl;
 
         printIndent(out, int_Indent);
-        out << "Type  : " << m_order->m_orderType << std::endl;
+        out << "Price   : " << m_order->m_price_d << std::endl;
 
+        printIndent(out, int_Indent);
+        out << "Type    : " << (( m_order->m_orderType == OrderBook::Order::ASK )? "ASK" : "BID" ) << std::endl;
+
+        printIndent(out, int_Indent);
+        out << "Purpose : " << m_order->m_purpose << std::endl;
+
+        printIndent(out, int_Indent);
         printRsItemEnd(out, "RsZeroReserveOrderBookItem", indent);
         return out;
 }
@@ -236,7 +245,8 @@ bool RsZeroReserveMsgItem::serialise(void *data, uint32_t& pktsize)
 
         uint32_t offset = 8;  // skip header
 
-
+        ok &= setRawUInt8( data, tlvsize, &offset, m_msgType );
+        ok &= setRawString( data, tlvsize, &offset, m_msg );
 
         if (offset != tlvsize){
                 ok = false;
@@ -264,7 +274,10 @@ RsZeroReserveMsgItem::RsZeroReserveMsgItem(void *data, uint32_t pktsize)
 
     bool ok = true;
 
-
+    uint8_t msgType;
+    ok &= getRawUInt8(data, rssize, &offset, &msgType );
+    m_msgType = (MsgTypes) msgType;
+    ok &= getRawString(data, rssize, &offset, m_msg );
 
     if (offset != rssize || !ok )
         throw std::runtime_error("Deserialisation error!") ;

@@ -106,7 +106,8 @@ protected:
     bool isOwnOrder( Order * order );
     /** Matches our new order with all others  */
     virtual int match( Order * ){ return ZR::ZR_FAILURE; }
-
+    /** Matches incoming new order with ours */
+    virtual int matchOther( Order * ){ return ZR::ZR_FAILURE; }
 signals:
 
 public slots:
