@@ -58,14 +58,15 @@ public:
 class RsZeroReserveMsgItem: public RsZeroReserveItem
 {
 public:
-    enum MsgTypes {
-        SELL,
+    enum MsgType {
+        REQUEST_ORDERBOOK,
+        SENT_ORDERBOOK,
         INVALID
     };
 
     RsZeroReserveMsgItem() :RsZeroReserveItem( ZERORESERVE_MSG_ITEM ) {}
     RsZeroReserveMsgItem(void *data,uint32_t size) ;
-    RsZeroReserveMsgItem( uint8_t msgType, const std::string & msg );
+    RsZeroReserveMsgItem(MsgType msgType, const std::string & msg );
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
@@ -73,8 +74,11 @@ public:
     virtual ~RsZeroReserveMsgItem() {}
     virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
 
+    MsgType getType(){ return m_msgType; }
+    const std::string & getMessage(){ return m_msg; }
+
 private:
-    uint8_t m_msgType;
+    MsgType m_msgType;
     std::string m_msg;
 };
 

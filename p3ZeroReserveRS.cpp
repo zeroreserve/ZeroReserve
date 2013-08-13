@@ -17,19 +17,42 @@
 
 #include "p3ZeroReserverRS.h"
 
+#include "pqi/p3linkmgr.h"
+
 #include <QMessageBox>
 #include <iostream>
 
-
+// after getting data from 3 peers, we believe we're complete
+static const int INIT_THRESHOLD = 3;
 
 p3ZeroReserveRS::p3ZeroReserveRS( RsPluginHandler *pgHandler, OrderBook * bids, OrderBook * asks, RsPeers* peers ) :
         RsPQIService( RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, CONFIG_TYPE_ZERORESERVE_PLUGIN, 0, pgHandler ),
         m_bids(bids),
         m_asks(asks),
-        m_peers(peers)
+        m_peers(peers),
+        m_initialized( 0 )
 {
     addSerialType(new RsZeroReserveSerialiser());
+    pgHandler->getLinkMgr()->addMonitor( this );
 }
+
+
+void p3ZeroReserveRS::statusChange(const std::list< pqipeer > &plist)
+{
+    std::cerr << "Zero Reserve: Status changed:" << std::endl;
+    if( m_initialized < INIT_THRESHOLD ){
+        for (std::list< pqipeer >::const_iterator it = plist.begin(); it != plist.end(); it++ ){
+            if( RS_PEER_CONNECTED & (*it).actions ){
+                RsZeroReserveMsgItem * item = new RsZeroReserveMsgItem( RsZeroReserveMsgItem::REQUEST_ORDERBOOK, "" );
+                item->PeerId( (*it).id );
+                sendItem( item );
+            }
+            // TODO: Credit update
+        }
+    }
+}
+
+
 
 int p3ZeroReserveRS::tick()
 {
@@ -55,6 +78,7 @@ void p3ZeroReserveRS::processIncoming()
             break;
         case RsZeroReserveItem::ZERORESERVE_MSG_ITEM:
             handleMessage( dynamic_cast<RsZeroReserveMsgItem*>( item ) );
+            break;
         default:
             std::cerr << "Zero Reserve: Received Item unknown" << std::endl;
         }
@@ -62,9 +86,33 @@ void p3ZeroReserveRS::processIncoming()
     }
 }
 
+
+void p3ZeroReserveRS::sendOrderBook( const std::string & uid )
+{
+    for( OrderBook::OrderIterator it = m_asks->begin(); it != m_asks->end(); it++ ){
+        sendOrder( uid, *it );
+    }
+    for( OrderBook::OrderIterator it = m_bids->begin(); it != m_bids->end(); it++ ){
+        sendOrder( uid, *it );
+    }
+    sendItem( new RsZeroReserveMsgItem( RsZeroReserveMsgItem::SENT_ORDERBOOK, "" ) );
+}
+
+
 void p3ZeroReserveRS::handleMessage( RsZeroReserveMsgItem *item )
 {
     std::cerr << "Zero Reserve: Received Message Item" << std::endl;
+    RsZeroReserveMsgItem::MsgType msgType = item->getType();
+    switch( msgType ){
+    case RsZeroReserveMsgItem::REQUEST_ORDERBOOK:
+        sendOrderBook( item->PeerId() );
+        break;
+    case RsZeroReserveMsgItem::SENT_ORDERBOOK:
+        m_initialized++;
+        break;
+    default:
+        std::cerr << "Zero Reserve: Received unknown message" << std::endl;
+    }
 }
 
 

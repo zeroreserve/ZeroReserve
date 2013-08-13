@@ -23,6 +23,8 @@
 
 #include "retroshare/rspeers.h"
 #include "plugins/rspqiservice.h"
+#include "pqi/pqimonitor.h"
+
 
 
 
@@ -30,7 +32,7 @@ class RsPluginHandler;
 class OrderBook;
 class RsPeers;
 
-class p3ZeroReserveRS : public RsPQIService
+class p3ZeroReserveRS : public RsPQIService, public pqiMonitor
 {
 public:
     p3ZeroReserveRS(RsPluginHandler *pgHandler, OrderBook * bids, OrderBook * asks, RsPeers* peers);
@@ -40,6 +42,8 @@ public:
     bool sendCredit( Credit * credit );
     void publishOrder( OrderBook::Order * order );
     std::string getOwnId(){ return m_peers->getOwnId(); }
+    virtual void statusChange(const std::list<pqipeer> &plist);
+
 
 private:
 
@@ -49,10 +53,14 @@ private:
     void handleCredit( RsZeroReserveCreditItem *item );
     void handleMessage( RsZeroReserveMsgItem *item );
 
+    /** help our friends to bootstrap the order book */
+    void sendOrderBook(const std::string &uid);
+
 private:
     OrderBook * m_bids;
     OrderBook * m_asks;
     RsPeers * m_peers;
+    int m_initialized;
 };
 
 #endif // P3ZERORESERVERRS_H

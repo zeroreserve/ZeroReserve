@@ -276,14 +276,14 @@ RsZeroReserveMsgItem::RsZeroReserveMsgItem(void *data, uint32_t pktsize)
 
     uint8_t msgType;
     ok &= getRawUInt8(data, rssize, &offset, &msgType );
-    m_msgType = (MsgTypes) msgType;
+    m_msgType = (MsgType) msgType;
     ok &= getRawString(data, rssize, &offset, m_msg );
 
     if (offset != rssize || !ok )
         throw std::runtime_error("Deserialisation error!") ;
 }
 
-RsZeroReserveMsgItem::RsZeroReserveMsgItem( uint8_t msgType, const std::string & msg )
+RsZeroReserveMsgItem::RsZeroReserveMsgItem( MsgType msgType, const std::string & msg )
         : RsZeroReserveItem( ZERORESERVE_MSG_ITEM ),
         m_msgType( msgType ),
         m_msg( msg )
