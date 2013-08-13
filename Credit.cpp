@@ -25,6 +25,14 @@
 
 #include <stdexcept>
 
+
+void Credit::getCreditList( CreditList & outList, const std::string & id )
+{
+    ZrDB::Instance()->loadPeer( id, outList );
+}
+
+
+
 Credit::Credit( const std::string & id, const std::string & currencySym ) :
     m_id( id ),
     m_currency( currencySym )

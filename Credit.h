@@ -19,11 +19,15 @@
 #define CREDIT_H
 
 #include <string>
+#include <list>
 
 class Credit
 {
     Credit();
 public:
+    typedef std::list< Credit * > CreditList;
+
+
     Credit( const std::string & id, const std::string & currencySym );
 
     void updateCredit();
@@ -32,6 +36,7 @@ public:
     void updateOurCredit();
     void updateBalance();
 
+    static void getCreditList( CreditList & outList, const std::string & id );
 
 public:
     std::string m_id;

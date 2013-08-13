@@ -16,6 +16,7 @@
 */
 
 #include "p3ZeroReserverRS.h"
+#include "Credit.h"
 
 #include "pqi/p3linkmgr.h"
 
@@ -47,7 +48,16 @@ void p3ZeroReserveRS::statusChange(const std::list< pqipeer > &plist)
                 item->PeerId( (*it).id );
                 sendItem( item );
             }
-            // TODO: Credit update
+        }
+    }
+    // give any newly connected peer updated credit info - we might have changed it.
+    for (std::list< pqipeer >::const_iterator peerIt = plist.begin(); peerIt != plist.end(); peerIt++ ){
+        if( RS_PEER_CONNECTED & (*peerIt).actions ){
+            Credit::CreditList cl;
+            Credit::getCreditList( cl, (*peerIt).id );
+            for( Credit::CreditList::const_iterator creditIt = cl.begin(); creditIt != cl.end(); creditIt++){
+                sendCredit( *creditIt );
+            }
         }
     }
 }
@@ -143,7 +153,6 @@ void p3ZeroReserveRS::handleCredit(RsZeroReserveCreditItem *item)
         message += "Different balance: " + otherCredit->m_id + " has " + otherCredit->m_balance
                 + " we have " + ourCredit.m_balance;
         std::cerr << "Zero Reserve: " << message << std::endl;
- //       QMessageBox::critical( 0, "Balance", QString::fromStdString( message ) );
     }
 }
 

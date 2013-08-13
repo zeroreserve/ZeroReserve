@@ -28,6 +28,7 @@
 
 #include <stdlib.h>
 
+
 /**
   Database class to save and load friend data and payment info. Uses sqlite3
   */
@@ -51,6 +52,7 @@ public:
     void createPeerRecord( const Credit & peer_in );
     void updatePeerCredit( const Credit & peer_in, const std::string & column, const std::string & value );
     void loadPeer( Credit & peer_out );
+    void loadPeer( const std::string & id, Credit::CreditList & peer_out );
     bool peerExists( const Credit & peer_in );
 
     const GrandTotal & loadGrandTotal( const std::string & currency );
@@ -63,6 +65,7 @@ public:
 // TODO: make these functios private by making callbacks private static members
     void peerRecordExists(){ m_peer_record_exists = true; }
     void setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance );
+    void addPeerCredit( Credit * credit );
     void setConfigValue( const std::string & val ) { m_config_value = val; }
     void addToGrandTotal( char ** cols );
 
@@ -80,6 +83,7 @@ private:
     RsMutex m_config_mutex;
 
     Credit * m_credit;
+    Credit::CreditList * m_creditList;
     sqlite3 *m_db;
 
     bool m_peer_record_exists;

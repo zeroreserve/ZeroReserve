@@ -61,6 +61,21 @@ static int peer_credit_callback(void *, int argc, char ** argv, char ** )
     return SQLITE_OK;
 }
 
+static int peer_credits_callback(void *, int argc, char ** argv, char ** )
+{
+    if(argc == 5){
+        Credit * credit = new Credit( argv[0], argv[1]);
+        credit->m_credit = argv[2];
+        credit->m_our_credit = argv[3];
+        credit->m_balance = argv[4];
+        ZrDB::Instance()->addPeerCredit( credit );
+    }
+    else {
+        return SQLITE_ERROR;
+    }
+    return SQLITE_OK;
+}
+
 static int grandtotal_callback(void *, int argc, char ** argv, char ** )
 {
     if(argc != 3) return SQLITE_ERROR;
@@ -240,7 +255,8 @@ bool ZrDB::peerExists( const Credit & peer_in )
 
 void ZrDB::updatePeerCredit( const Credit & peer_in, const std::string & column, const std::string & value )
 {
-    std::cerr << "Zero Reserve: Updating peer credit " << peer_in.m_id << std::endl;
+    RsMutex peerMutex( m_peer_mutex );
+    std::cerr << "Zero Reserve: Updating peer credit " << peer_in.m_id << std::endl; 
     std::ostringstream update;
     update << "update peers set " <<
               column << " = " << value <<
@@ -290,12 +306,35 @@ void ZrDB::loadPeer( Credit & peer_out )
     }
 }
 
+void ZrDB::loadPeer( const std::string & id, Credit::CreditList & peer_out )
+{
+    RsMutex peerMutex( m_peer_mutex );
+    m_creditList = &peer_out;
+    char *zErrMsg = 0;
+    std::ostringstream select;
+    select << "select id, currency, credit, our_credit, balance from peers where id = '" << id << "'";
+    std::string selectstr = select.str();
+    int rc = sqlite3_exec(m_db, selectstr.c_str(), peer_credits_callback, 0, &zErrMsg);
+    if( rc!=SQLITE_OK ){
+        std::cerr << "SQL error: " << zErrMsg << std::endl;
+        sqlite3_free(zErrMsg);
+        throw std::runtime_error( "SQL Error: Cannot load peer data" );
+    }
+}
+
+
 void ZrDB::setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance )
 {
     m_credit->m_credit = credit;
     m_credit->m_our_credit = our_credit;
     m_credit->m_balance = balance;
 }
+
+void ZrDB::addPeerCredit( Credit * credit )
+{
+    m_creditList->push_back( credit );
+}
+
 
 
 void ZrDB::close()
