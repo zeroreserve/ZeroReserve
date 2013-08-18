@@ -1,7 +1,9 @@
 #include "dbconfig.h"
 
-DBConfig::DBConfig()
+DBConfig::DBConfig( QWidget *parent, Qt::WFlags flags ) :
+    ConfigPage(parent, flags)
 {
+    ui.setupUi( this );
 }
 
 
