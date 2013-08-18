@@ -17,7 +17,8 @@ SOURCES = ZeroReserveDialog.cpp \
     TransactionManager.cpp \
     zrdb.cpp \
     MyOrders.cpp \
-    Credit.cpp
+    Credit.cpp \
+    dbconfig.cpp
 
 LIBS += -lsqlite3
 
@@ -36,11 +37,13 @@ HEADERS = ZeroReserveDialog.h \
     zrdb.h \
     zrtypes.h \
     MyOrders.h \
-    Credit.h
+    Credit.h \
+    dbconfig.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
-    paymentdialog.ui
+    paymentdialog.ui \
+    ZeroReserveConfig.ui
 
 TARGET = ZeroReserve
 

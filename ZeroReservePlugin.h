@@ -23,6 +23,7 @@
 
 class OrderBook;
 class p3ZeroReserveRS;
+class ConfigPage;
 
 class ZeroReservePlugin: public RsPlugin
 {
@@ -30,10 +31,11 @@ public:
     ZeroReservePlugin() ;
     virtual ~ZeroReservePlugin() {}
 
-    virtual MainPage       *qt_page()       			const	;
-    virtual QIcon          *qt_icon()       			const	;
+    virtual MainPage       *qt_page() const	;
+    virtual QIcon          *qt_icon() const	;
     virtual QTranslator    *qt_translator(QApplication *app, const QString& languageCode, const QString& externalDir) const;
     virtual QDialog * qt_about_page() const;
+    virtual ConfigPage *qt_config_page() const ;
     virtual void stop() const;
 
     virtual void getPluginVersion(int& major,int& minor,int& svn_rev) const ;

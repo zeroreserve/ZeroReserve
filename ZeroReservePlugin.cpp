@@ -21,6 +21,7 @@
 #include "OrderBook.h"
 #include "p3ZeroReserverRS.h"
 #include "zrdb.h"
+#include "dbconfig.h"
 
 #include <retroshare/rsplugin.h>
 #include <util/rsversion.h>
@@ -137,6 +138,11 @@ QTranslator* ZeroReservePlugin::qt_translator(QApplication */*app*/, const QStri
 
 	delete(translator);
 	return NULL;
+}
+
+ConfigPage * ZeroReservePlugin::qt_config_page() const
+{
+    return new DBConfig() ;
 }
 
 QDialog * ZeroReservePlugin::qt_about_page() const
