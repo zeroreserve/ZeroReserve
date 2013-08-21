@@ -32,6 +32,8 @@
 #include <stdexcept>
 
 
+const char * const ZrDB::TXLOGPATH = "TXLOGPATH";
+
 
 
 ZrDB * ZrDB::instance = 0;
@@ -145,7 +147,7 @@ void ZrDB::init()
     }
     std::string txlog;
     if( db_exists ){
-        txlog = getConfig( "TXLOG" );
+        txlog = getConfig( TXLOGPATH );
     }
     else {
         std::cerr << "Populating " << db_name << std::endl;
@@ -163,11 +165,9 @@ void ZrDB::init()
             }
         }
 
-//        txlog = QFileDialog::getExistingDirectory( 0, "Select directory for Transaction log", QString::fromStdString( pathname ) ).toStdString()
-//                + "/zeroreserve.tx";
-//        setConfig( "TXLOG", txlog );
+        txlog =  pathname + "/zeroreserve.tx";
+        setConfig( TXLOGPATH, txlog );
     }
-    // TODO: Do something with the tx log
 }
 
 void ZrDB::setConfig( const std::string & key, const std::string & value )

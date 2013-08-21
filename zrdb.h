@@ -92,6 +92,9 @@ private:
 
     static ZrDB * instance;
     static RsMutex creation_mutex;
+
+public: // config parameters
+    static const char * const TXLOGPATH;
 };
 
 #endif // ZRDB_H
