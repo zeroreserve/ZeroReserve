@@ -143,13 +143,9 @@ void ZrDB::init()
         std::cerr <<  "Can't open database: " << sqlite3_errmsg(m_db) << std::endl;
         sqlite3_close(m_db);
         throw  std::runtime_error("SQL Error: Cannot open database");
+    }
 
-    }
-    std::string txlog;
-    if( db_exists ){
-        txlog = getConfig( TXLOGPATH );
-    }
-    else {
+    if( !db_exists ){
         std::cerr << "Populating " << db_name << std::endl;
         std::vector < std::string > tables;
         tables.push_back( "create table if not exists peers ( id varchar(32), currency varchar(3), our_credit decimal(12,8), credit decimal(12,8), balance decimal(12,8) )");
@@ -164,10 +160,9 @@ void ZrDB::init()
                 throw std::runtime_error("SQL Error: Cannot create table");
             }
         }
-
-        txlog =  pathname + "/zeroreserve.tx";
-        setConfig( TXLOGPATH, txlog );
+        setConfig( TXLOGPATH, pathname + "/zeroreserve.tx" );
     }
+    openTxLog();
 }
 
 void ZrDB::setConfig( const std::string & key, const std::string & value )
@@ -335,9 +330,31 @@ void ZrDB::addPeerCredit( Credit * credit )
     m_creditList->push_back( credit );
 }
 
+void ZrDB::openTxLog()
+{
+    char *zErrMsg = 0;
+    std::string txLog = getConfig( TXLOGPATH );
+    int rc = sqlite3_open( txLog.c_str(), &m_txLog );
+    if( rc ){
+        std::cerr <<  "Can't open transaction log: " << sqlite3_errmsg( m_txLog ) << std::endl;
+        sqlite3_close(m_txLog);
+        throw  std::runtime_error("SQL Error: Cannot open database");
+    }
+    rc = sqlite3_exec(m_txLog, "create table if not exists txlog ( uid varchar(32), amount decimal(12,8), txtime datetime default current_timestamp )", noop_callback, 0, &zErrMsg);
+    if( rc!=SQLITE_OK ){
+        std::cerr << "SQL error: " << zErrMsg << std::endl;
+        sqlite3_free(zErrMsg);
+        throw std::runtime_error("SQL Error: Cannot create table");
+    }
+}
 
+void ZrDB::closeTxLog()
+{
+    sqlite3_close( m_txLog );
+}
 
 void ZrDB::close()
 {
     sqlite3_close( m_db );
+    closeTxLog();
 }

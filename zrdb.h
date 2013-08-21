@@ -69,6 +69,9 @@ public:
     void setConfigValue( const std::string & val ) { m_config_value = val; }
     void addToGrandTotal( char ** cols );
 
+    void openTxLog();
+    void closeTxLog();
+
     // TODO void logPayment() const;
     // TODO: void replayPaymentLog();
     // TODO: void backup() const;
@@ -85,6 +88,7 @@ private:
     Credit * m_credit;
     Credit::CreditList * m_creditList;
     sqlite3 *m_db;
+    sqlite3 *m_txLog;
 
     bool m_peer_record_exists;
     std::string m_config_value;

@@ -45,6 +45,8 @@ void DBConfig::editTxLog()
     QString txLogPath = QString::fromStdString( ZrDB::Instance()->getConfig( ZrDB::TXLOGPATH ) );
     QFileInfo fileInfo( txLogPath );
     QString newPath   = QFileDialog::getSaveFileName( 0, "Set the Transaction Log", fileInfo.absoluteDir().absolutePath(), "Transaction Log (*.tx)" );
-    if( !newPath.isEmpty() )
-        ZrDB::Instance()->updateConfig( ZrDB::TXLOGPATH, newPath.toStdString() );
+    if( newPath.isEmpty() )
+        return;
+
+    ZrDB::Instance()->updateConfig( ZrDB::TXLOGPATH, newPath.toStdString() );
 }
