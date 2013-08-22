@@ -51,7 +51,7 @@ int PaymentReceiver::init()
     switch( m_category )
     {
     case BITCOIN:
-        return MyOrders::Instance()->startExecute();
+        return MyOrders::Instance()->startExecute( this );
     case PAYMENT:
         return ZR::ZR_SUCCESS;
     default:

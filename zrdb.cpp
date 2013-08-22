@@ -348,6 +348,11 @@ void ZrDB::openTxLog()
     }
 }
 
+void ZrDB::appendTx()
+{
+
+}
+
 void ZrDB::closeTxLog()
 {
     sqlite3_close( m_txLog );

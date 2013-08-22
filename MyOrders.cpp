@@ -176,20 +176,35 @@ void MyOrders::buy( Order * order, QString amount )
 }
 
 
-void MyOrders::sell( Order * order, QString amount )
+
+int MyOrders::startExecute( Payment * payment )
 {
+    // TODO: start 2/3 Bitcoin TX here
+    std::cerr << "Zero Reserve: Starting Order execution for " << payment->getText() << std::endl;
+    ZR::RetVal result = ZR::ZR_FAILURE;
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
-}
+    // find out if the payment really refers to an order of ours...
+    Order order;
+    std::stringstream s_timestamp( payment->getText() );
+    s_timestamp >> order.m_timeStamp;
+    order.m_trader_id = p3zr->getOwnId();
+    order.m_currency = Currency::getCurrencyBySymbol( payment->getCurrency() );
+    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
+        if( order == *(*it) ){
+            ZR::ZR_Number amount = QString::fromStdString( payment->getAmount() ).toDouble();
+            // ... and if the amount to buy does not exceed the order.
+            result = ( (*it)->m_price_d < amount )? ZR::ZR_FAILURE : ZR::ZR_SUCCESS;
+        }
+    }
 
-
-int MyOrders::startExecute()
-{
-    return ZR::ZR_SUCCESS;
+    return result;
 }
 
 
 int MyOrders::finishExecute( Payment * payment )
 {
+    // TODO: sign 2/3 Bitcoin TX here
     std::cerr << "Zero Reserve: Finishing Order execution for " << payment->getText() << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     Order order;
@@ -217,6 +232,7 @@ int MyOrders::finishExecute( Payment * payment )
     }
     else {
         std::cerr << "Zero Reserve: Could not find order" << std::endl;
+        return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;
 }

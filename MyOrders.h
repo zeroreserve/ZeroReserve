@@ -41,7 +41,7 @@ public:
 
 
     /** Seller side: start executing the deal - initiate Bitcoin payment */
-    int startExecute();
+    int startExecute(Payment *payment);
 
     /** Seller side: remove Order from the book, if partly filled, publish
      * a new order, finish Bitcoin payment
@@ -59,8 +59,6 @@ protected:
     /** Buyer side: start buying Bitcoins */
     void buy( Order * order, QString amount );
 
-    /** Seller side: informs the buyer of the intention to sell */
-    void sell( Order * order, QString amount );
 
 private:
     OrderBook * m_bids;

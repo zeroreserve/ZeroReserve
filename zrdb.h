@@ -71,6 +71,8 @@ public:
 
     void openTxLog();
     void closeTxLog();
+    void appendTx();
+
 
     // TODO void logPayment() const;
     // TODO: void replayPaymentLog();
