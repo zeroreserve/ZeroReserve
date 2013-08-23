@@ -71,7 +71,7 @@ public:
 
     void openTxLog();
     void closeTxLog();
-    void appendTx();
+    void appendTx(  const std::string & id, const std::string & amount );
 
 
     // TODO void logPayment() const;

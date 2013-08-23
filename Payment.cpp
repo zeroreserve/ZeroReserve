@@ -18,16 +18,25 @@
 #include "Payment.h"
 #include "MyOrders.h"
 #include "zrtypes.h"
+#include "zrdb.h"
+
+#include <sstream>
 
 #include <stdlib.h>
 
 
 Payment::Payment( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category) :
-    m_counterparty( counterparty ),
+    m_credit( counterparty, currency ),
     m_amount( amount ),
-    m_currency( currency ),
     m_category( category )
 {
+    m_credit.loadPeer();
+}
+
+void Payment::setCounterparty( const std::string & counterparty )
+{
+    m_credit.m_id = counterparty;
+    m_credit.loadPeer();
 }
 
 
@@ -38,16 +47,20 @@ PaymentReceiver::PaymentReceiver( const std::string & counterparty, const std::s
 {}
 
 
-ZR::ZR_Number PaymentReceiver::newBalance( const Credit * credit ) const
+ZR::ZR_Number PaymentReceiver::newBalance() const
 {
     ZR::ZR_Number amount = atof( m_amount.c_str() );
-    ZR::ZR_Number balance = atof( credit->m_balance.c_str() );
+    ZR::ZR_Number balance = atof( m_credit.m_balance.c_str() );
     return balance + amount;
 }
 
 
 int PaymentReceiver::init()
 {
+    if( ( atof( m_credit.m_credit.c_str()) - newBalance( ) ) < 0 ){
+        return ZR::ZR_FAILURE;
+    }
+
     switch( m_category )
     {
     case BITCOIN:
@@ -61,6 +74,13 @@ int PaymentReceiver::init()
 
 int PaymentReceiver::commit()
 {
+    std::ostringstream balance;
+    balance << newBalance();
+    m_credit.m_balance = balance.str();
+    // TODO: make atomic !!!!
+    ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
+    ZrDB::Instance()->appendTx( m_credit.m_id, m_amount );
+
     switch( m_category )
     {
     case BITCOIN:
@@ -79,20 +99,29 @@ PaymentSpender::PaymentSpender( const std::string & counterparty, const std::str
     Payment( counterparty, amount, currency, category)
 {}
 
-ZR::ZR_Number PaymentSpender::newBalance( const Credit * credit ) const
+ZR::ZR_Number PaymentSpender::newBalance() const
 {
     ZR::ZR_Number amount = atof( m_amount.c_str() );
-    ZR::ZR_Number balance = atof( credit->m_balance.c_str() );
+    ZR::ZR_Number balance = atof( m_credit.m_balance.c_str() );
     return balance - amount;
 }
 
 int PaymentSpender::init()
 {
+    if( atof( m_credit.m_our_credit.c_str()) + newBalance() < 0 ){
+        return ZR::ZR_SUCCESS;
+    }
     return ZR::ZR_SUCCESS;
 }
 
 int PaymentSpender::commit()
 {
+    std::ostringstream balance;
+    balance << newBalance();
+    m_credit.m_balance = balance.str();
+    // TODO: make atomic !!!!
+    ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
+    ZrDB::Instance()->appendTx( m_credit.m_id, m_amount );
     return ZR::ZR_SUCCESS;
 }
 

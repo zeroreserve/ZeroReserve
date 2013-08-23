@@ -26,7 +26,6 @@
 
 class RsZeroReserveTxItem;
 class RsZeroReserveInitTxItem;
-class Credit;
 class Payment;
 
 /**
@@ -61,7 +60,6 @@ public:
     static int handleTxItem( RsZeroReserveTxItem * item );
 
 private:
-    void commit();
     void setTxId( const std::string & id ){ m_TxId = id; }
 
     int initCohort( RsZeroReserveInitTxItem * item );
@@ -69,7 +67,6 @@ private:
     void abortTx( RsZeroReserveTxItem * item );
 
     Role m_role;
-    Credit * m_credit;
     Payment * m_payment;
     std::string m_TxId;
 

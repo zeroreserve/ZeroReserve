@@ -41,22 +41,21 @@ public:
     Payment( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category);
     virtual ~Payment(){}
 
-    virtual ZR::ZR_Number newBalance( const Credit * credit ) const = 0;
+    virtual ZR::ZR_Number newBalance() const = 0;
     virtual int init() = 0;
     virtual int commit() = 0;
 
-    const std::string & getCounterparty(){ return m_counterparty; }
-    void setCounterparty( const std::string & counterparty ){ m_counterparty = counterparty; }
-    const std::string & getCurrency(){ return m_currency; }
+    const std::string & getCounterparty(){ return m_credit.m_id; }
+    void setCounterparty( const std::string & counterparty );
+    const std::string & getCurrency(){ return m_credit.m_currency; }
     const std::string & getAmount(){ return m_amount; }
     Category getCategory(){ return m_category; }
     void setText( const std::string & text ){ m_text = text; }
     const std::string & getText(){ return m_text; }
 
 protected:
-    std::string m_counterparty;
+    Credit m_credit;
     std::string m_amount;
-    std::string m_currency;
     Category m_category;
     std::string m_text;  // this is freeform data which the category
 
@@ -69,7 +68,7 @@ public:
     PaymentReceiver( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category);
     virtual ~PaymentReceiver(){}
 
-    virtual ZR::ZR_Number newBalance(const Credit * credit ) const;
+    virtual ZR::ZR_Number newBalance() const;
     virtual int init();
     virtual int commit();
 };
@@ -81,7 +80,7 @@ public:
     PaymentSpender( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category);
     virtual ~PaymentSpender(){}
 
-    virtual ZR::ZR_Number newBalance( const Credit * credit ) const;
+    virtual ZR::ZR_Number newBalance() const;
     virtual int init();
     virtual int commit();
 };

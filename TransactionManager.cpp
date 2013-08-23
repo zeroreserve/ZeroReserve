@@ -19,7 +19,6 @@
 #include "RSZeroReserveItems.h"
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
-#include "zrdb.h"
 #include "Payment.h"
 #include "zrtypes.h"
 
@@ -95,7 +94,6 @@ TransactionManager::TransactionManager()
 TransactionManager::~TransactionManager()
 {
     std::cerr << "Zero Reserve: TX Manager: Cleaning up." << std::endl;
-    delete m_credit;
     delete m_payment;
 }
 
@@ -105,14 +103,14 @@ int TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
     std::cerr << "Zero Reserve: TX Manager: Payment request for " << m_payment->getAmount() << " "
               << m_payment->getCurrency()
               << " received - Setting TX manager up as cohorte" << std::endl;
-    m_credit = new Credit( item->PeerId(), m_payment->getCurrency() );
-    m_credit->loadPeer();
+
     // TODO: multi hop
 // TODO    m_role = (Role)item->getRole();
     m_role = Payee; // FIXME
     RsZeroReserveTxItem * reply;
     int retval;
-    if ( ( atof( m_credit->m_credit.c_str()) - m_payment->newBalance( m_credit ) ) < 0 ){
+
+    if ( m_payment->init() == ZR::ZR_FAILURE ){
         std::cerr << "Zero Reserve: initCohort(): Insufficient Credit - voting no" << std::endl;
         reply = new RsZeroReserveTxItem( VOTE_NO );
         retval = ZR::ZR_FAILURE;
@@ -121,7 +119,8 @@ int TransactionManager::initCohort( RsZeroReserveInitTxItem * item )
         reply = new RsZeroReserveTxItem( VOTE_YES );
         retval = ZR::ZR_SUCCESS;
     }
-    reply->PeerId( m_credit->m_id );
+
+    reply->PeerId( m_payment->getCounterparty() );
     reply->setTxId( m_TxId );
 
     p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
@@ -144,9 +143,7 @@ int TransactionManager::initCoordinator( Payment * payment )
     std::cerr << "Zero Reserve: Id = " << m_TxId << std::endl;
 
     currentTX[ m_TxId ] = this;
-    m_credit = new Credit( m_payment->getCounterparty(), m_payment->getCurrency() );
-    m_credit->loadPeer();
-    if ( ( atof( m_credit->m_our_credit.c_str()) + m_payment->newBalance( m_credit ) ) < 0 ){
+    if ( m_payment->init() == ZR::ZR_FAILURE ){
         std::cerr << "Zero Reserve: Error, not enough Credit " << std::endl;
         return ZR::ZR_FAILURE;
     }
@@ -171,7 +168,7 @@ int TransactionManager::processItem( RsZeroReserveTxItem * item )
         if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect VOTE (YES)");
         std::cerr << "Zero Reserve: TX Coordinator: Received Vote: YES" << std::endl;
         reply = new RsZeroReserveTxItem( COMMIT );
-        reply->PeerId( m_credit->m_id );
+        reply->PeerId( m_payment->getCounterparty() );
         reply->setTxId( m_TxId );
         p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
         p3zs->sendItem( reply );
@@ -183,16 +180,16 @@ int TransactionManager::processItem( RsZeroReserveTxItem * item )
         if( m_role != Payee ) throw std::runtime_error( "Dit not expect COMMIT" ); // TODO: Hop
         std::cerr << "Zero Reserve: TX Cohorte: Received Command: COMMIT" << std::endl;
         reply = new RsZeroReserveTxItem( ACK_COMMIT );
-        reply->PeerId( m_credit->m_id );
+        reply->PeerId( m_payment->getCounterparty() );
         reply->setTxId( m_TxId );
         p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
         p3zs->sendItem( reply );
-        commit();
+        m_payment->commit();
         return ZR::ZR_FINISH;
     case ACK_COMMIT:
         if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect ACK_COMMIT");
         std::cerr << "Zero Reserve: TX Coordinator: Received Acknowledgement, Committing" << std::endl;
-        commit();
+        m_payment->commit();
         return ZR::ZR_FINISH;
     case ABORT:
         abortTx( item );
@@ -206,18 +203,6 @@ int TransactionManager::processItem( RsZeroReserveTxItem * item )
 void TransactionManager::abortTx( RsZeroReserveTxItem * item )
 {
      std::cerr << "Zero Reserve: TX Manger:Error happened. Aborting." << std::endl;
-}
-
-
-void TransactionManager::commit()
-{
-    std::ostringstream balance;
-    balance << m_payment->newBalance( m_credit );
-    m_credit->m_balance = balance.str();
-
-    m_payment->commit();
-
-    ZrDB::Instance()->updatePeerCredit( *m_credit, "balance", m_credit->m_balance );
 }
 
 

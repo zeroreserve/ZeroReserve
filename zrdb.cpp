@@ -348,9 +348,18 @@ void ZrDB::openTxLog()
     }
 }
 
-void ZrDB::appendTx()
+void ZrDB::appendTx(const std::string &id, const std::string &amount)
 {
-
+    char *zErrMsg = 0;
+    std::cerr << "Zero Reserve: Appending to TX log " << id << ". " << amount << std::endl;
+    std::ostringstream insert;
+    insert << "insert into txlog ( uid, amount ) values( '" << id << "', " << amount << " )";
+    int rc = sqlite3_exec(m_txLog, insert.str().c_str(), noop_callback, 0, &zErrMsg);
+    if( rc!=SQLITE_OK ){
+        std::cerr << "SQL error: " << zErrMsg << std::endl;
+        sqlite3_free(zErrMsg);
+        throw std::runtime_error( "SQL Error: Cannot append to TX log" );
+    }
 }
 
 void ZrDB::closeTxLog()
