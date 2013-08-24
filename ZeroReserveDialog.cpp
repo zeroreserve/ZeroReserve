@@ -35,6 +35,7 @@
 ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget *parent )
 : MainPage(parent)
 {
+    std::cerr << "Zero Reserve: Setting up main dialog" << std::endl;
     ui.setupUi(this);
     int index = 0;
     while(Currency::currencyNames[ index ]){
@@ -68,6 +69,11 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     connect(ui.currencySelector1, SIGNAL(currentIndexChanged(QString)), bids, SLOT(setCurrency(QString) ) );
     connect(ui.currencySelector1, SIGNAL(currentIndexChanged(QString)), asks, SLOT(setCurrency(QString) ) );
     connect(ui.currencySelector1, SIGNAL(currentIndexChanged(QString)), myOrders, SLOT(setCurrency(QString) ) );
+
+    ui.myOrders->setContextMenuPolicy( Qt::CustomContextMenu );
+    ui.myOrders->setSelectionBehavior( QAbstractItemView::SelectRows );
+    ui.myOrders->setSelectionMode( QAbstractItemView::SingleSelection );
+    connect(ui.myOrders, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT( contextMenuMyOrders(const QPoint &) ) );
 
     ui.asksTableView->setModel( asks );
     ui.bidsTableView->setModel( bids );
@@ -148,6 +154,22 @@ void ZeroReserveDialog::addAsk()
     OrderBook * asks = static_cast<OrderBook*>(ui.asksTableView->model());
     doOrder( asks, OrderBook::Order::ASK, ui.ask_price->text(), ui.ask_amount->text() );
 }
+
+void ZeroReserveDialog::cancelOrder()
+{
+    QModelIndexList indexes = ui.myOrders->selectionModel()->selection().indexes();
+    MyOrders * myOrders = static_cast< MyOrders* >( ui.myOrders->model() );
+    myOrders->cancelOrder( indexes.at( 0 ).row() );
+}
+
+void ZeroReserveDialog::contextMenuMyOrders( const QPoint & )
+{
+    QMenu contextMnu(this);
+    QAction *action = contextMnu.addAction(QIcon(), tr("Cancel Order"), this, SLOT(cancelOrder()));
+    action->setEnabled(true);
+    contextMnu.exec(QCursor::pos());
+}
+
 
 void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType type, QString price, QString amount )
 {

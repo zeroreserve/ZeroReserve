@@ -237,3 +237,21 @@ int MyOrders::finishExecute( Payment * payment )
     return ZR::ZR_SUCCESS;
 }
 
+void MyOrders::cancelOrder( int index )
+{
+    std::cerr << "Zero Reserve: Cancelling order: " << index << std::endl;
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    Order * order = m_filteredOrders[ index ];
+
+    remove( order );
+    if( order->m_orderType == Order::ASK ){
+        m_asks->remove( order );
+    }
+    else{
+        m_bids->remove( order );
+    }
+
+    order->m_purpose = Order::CANCEL;
+    p3zr->publishOrder( order );
+}
+

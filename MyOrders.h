@@ -48,6 +48,8 @@ public:
      */
     int finishExecute( Payment *payment );
 
+    void cancelOrder( int index );
+
 protected:
     /** Matches our new order with all others  */
     virtual int match(Order *order);

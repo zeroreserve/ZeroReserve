@@ -45,6 +45,8 @@ private slots:
     void friendDetails();
     void payTo();
     void loadGrandTotal( QString currency = "" );
+    void cancelOrder();
+    void contextMenuMyOrders(const QPoint & );
 
 private:
     void doOrder( OrderBook * book, OrderBook::Order::OrderType type, QString price, QString amount );
