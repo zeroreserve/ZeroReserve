@@ -194,7 +194,7 @@ int MyOrders::startExecute( Payment * payment )
         if( order == *(*it) ){
             ZR::ZR_Number amount = QString::fromStdString( payment->getAmount() ).toDouble();
             // ... and if the amount to buy does not exceed the order.
-            result = ( (*it)->m_price_d < amount )? ZR::ZR_FAILURE : ZR::ZR_SUCCESS;
+            result = ( (*it)->m_price_d * (*it)->m_amount.toDouble() < amount )? ZR::ZR_FAILURE : ZR::ZR_SUCCESS;
         }
     }
 

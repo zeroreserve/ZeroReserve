@@ -341,7 +341,7 @@ p, li { white-space: pre-wrap; }
         </rect>
        </property>
       </widget>
-      <widget class="QListView" name="paymentHistorylistView">
+      <widget class="QListWidget" name="paymentHistoryList">
        <property name="geometry">
         <rect>
          <x>240</x>

@@ -20,9 +20,14 @@
 #include "zrtypes.h"
 #include "zrdb.h"
 
+#include <QListWidget>
+
 #include <sstream>
 
 #include <stdlib.h>
+
+
+QListWidget * Payment::txLogView = NULL;
 
 
 Payment::Payment( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category) :
@@ -74,12 +79,17 @@ int PaymentReceiver::init()
 
 int PaymentReceiver::commit()
 {
+    m_credit.loadPeer();
     std::ostringstream balance;
     balance << newBalance();
     m_credit.m_balance = balance.str();
     // TODO: make atomic !!!!
     ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
     ZrDB::Instance()->appendTx( m_credit.m_id, m_amount );
+
+    if( txLogView ){
+        txLogView->insertItem( 0, QString::fromStdString( m_credit.m_id + " : " + m_credit.m_currency + " : +" + m_amount ) );
+    }
 
     switch( m_category )
     {
@@ -109,19 +119,25 @@ ZR::ZR_Number PaymentSpender::newBalance() const
 int PaymentSpender::init()
 {
     if( atof( m_credit.m_our_credit.c_str()) + newBalance() < 0 ){
-        return ZR::ZR_SUCCESS;
+        return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;
 }
 
 int PaymentSpender::commit()
 {
+    m_credit.loadPeer();
     std::ostringstream balance;
     balance << newBalance();
     m_credit.m_balance = balance.str();
     // TODO: make atomic !!!!
     ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
-    ZrDB::Instance()->appendTx( m_credit.m_id, m_amount );
+    ZrDB::Instance()->appendTx( m_credit.m_id, std::string("-") + m_amount );
+
+    if( txLogView ){
+        txLogView->insertItem( 0, QString::fromStdString( m_credit.m_id + " : " + m_credit.m_currency + " : -" + m_amount ) );
+    }
+
     return ZR::ZR_SUCCESS;
 }
 

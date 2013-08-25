@@ -23,6 +23,7 @@
 
 #include <string>
 
+class QListWidget;
 
 /**
   * Take care of the actual payment on behalf of the @TransactionManager
@@ -58,6 +59,9 @@ protected:
     std::string m_amount;
     Category m_category;
     std::string m_text;  // this is freeform data which the category
+
+public:
+    static QListWidget * txLogView;
 
 };
 

@@ -23,6 +23,7 @@
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 #include "zrdb.h"
+#include "Payment.h"
 
 #include <QMenu>
 #include <QStandardItem>
@@ -37,6 +38,9 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 {
     std::cerr << "Zero Reserve: Setting up main dialog" << std::endl;
     ui.setupUi(this);
+
+    Payment::txLogView = ui.paymentHistoryList;
+
     int index = 0;
     while(Currency::currencyNames[ index ]){
         ui.currencySelector2->addItem( Currency::currencyNames[ index ] );
