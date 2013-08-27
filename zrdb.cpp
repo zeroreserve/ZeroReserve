@@ -67,9 +67,9 @@ static int peer_credits_callback(void *, int argc, char ** argv, char ** )
 {
     if(argc == 5){
         Credit * credit = new Credit( argv[0], argv[1]);
-        credit->m_credit.fromString( std::string( argv[2] ) );
-        credit->m_our_credit.fromString( std::string( argv[3] ) );
-        credit->m_balance.fromString( std::string( argv[4] ) );
+        credit->m_credit = ZR::ZR_Number::fromString( std::string( argv[2] ) );
+        credit->m_our_credit = ZR::ZR_Number::fromString( std::string( argv[3] ) );
+        credit->m_balance = ZR::ZR_Number::fromString( std::string( argv[4] ) );
         ZrDB::Instance()->addPeerCredit( credit );
     }
     else {
@@ -320,9 +320,9 @@ void ZrDB::loadPeer( const std::string & id, Credit::CreditList & peer_out )
 
 void ZrDB::setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance )
 {
-    m_credit->m_credit.fromString( credit );
-    m_credit->m_our_credit.fromString( our_credit );
-    m_credit->m_balance.fromString( balance );
+    m_credit->m_credit = ZR::ZR_Number::fromString( credit );
+    m_credit->m_our_credit = ZR::ZR_Number::fromString( our_credit );
+    m_credit->m_balance = ZR::ZR_Number::fromString( balance );
 }
 
 void ZrDB::addPeerCredit( Credit * credit )

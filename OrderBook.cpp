@@ -78,9 +78,9 @@ QVariant OrderBook::data( const QModelIndex& index, int role ) const
         Order * order = m_filteredOrders[index.row()];
         switch(index.column()){
             case 0:
-                return QVariant(order->m_amount);
+                return QVariant( order->m_amount.toDouble() );
             case 1:
-                return QVariant(order->m_price);
+                return QVariant( order->m_price.toDouble() );
             default:
                 return QVariant();
         }

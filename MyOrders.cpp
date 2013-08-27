@@ -81,9 +81,9 @@ QVariant MyOrders::data( const QModelIndex& index, int role ) const
             else
                 return QVariant( "Buy");
         case 1:
-            return QVariant(order->m_amount);
+            return QVariant( order->m_amount.toDouble() );
         case 2:
-            return QVariant(order->m_price);
+            return QVariant( order->m_price.toDouble() );
         default:
             return QVariant();
         }
