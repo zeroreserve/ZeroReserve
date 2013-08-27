@@ -101,12 +101,12 @@ void ZeroReserveDialog::loadGrandTotal(QString)
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui.currencySelector2->currentText().toStdString() );
     std::string currencySym = Currency::currencySymbols[ sym ];
-    const ZrDB::GrandTotal & gt = ZrDB::Instance()->loadGrandTotal( currencySym );
-    ui.lcdTotalCredit->display( gt.our_credit );
-    ui.lcdTotalDebt->display( gt.debt );
-    ui.lcdtotalOutstanding->display( gt.outstanding );
-    ui.lcdBalance->display( gt.balance );
-    ui.lcdTheirCredit->display( gt.credit );
+    ZrDB::GrandTotal & gt = ZrDB::Instance()->loadGrandTotal( currencySym );
+    ui.lcdTotalCredit->display( gt.our_credit.toDouble() );
+    ui.lcdTotalDebt->display( gt.debt.toDouble() );
+    ui.lcdtotalOutstanding->display( gt.outstanding.toDouble() );
+    ui.lcdBalance->display( gt.balance.toDouble() );
+    ui.lcdTheirCredit->display( gt.credit.toDouble() );
 }
 
 void ZeroReserveDialog::contextMenuFriendList(QPoint)
@@ -150,13 +150,13 @@ void ZeroReserveDialog::payTo()
 void ZeroReserveDialog::addBid()
 {
     OrderBook * bids = static_cast<OrderBook*>(ui.bidsTableView->model());
-    doOrder( bids, OrderBook::Order::BID, ui.bid_price->text(), ui.bid_amount->text() );
+    doOrder( bids, OrderBook::Order::BID, ZR::ZR_Number::fromString( ui.bid_price->text() ), ZR::ZR_Number::fromString( ui.bid_amount->text() ) );
 }
 
 void ZeroReserveDialog::addAsk()
 {
     OrderBook * asks = static_cast<OrderBook*>(ui.asksTableView->model());
-    doOrder( asks, OrderBook::Order::ASK, ui.ask_price->text(), ui.ask_amount->text() );
+    doOrder( asks, OrderBook::Order::ASK, ZR::ZR_Number::fromString( ui.ask_price->text() ), ZR::ZR_Number::fromString( ui.ask_amount->text() ) );
 }
 
 void ZeroReserveDialog::cancelOrder()
@@ -175,11 +175,11 @@ void ZeroReserveDialog::contextMenuMyOrders( const QPoint & )
 }
 
 
-void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType type, QString price, QString amount )
+void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType type, ZR::ZR_Number price, ZR::ZR_Number amount )
 {
     OrderBook::Order * order = new OrderBook::Order();
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    order->setPrice( price );
+    order->m_price = price;
     order->m_currency = Currency::getCurrencyByName( ui.currencySelector1->currentText().toStdString() );
     order->m_amount = amount;
     order->m_orderType = type;

@@ -50,12 +50,12 @@ public:
 
     static ZrDB * Instance();
     void createPeerRecord( const Credit & peer_in );
-    void updatePeerCredit( const Credit & peer_in, const std::string & column, const std::string & value );
+    void updatePeerCredit(const Credit & peer_in, const std::string & column, ZR::ZR_Number &value );
     void loadPeer( Credit & peer_out );
     void loadPeer( const std::string & id, Credit::CreditList & peer_out );
     bool peerExists( const Credit & peer_in );
 
-    const GrandTotal & loadGrandTotal( const std::string & currency );
+    GrandTotal &loadGrandTotal( const std::string & currency );
 
     std::string getConfig( const std::string & key );
     void updateConfig( const std::string & key, const std::string & value );
@@ -71,7 +71,7 @@ public:
 
     void openTxLog();
     void closeTxLog();
-    void appendTx(  const std::string & id, const std::string & amount );
+    void appendTx(const std::string & id, ZR::ZR_Number amount );
 
 
     // TODO void logPayment() const;

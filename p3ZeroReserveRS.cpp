@@ -149,10 +149,8 @@ void p3ZeroReserveRS::handleCredit(RsZeroReserveCreditItem *item)
         otherCredit->updateOurCredit();
     }
     if( ourCredit.m_balance != otherCredit->m_balance ){
-        std::string message;
-        message += "Different balance: " + otherCredit->m_id + " has " + otherCredit->m_balance
-                + " we have " + ourCredit.m_balance;
-        std::cerr << "Zero Reserve: " << message << std::endl;
+        std::cerr << "Zero Reserve: " << "Different balance: " << otherCredit->m_id << " has " << otherCredit->m_balance
+                     << " we have " << ourCredit.m_balance << std::endl;
     }
 }
 

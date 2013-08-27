@@ -73,13 +73,13 @@ std::ostream& RsZeroReserveOrderBookItem::print(std::ostream &out, uint16_t inde
         printRsItemBase(out, "RsZeroReserveOrderBookItem", indent);
         uint16_t int_Indent = indent + 2;
         printIndent(out, int_Indent);
-        out << "Amount  : " << m_order->m_amount.toStdString() << std::endl;
+        out << "Amount  : " << m_order->m_amount << std::endl;
 
         printIndent(out, int_Indent);
         out << "ID      : " << m_order->m_trader_id << std::endl;
 
         printIndent(out, int_Indent);
-        out << "Price   : " << m_order->m_price_d << std::endl;
+        out << "Price   : " << m_order->m_price << std::endl;
 
         printIndent(out, int_Indent);
         out << "Type    : " << (( m_order->m_orderType == OrderBook::Order::ASK )? "ASK" : "BID" ) << std::endl;
@@ -166,7 +166,7 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
 
     std::string amount;
     ok &= getRawString(data, rssize, &offset, amount);
-    m_order->m_amount = QString::fromStdString( amount );
+    m_order->m_amount = ZR::ZR_Number::fromString( amount );
 
     std::string currency;
     ok &= getRawString(data, rssize, &offset, currency);
@@ -178,7 +178,7 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
 
     std::string price;
     ok &= getRawString(data, rssize, &offset, price);
-    m_order->setPrice( QString::fromStdString( price ) );
+    m_order->m_price = ZR::ZR_Number::fromString( price );
 
     uint64_t timestamp;
     ok &= getRawUInt64(data, rssize, &offset, &timestamp );
@@ -341,9 +341,12 @@ bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
         uint32_t offset = 8;  // skip header
 
         ok &= setRawString( data, tlvsize, &offset, m_credit->m_currency );
-        ok &= setRawString( data, tlvsize, &offset, m_credit->m_credit );
-        ok &= setRawString( data, tlvsize, &offset, m_credit->m_our_credit );
-        ok &= setRawString( data, tlvsize, &offset, m_credit->m_balance );
+        std::string buf = m_credit->m_credit.toStdString();
+        ok &= setRawString( data, tlvsize, &offset, buf );
+        buf = m_credit->m_our_credit.toStdString();
+        ok &= setRawString( data, tlvsize, &offset, buf );
+        buf = m_credit->m_balance.toStdString();
+        ok &= setRawString( data, tlvsize, &offset, buf );
 
         if (offset != tlvsize){
                 ok = false;
@@ -374,9 +377,13 @@ RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
     if (pktsize < rssize)    /* check size */
         throw std::runtime_error("Not enough size!") ;
 
-    ok &= getRawString( data, rssize, &offset, m_credit->m_our_credit ); // these 2 need to interchange
-    ok &= getRawString( data, rssize, &offset, m_credit->m_credit );     // because credit at peer is our_credit here
-    ok &= getRawString( data, rssize, &offset, m_credit->m_balance );
+    std::string buf;
+    ok &= getRawString( data, rssize, &offset, buf ); // these 2 need to interchange
+    m_credit->m_our_credit.fromString( buf );
+    ok &= getRawString( data, rssize, &offset, buf );     // because credit at peer is our_credit here
+    m_credit->m_credit.fromString( buf );
+    ok &= getRawString( data, rssize, &offset, buf );
+    m_credit->m_balance.fromString( buf );
 
     if (offset != rssize || !ok )
         throw std::runtime_error("Deserialisation error!") ;
@@ -496,8 +503,9 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
     uint8_t role;
     ok &= getRawUInt8(data, rssize, &m_offset, &role );
     m_Role = (TransactionManager::Role) role;
-    std::string amount;
-    ok &= getRawString(data, rssize, &m_offset, amount );
+    std::string s_amount;
+    ok &= getRawString(data, rssize, &m_offset, s_amount );
+    ZR::ZR_Number amount = ZR::ZR_Number::fromString( s_amount );
     std::string currency;
     ok &= getRawString(data, rssize, &m_offset, currency );
     uint8_t category;
@@ -541,7 +549,7 @@ bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
 
     ok &= setRawUInt8( data, tlvsize, &m_offset, m_Role );
 
-    std::string amount = m_payment->getAmount();
+    std::string amount = m_payment->getAmount().toStdString();
     ok &= setRawString( data, tlvsize, &m_offset, amount );
 
     std::string currency = m_payment->getCurrency();

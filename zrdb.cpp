@@ -67,9 +67,9 @@ static int peer_credits_callback(void *, int argc, char ** argv, char ** )
 {
     if(argc == 5){
         Credit * credit = new Credit( argv[0], argv[1]);
-        credit->m_credit = argv[2];
-        credit->m_our_credit = argv[3];
-        credit->m_balance = argv[4];
+        credit->m_credit.fromString( std::string( argv[2] ) );
+        credit->m_our_credit.fromString( std::string( argv[3] ) );
+        credit->m_balance.fromString( std::string( argv[4] ) );
         ZrDB::Instance()->addPeerCredit( credit );
     }
     else {
@@ -198,7 +198,7 @@ std::string ZrDB::getConfig( const std::string & key )
 }
 
 
-const ZrDB::GrandTotal & ZrDB::loadGrandTotal( const std::string & currency )
+ZrDB::GrandTotal & ZrDB::loadGrandTotal( const std::string & currency )
 {
     char *zErrMsg = 0;
     RsMutex peerMutex( m_peer_mutex );
@@ -248,13 +248,13 @@ bool ZrDB::peerExists( const Credit & peer_in )
     return m_peer_record_exists;
 }
 
-void ZrDB::updatePeerCredit( const Credit & peer_in, const std::string & column, const std::string & value )
+void ZrDB::updatePeerCredit( const Credit & peer_in, const std::string & column, ZR::ZR_Number & value )
 {
     RsMutex peerMutex( m_peer_mutex );
     std::cerr << "Zero Reserve: Updating peer credit " << peer_in.m_id << std::endl; 
     std::ostringstream update;
     update << "update peers set " <<
-              column << " = " << value <<
+              column << " = " << value.toDouble() <<
               " where id = '" << peer_in.m_id << "'" <<
               " and currency = '" << peer_in.m_currency << "'";
     runQuery( update.str() );
@@ -320,9 +320,9 @@ void ZrDB::loadPeer( const std::string & id, Credit::CreditList & peer_out )
 
 void ZrDB::setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance )
 {
-    m_credit->m_credit = credit;
-    m_credit->m_our_credit = our_credit;
-    m_credit->m_balance = balance;
+    m_credit->m_credit.fromString( credit );
+    m_credit->m_our_credit.fromString( our_credit );
+    m_credit->m_balance.fromString( balance );
 }
 
 void ZrDB::addPeerCredit( Credit * credit )
@@ -348,12 +348,12 @@ void ZrDB::openTxLog()
     }
 }
 
-void ZrDB::appendTx(const std::string &id, const std::string &amount)
+void ZrDB::appendTx(const std::string & id, ZR::ZR_Number amount )
 {
     char *zErrMsg = 0;
     std::cerr << "Zero Reserve: Appending to TX log " << id << ". " << amount << std::endl;
     std::ostringstream insert;
-    insert << "insert into txlog ( uid, amount ) values( '" << id << "', " << amount << " )";
+    insert << "insert into txlog ( uid, amount ) values( '" << id << "', " << amount.toDouble() << " )";
     int rc = sqlite3_exec(m_txLog, insert.str().c_str(), noop_callback, 0, &zErrMsg);
     if( rc!=SQLITE_OK ){
         std::cerr << "SQL error: " << zErrMsg << std::endl;

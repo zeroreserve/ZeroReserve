@@ -21,6 +21,7 @@
 #include "zrdb.h"
 
 #include <QListWidget>
+#include <QDateTime>
 
 #include <sstream>
 
@@ -30,7 +31,7 @@
 QListWidget * Payment::txLogView = NULL;
 
 
-Payment::Payment( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category) :
+Payment::Payment( const std::string & counterparty, const ZR::ZR_Number & amount, const std::string & currency, Category category) :
     m_credit( counterparty, currency ),
     m_amount( amount ),
     m_category( category )
@@ -47,22 +48,20 @@ void Payment::setCounterparty( const std::string & counterparty )
 
 /////// PaymentReceiver
 
-PaymentReceiver::PaymentReceiver( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category) :
+PaymentReceiver::PaymentReceiver( const std::string & counterparty, const ZR::ZR_Number & amount, const std::string & currency, Category category) :
     Payment( counterparty, amount, currency, category)
 {}
 
 
 ZR::ZR_Number PaymentReceiver::newBalance() const
 {
-    ZR::ZR_Number amount = atof( m_amount.c_str() );
-    ZR::ZR_Number balance = atof( m_credit.m_balance.c_str() );
-    return balance + amount;
+    return m_credit.m_balance + m_amount;
 }
 
 
 int PaymentReceiver::init()
 {
-    if( ( atof( m_credit.m_credit.c_str()) - newBalance( ) ) < 0 ){
+    if( ( m_credit.m_credit - newBalance( ) ) < 0 ){
         return ZR::ZR_FAILURE;
     }
 
@@ -80,15 +79,13 @@ int PaymentReceiver::init()
 int PaymentReceiver::commit()
 {
     m_credit.loadPeer();
-    std::ostringstream balance;
-    balance << newBalance();
-    m_credit.m_balance = balance.str();
+    m_credit.m_balance = newBalance();
     // TODO: make atomic !!!!
     ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
     ZrDB::Instance()->appendTx( m_credit.m_id, m_amount );
 
     if( txLogView ){
-        txLogView->insertItem( 0, QString::fromStdString( m_credit.m_id + " : " + m_credit.m_currency + " : +" + m_amount ) );
+        txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : +" + m_amount.toQString() );
     }
 
     switch( m_category )
@@ -105,20 +102,18 @@ int PaymentReceiver::commit()
 
 /////// PaymentSpender
 
-PaymentSpender::PaymentSpender( const std::string & counterparty, const std::string & amount, const std::string & currency, Category category) :
+PaymentSpender::PaymentSpender(const std::string & counterparty, ZR::ZR_Number amount, const std::string & currency, Category category) :
     Payment( counterparty, amount, currency, category)
 {}
 
 ZR::ZR_Number PaymentSpender::newBalance() const
 {
-    ZR::ZR_Number amount = atof( m_amount.c_str() );
-    ZR::ZR_Number balance = atof( m_credit.m_balance.c_str() );
-    return balance - amount;
+    return m_credit.m_balance - m_amount;
 }
 
 int PaymentSpender::init()
 {
-    if( atof( m_credit.m_our_credit.c_str()) + newBalance() < 0 ){
+    if( m_credit.m_our_credit + newBalance() < 0 ){
         return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;
@@ -127,15 +122,13 @@ int PaymentSpender::init()
 int PaymentSpender::commit()
 {
     m_credit.loadPeer();
-    std::ostringstream balance;
-    balance << newBalance();
-    m_credit.m_balance = balance.str();
+    m_credit.m_balance = newBalance();
     // TODO: make atomic !!!!
     ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
-    ZrDB::Instance()->appendTx( m_credit.m_id, std::string("-") + m_amount );
+    ZrDB::Instance()->appendTx( m_credit.m_id,  -m_amount );
 
     if( txLogView ){
-        txLogView->insertItem( 0, QString::fromStdString( m_credit.m_id + " : " + m_credit.m_currency + " : -" + m_amount ) );
+        txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : -" + m_amount.toQString() );
     }
 
     return ZR::ZR_SUCCESS;

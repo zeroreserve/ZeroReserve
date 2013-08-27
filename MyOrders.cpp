@@ -103,18 +103,16 @@ int MyOrders::matchOther( Order * other )
     Order * order = NULL;
     for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
         order = *it;
-        if( order->m_price_d < other->m_price_d ) break;    // no need to try and find matches beyond
+        if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << order->m_price.toStdString() << std::endl;
-        bool ok;
-        ZR::ZR_Number myAmount = order->m_amount.toDouble( &ok );
-        ZR::ZR_Number otherAmount = other->m_amount.toDouble( &ok );
-        if( myAmount > otherAmount ){
+
+        if( order->m_amount > other->m_amount ){
             buy( other, other->m_amount );
-            order->m_amount = QString::number( myAmount - otherAmount );
+            order->m_amount = order->m_amount - other->m_amount;
         }
         else {
             buy( other, order->m_amount );
-            order->m_amount = "";
+            order->m_amount = 0;
             // FIXME - wait until deal closed
             order->m_purpose = Order::FILLED;
             p3zr->publishOrder( order );
@@ -142,18 +140,16 @@ int MyOrders::match( Order * order )
     for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){
         Order * other = *askIt;
         if( other->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
-        if( order->m_price_d < other->m_price_d ) break;    // no need to try and find matches beyond
+        if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
-        bool ok;
-        ZR::ZR_Number myAmount = order->m_amount.toDouble( &ok );
-        ZR::ZR_Number otherAmount = other->m_amount.toDouble( &ok );
-        if( myAmount > otherAmount ){
+
+        if( order->m_amount > other->m_amount ){
             buy( other, other->m_amount );
-            order->m_amount = QString::number( myAmount - otherAmount );
+            order->m_amount = order->m_amount - other->m_amount;
         }
         else {
             buy( other, order->m_amount );
-            order->m_amount = "";
+            order->m_amount = 0;
             return ZR::ZR_FINISH;
         }
     }
@@ -162,13 +158,12 @@ int MyOrders::match( Order * order )
 }
 
 
-void MyOrders::buy( Order * order, QString amount )
+void MyOrders::buy( Order * order, ZR::ZR_Number amount )
 {
     TransactionManager * tm = new TransactionManager();
-    std::ostringstream s_amountToPay;
-    s_amountToPay << amount.toDouble() * order->m_price_d;
+    ZR::ZR_Number amountToPay = amount * order->m_price;
 
-    Payment * payment = new PaymentSpender( order->m_trader_id, s_amountToPay.str(), Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
+    Payment * payment = new PaymentSpender( order->m_trader_id, amountToPay, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
     std::ostringstream timestamp;
     timestamp << order->m_timeStamp;
     payment->setText( timestamp.str() );
@@ -192,9 +187,9 @@ int MyOrders::startExecute( Payment * payment )
     order.m_currency = Currency::getCurrencyBySymbol( payment->getCurrency() );
     for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
         if( order == *(*it) ){
-            ZR::ZR_Number amount = QString::fromStdString( payment->getAmount() ).toDouble();
             // ... and if the amount to buy does not exceed the order.
-            result = ( (*it)->m_price_d * (*it)->m_amount.toDouble() < amount )? ZR::ZR_FAILURE : ZR::ZR_SUCCESS;
+            result = ( (*it)->m_price * (*it)->m_amount < payment->getAmount() )? ZR::ZR_FAILURE : ZR::ZR_SUCCESS;
+            break;
         }
     }
 
@@ -216,14 +211,9 @@ int MyOrders::finishExecute( Payment * payment )
     Order * oldOrder = m_asks->remove( &order );
     // TODO: publish delete order and possibly updated order
     if( NULL != oldOrder ){
-        bool ok;
-        ZR::ZR_Number payAmount = atof( payment->getAmount().c_str() );
-        ZR::ZR_Number bitcoinAmount = oldOrder->m_amount.toDouble( &ok);
-        if( bitcoinAmount * oldOrder->m_price_d > payAmount ){ // order only partly filled
+        if( oldOrder->m_amount * oldOrder->m_price >  payment->getAmount() ){ // order only partly filled
             oldOrder->m_purpose = Order::PARTLY_FILLED;
-            std::ostringstream newAmount;
-            newAmount << bitcoinAmount - payAmount / oldOrder->m_price_d;
-            oldOrder->m_amount = QString::fromStdString( newAmount.str() );
+            oldOrder->m_amount = oldOrder->m_amount - payment->getAmount() / oldOrder->m_price;
         }
         else {  // completely filled
             oldOrder->m_purpose = Order::FILLED;

@@ -59,7 +59,7 @@ protected:
 
 
     /** Buyer side: start buying Bitcoins */
-    void buy( Order * order, QString amount );
+    void buy(Order * order, ZR::ZR_Number amount );
 
 
 private:

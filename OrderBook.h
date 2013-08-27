@@ -54,15 +54,13 @@ public:
 
         std::string m_trader_id;
         OrderType m_orderType;
-        QString m_amount;
-        QString m_price;      // a string of the form "77.123" - any length. For printing
-        ZR::ZR_Number m_price_d;     // the amount as number for sorting
+        ZR::ZR_Number m_amount;
+        ZR::ZR_Number m_price;     // the amount as number for sorting
         Currency::CurrencySymbols m_currency;
         qint64 m_timeStamp;   // no more than 1 order / millisecond
         bool sent;
         OrderBook::Order::Purpose m_purpose;
 
-        bool setPrice( QString price );
         bool operator == (const Order & other);
     };
 

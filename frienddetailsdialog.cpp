@@ -55,9 +55,9 @@ void FriendDetailsDialog::loadPeer( QString )
     catch( std::exception e ) {
         QMessageBox::critical(0, "Error reading credit", e.what() );
     }
-    ui->creditSpinBox->setValue( QString::fromStdString(peerCredit.m_credit).toDouble() );
-    ui->yourCredit->display( QString::fromStdString(peerCredit.m_our_credit ) );
-    ui->balance->display( QString::fromStdString(peerCredit.m_balance ) );
+    ui->creditSpinBox->setValue( peerCredit.m_credit.toDouble() );
+    ui->yourCredit->display( peerCredit.m_our_credit.toDouble() );
+    ui->balance->display( peerCredit.m_balance.toDouble() );
 }
 
 FriendDetailsDialog::~FriendDetailsDialog()
@@ -71,7 +71,7 @@ void FriendDetailsDialog::editFriend()
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
     Credit peerCredit( m_id, Currency::currencySymbols[ sym ] );
     peerCredit.loadPeer();
-    peerCredit.m_credit = ui->creditSpinBox->text().toStdString();
+    peerCredit.m_credit = ZR::ZR_Number::fromString( ui->creditSpinBox->text() );
     try {
         peerCredit.updateCredit();
         peerCredit.publish();

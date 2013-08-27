@@ -24,7 +24,7 @@
 
 bool OrderBook::compareOrder( const Order * left, const Order * right ){
     if(left->m_orderType == Order::ASK){
-        if( left->m_price_d < right->m_price_d){
+        if( left->m_price < right->m_price){
             return true;
         }
         else {
@@ -32,7 +32,7 @@ bool OrderBook::compareOrder( const Order * left, const Order * right ){
         }
     }
     else {
-        if( left->m_price_d < right->m_price_d){
+        if( left->m_price < right->m_price){
             return false;
         }
         else {
@@ -192,14 +192,6 @@ int OrderBook::addOrder( Order * order )
     filterOrders( m_filteredOrders, m_currency );
     endInsertRows();
     return ZR::ZR_SUCCESS;
-}
-
-bool OrderBook::Order::setPrice(QString price)
-{
-    bool ok;
-    m_price = price;
-    m_price_d = price.toDouble( &ok );
-    return ok;
 }
 
 

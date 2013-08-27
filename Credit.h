@@ -18,6 +18,8 @@
 #ifndef CREDIT_H
 #define CREDIT_H
 
+#include "zrtypes.h"
+
 #include <string>
 #include <list>
 
@@ -41,9 +43,9 @@ public:
 public:
     std::string m_id;
     std::string m_currency;
-    std::string m_our_credit; // our credit with peer
-    std::string m_credit;     // their credit with us
-    std::string m_balance;    // negative means we owe them money
+    ZR::ZR_Number m_our_credit; // our credit with peer
+    ZR::ZR_Number m_credit;     // their credit with us
+    ZR::ZR_Number m_balance;    // negative means we owe them money
 };
 
 #endif // CREDIT_H

@@ -49,7 +49,7 @@ private slots:
     void contextMenuMyOrders(const QPoint & );
 
 private:
-    void doOrder( OrderBook * book, OrderBook::Order::OrderType type, QString price, QString amount );
+    void doOrder(OrderBook * book, OrderBook::Order::OrderType type, ZR::ZR_Number price, ZR::ZR_Number amount );
 
     Ui::ZeroReserveDialog ui;
 
