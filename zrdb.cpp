@@ -32,12 +32,32 @@
 #include <stdexcept>
 
 
-const char * const ZrDB::TXLOGPATH = "TXLOGPATH";
+const char * const ZrDB::TXLOGPATH        = "TXLOGPATH";
+const char * const ZrDB::PROTOCOL_VERSION = "PROTOCOL_VERSION";
+const char * const ZrDB::DB_VERSION       = "DB_VERSION";
 
 
 
 ZrDB * ZrDB::instance = 0;
 RsMutex ZrDB::creation_mutex("creation_mutex");
+
+
+static int txlog_callback(void *, int argc, char ** argv, char ** )
+{
+    if(argc == 4){
+        ZrDB::TxLogItem item;
+        item.id = argv[0];
+        item.currency = argv[1];
+        item.m_amount = ZR::ZR_Number::fromString( std::string(argv[2]) );
+        item.timestamp = QDateTime::fromString( argv[3] );
+
+        ZrDB::Instance()->addToTxList( item );
+    }
+    else {
+        return SQLITE_ERROR;
+    }
+    return SQLITE_OK;
+}
 
 
 static int noop_callback(void *, int, char **, char **)
@@ -99,7 +119,8 @@ static int peer_config_callback(void *, int argc, char ** argv, char ** )
 
 ZrDB::ZrDB() :
         m_peer_mutex("peer_mutex"),
-        m_config_mutex("config_mutex")
+        m_config_mutex("config_mutex"),
+        m_tx_mutex ( "tx_mutex" )
 {
 
 }
@@ -161,6 +182,8 @@ void ZrDB::init()
             }
         }
         setConfig( TXLOGPATH, pathname + "/zeroreserve.tx" );
+        setConfig( PROTOCOL_VERSION, "0" );
+        setConfig( DB_VERSION, "0" );
     }
     openTxLog();
 }
@@ -260,7 +283,7 @@ void ZrDB::updatePeerCredit( const Credit & peer_in, const std::string & column,
     runQuery( update.str() );
 }
 
-void ZrDB::runQuery( const std::string sql )
+void ZrDB::runQuery(const std::string & sql )
 {
     char *zErrMsg = 0;
     int rc = sqlite3_exec(m_db, sql.c_str(), noop_callback, 0, &zErrMsg);
@@ -340,7 +363,7 @@ void ZrDB::openTxLog()
         sqlite3_close(m_txLog);
         throw  std::runtime_error("SQL Error: Cannot open database");
     }
-    rc = sqlite3_exec(m_txLog, "create table if not exists txlog ( uid varchar(32), amount decimal(12,8), txtime datetime default current_timestamp )", noop_callback, 0, &zErrMsg);
+    rc = sqlite3_exec(m_txLog, "create table if not exists txlog ( uid varchar(32), currency varchar(3), amount decimal(12,8), txtime datetime default current_timestamp )", noop_callback, 0, &zErrMsg);
     if( rc!=SQLITE_OK ){
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
@@ -348,12 +371,15 @@ void ZrDB::openTxLog()
     }
 }
 
-void ZrDB::appendTx(const std::string & id, ZR::ZR_Number amount )
+void ZrDB::appendTx(const std::string & id, const std::string & currency, ZR::ZR_Number amount )
 {
     char *zErrMsg = 0;
     std::cerr << "Zero Reserve: Appending to TX log " << id << ". " << amount << std::endl;
     std::ostringstream insert;
-    insert << "insert into txlog ( uid, amount ) values( '" << id << "', " << amount.toDouble() << " )";
+    insert << "insert into txlog ( uid, currency, amount ) values( '"
+           << id << "', '"
+           << currency << "', "
+           << amount.toDouble() << " )";
     int rc = sqlite3_exec(m_txLog, insert.str().c_str(), noop_callback, 0, &zErrMsg);
     if( rc!=SQLITE_OK ){
         std::cerr << "SQL error: " << zErrMsg << std::endl;
@@ -361,6 +387,26 @@ void ZrDB::appendTx(const std::string & id, ZR::ZR_Number amount )
         throw std::runtime_error( "SQL Error: Cannot append to TX log" );
     }
 }
+
+void ZrDB::loadTxLog( std::list< TxLogItem > & txList )
+{
+    char *zErrMsg = 0;
+    RsMutex txMutex( m_tx_mutex );
+    m_txList = &txList;
+    int rc = sqlite3_exec(m_txLog, "select uid,currency,amount,txtime from txlog order by txtime desc", txlog_callback, 0, &zErrMsg);
+    if( rc != SQLITE_OK ){
+        std::cerr << "SQL error: " << zErrMsg << std::endl;
+        sqlite3_free(zErrMsg);
+        throw std::runtime_error( "SQL Error: Cannot read TX log" );
+    }
+}
+
+
+void ZrDB::addToTxList( const TxLogItem & item )
+{
+    m_txList->push_back( item );
+}
+
 
 void ZrDB::closeTxLog()
 {

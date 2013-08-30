@@ -21,7 +21,10 @@ public:
     ZR_Number( const  boost::rational< int64_t > & a ) :
         boost::rational< int64_t >::rational( a.numerator(), a.denominator() ){}
 
-    double toDouble(){ return boost::rational_cast<double>( *this ); }
+    double toDouble() const
+    {
+        return boost::rational_cast<double>( *this );
+    }
 
     static ZR_Number fromString( const std::string & s_num )
     {
@@ -57,6 +60,17 @@ public:
     QString toQString()
     {
         return QString::fromStdString( toStdString() );
+    }
+
+    std::string toDecimalStdString() const
+    {
+        std::ostringstream o;
+        o << toDouble();
+        return o.str();
+    }
+    QString toDecimalQString() const
+    {
+        return QString::fromStdString( toDecimalStdString() );
     }
 };
 

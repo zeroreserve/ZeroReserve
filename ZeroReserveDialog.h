@@ -50,6 +50,7 @@ private slots:
 
 private:
     void doOrder(OrderBook * book, OrderBook::Order::OrderType type, ZR::ZR_Number price, ZR::ZR_Number amount );
+    void loadTxLog();
 
     Ui::ZeroReserveDialog ui;
 

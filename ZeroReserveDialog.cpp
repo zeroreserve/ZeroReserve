@@ -95,7 +95,28 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.friendSelectionWidget->start();
 
     loadGrandTotal();
+    loadTxLog();
 }
+
+
+void ZeroReserveDialog::loadTxLog()
+{
+    std::list< ZrDB::TxLogItem > txList;
+    QStringList txStringList;
+    try{
+        ZrDB::Instance()->loadTxLog( txList );
+    }
+    catch( std::exception e ){
+        std::cerr << "Zero Reserve: " << e.what() << std::endl;
+    }
+
+    for( std::list< ZrDB::TxLogItem >::const_iterator it = txList.begin(); it != txList.end(); it++ ){
+        const ZrDB::TxLogItem & item = *it;
+        txStringList.append( item.timestamp.toString() + " : " + item.currency + item.m_amount.toDecimalQString() + ": " );
+    }
+    ui.paymentHistoryList->insertItems( 0, txStringList );
+}
+
 
 void ZeroReserveDialog::loadGrandTotal(QString)
 {

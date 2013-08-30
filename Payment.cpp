@@ -82,7 +82,7 @@ int PaymentReceiver::commit()
     m_credit.m_balance = newBalance();
     // TODO: make atomic !!!!
     ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
-    ZrDB::Instance()->appendTx( m_credit.m_id, m_amount );
+    ZrDB::Instance()->appendTx( m_credit.m_id, m_credit.m_currency, m_amount );
 
     if( txLogView ){
         txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : +" + m_amount.toQString() );
@@ -125,7 +125,7 @@ int PaymentSpender::commit()
     m_credit.m_balance = newBalance();
     // TODO: make atomic !!!!
     ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
-    ZrDB::Instance()->appendTx( m_credit.m_id,  -m_amount );
+    ZrDB::Instance()->appendTx( m_credit.m_id, m_credit.m_currency,  -m_amount );
 
     if( txLogView ){
         txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : -" + m_amount.toQString() );

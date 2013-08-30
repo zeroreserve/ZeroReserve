@@ -24,6 +24,8 @@
 #include "util/rsthreads.h"
 
 #include <sqlite3.h>
+#include <QDateTime>
+
 #include <string>
 
 #include <stdlib.h>
@@ -48,6 +50,13 @@ public:
         ZR::ZR_Number balance;
     } GrandTotal;
 
+    typedef struct {
+         QString id;
+         QString currency;
+         ZR::ZR_Number m_amount;
+         QDateTime timestamp;
+    } TxLogItem;
+
     static ZrDB * Instance();
     void createPeerRecord( const Credit & peer_in );
     void updatePeerCredit(const Credit & peer_in, const std::string & column, ZR::ZR_Number &value );
@@ -68,10 +77,12 @@ public:
     void addPeerCredit( Credit * credit );
     void setConfigValue( const std::string & val ) { m_config_value = val; }
     void addToGrandTotal( char ** cols );
+    void addToTxList( const TxLogItem & item );
 
     void openTxLog();
     void closeTxLog();
-    void appendTx(const std::string & id, ZR::ZR_Number amount );
+    void appendTx(const std::string & id, const std::string &currency, ZR::ZR_Number amount );
+    void loadTxLog(std::list< TxLogItem > & txList );
 
 
     // TODO void logPayment() const;
@@ -80,27 +91,32 @@ public:
     // TODO: void restore() const;
 private:
     void setConfig( const std::string & key, const std::string & value );
-    void runQuery( const std::string sql );
+    void runQuery( const std::string & sql );
 
 
 private:
     RsMutex m_peer_mutex;
     RsMutex m_config_mutex;
+    RsMutex m_tx_mutex;
 
-    Credit * m_credit;
-    Credit::CreditList * m_creditList;
     sqlite3 *m_db;
     sqlite3 *m_txLog;
 
+    // buffers for the callbacks
     bool m_peer_record_exists;
     std::string m_config_value;
-    GrandTotal grandTotal;
+    GrandTotal grandTotal;    
+    Credit * m_credit;
+    Credit::CreditList * m_creditList;
+    std::list< TxLogItem > * m_txList;
 
     static ZrDB * instance;
     static RsMutex creation_mutex;
 
 public: // config parameters
     static const char * const TXLOGPATH;
+    static const char * const PROTOCOL_VERSION; // integer
+    static const char * const DB_VERSION;       // integer
 };
 
 #endif // ZRDB_H
