@@ -64,7 +64,7 @@ private:
 
     int initCohort( RsZeroReserveInitTxItem * item );
     int processItem( RsZeroReserveTxItem * item );
-    void abortTx( RsZeroReserveTxItem * item );
+    ZR::RetVal abortTx( RsZeroReserveTxItem * item );
 
     Role m_role;
     Payment * m_payment;

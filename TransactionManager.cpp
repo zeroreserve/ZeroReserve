@@ -165,7 +165,7 @@ int TransactionManager::processItem( RsZeroReserveTxItem * item )
         abortTx( item ); // we should never get here
         throw std::runtime_error( "Dit not expect QUERY" );
     case VOTE_YES:
-        if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect VOTE (YES)");
+        if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect VOTE (YES) - not Coordinator");
         std::cerr << "Zero Reserve: TX Coordinator: Received Vote: YES" << std::endl;
         reply = new RsZeroReserveTxItem( COMMIT );
         reply->PeerId( m_payment->getCounterparty() );
@@ -174,8 +174,8 @@ int TransactionManager::processItem( RsZeroReserveTxItem * item )
         p3zs->sendItem( reply );
         return ZR::ZR_SUCCESS;
     case VOTE_NO:
-        abortTx( item );
-        return ZR::ZR_FAILURE;
+        if( m_role != Coordinator ) throw std::runtime_error( "Dit not expect VOTE (NO) - not Coordinator");
+        return abortTx( item );
     case COMMIT:
         if( m_role != Payee ) throw std::runtime_error( "Dit not expect COMMIT" ); // TODO: Hop
         std::cerr << "Zero Reserve: TX Cohorte: Received Command: COMMIT" << std::endl;
@@ -192,17 +192,24 @@ int TransactionManager::processItem( RsZeroReserveTxItem * item )
         m_payment->commit();
         return ZR::ZR_FINISH;
     case ABORT:
-        abortTx( item );
-        return ZR::ZR_FAILURE;
+        return abortTx( item );
     default:
         throw std::runtime_error( "Unknown Transaction Phase");
     }
     return ZR::ZR_SUCCESS;
 }
 
-void TransactionManager::abortTx( RsZeroReserveTxItem * item )
+ZR::RetVal TransactionManager::abortTx( RsZeroReserveTxItem * item )
 {
      std::cerr << "Zero Reserve: TX Manger:Error happened. Aborting." << std::endl;
+     if( m_role == Coordinator ){
+         RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( ABORT );
+         p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+         reply->PeerId( m_payment->getCounterparty() );
+         reply->setTxId( m_TxId );
+         p3zs->sendItem( reply );
+     }
+     return ZR::ZR_FAILURE;
 }
 
 
