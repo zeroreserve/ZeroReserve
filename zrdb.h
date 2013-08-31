@@ -115,7 +115,6 @@ private:
 
 public: // config parameters
     static const char * const TXLOGPATH;
-    static const char * const PROTOCOL_VERSION; // integer
     static const char * const DB_VERSION;       // integer
 };
 

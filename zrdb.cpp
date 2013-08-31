@@ -33,7 +33,6 @@
 
 
 const char * const ZrDB::TXLOGPATH        = "TXLOGPATH";
-const char * const ZrDB::PROTOCOL_VERSION = "PROTOCOL_VERSION";
 const char * const ZrDB::DB_VERSION       = "DB_VERSION";
 
 
@@ -182,7 +181,6 @@ void ZrDB::init()
             }
         }
         setConfig( TXLOGPATH, pathname + "/zeroreserve.tx" );
-        setConfig( PROTOCOL_VERSION, "0" );
         setConfig( DB_VERSION, "0" );
     }
     openTxLog();

@@ -61,6 +61,8 @@ public:
 
     virtual bool serialise(void *data,uint32_t& size) = 0 ;
     virtual uint32_t serial_size() const = 0 ;
+
+    static const uint8_t PROTOCOL_VERSION;
 };
 
 
