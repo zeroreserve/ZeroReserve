@@ -28,7 +28,7 @@ public:
 
     static ZR_Number fromFractionString( const std::string & s_num )
     {
-        rational< int64_t > num;
+        boost::rational< int64_t > num;
         std::istringstream sNum( s_num );
         sNum >> num;
         return num;
