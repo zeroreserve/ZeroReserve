@@ -26,7 +26,15 @@ public:
         return boost::rational_cast<double>( *this );
     }
 
-    static ZR_Number fromString( const std::string & s_num )
+    static ZR_Number fromFractionString( const std::string & s_num )
+    {
+        rational< int64_t > num;
+        std::istringstream sNum( s_num );
+        sNum >> num;
+        return num;
+    }
+
+    static ZR_Number fromDecimalString( const std::string & s_num )
     {
       // TODO locale doesn't quite work. We need to accomodate any of dot or comma
         char delim = '.';
@@ -42,9 +50,9 @@ public:
         ZR_Number zrnum( intPart * factor + fracPart, factor );
         return zrnum;
     }
-    static ZR_Number fromString( QString s_num )
+    static ZR_Number fromDecimalString( QString s_num )
     {
-        return fromString( s_num.toStdString() );
+        return fromDecimalString( s_num.toStdString() );
     }
 
     std::string toStdString()

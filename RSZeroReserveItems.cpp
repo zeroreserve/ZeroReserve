@@ -166,7 +166,7 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
 
     std::string amount;
     ok &= getRawString(data, rssize, &offset, amount);
-    m_order->m_amount = ZR::ZR_Number::fromString( amount );
+    m_order->m_amount = ZR::ZR_Number::fromFractionString( amount );
 
     std::string currency;
     ok &= getRawString(data, rssize, &offset, currency);
@@ -178,7 +178,7 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
 
     std::string price;
     ok &= getRawString(data, rssize, &offset, price);
-    m_order->m_price = ZR::ZR_Number::fromString( price );
+    m_order->m_price = ZR::ZR_Number::fromFractionString( price );
 
     uint64_t timestamp;
     ok &= getRawUInt64(data, rssize, &offset, &timestamp );
@@ -379,11 +379,11 @@ RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
 
     std::string buf;
     ok &= getRawString( data, rssize, &offset, buf ); // these 2 need to interchange
-    m_credit->m_our_credit.fromString( buf );
+    m_credit->m_our_credit = ZR::ZR_Number::fromFractionString( buf );
     ok &= getRawString( data, rssize, &offset, buf );     // because credit at peer is our_credit here
-    m_credit->m_credit.fromString( buf );
+    m_credit->m_credit = ZR::ZR_Number::fromFractionString( buf );
     ok &= getRawString( data, rssize, &offset, buf );
-    m_credit->m_balance.fromString( buf );
+    m_credit->m_balance = ZR::ZR_Number::fromFractionString( buf );
 
     if (offset != rssize || !ok )
         throw std::runtime_error("Deserialisation error!") ;
@@ -505,7 +505,7 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
     m_Role = (TransactionManager::Role) role;
     std::string s_amount;
     ok &= getRawString(data, rssize, &m_offset, s_amount );
-    ZR::ZR_Number amount = ZR::ZR_Number::fromString( s_amount );
+    ZR::ZR_Number amount = ZR::ZR_Number::fromFractionString( s_amount );
     std::string currency;
     ok &= getRawString(data, rssize, &m_offset, currency );
     uint8_t category;

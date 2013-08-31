@@ -171,13 +171,13 @@ void ZeroReserveDialog::payTo()
 void ZeroReserveDialog::addBid()
 {
     OrderBook * bids = static_cast<OrderBook*>(ui.bidsTableView->model());
-    doOrder( bids, OrderBook::Order::BID, ZR::ZR_Number::fromString( ui.bid_price->text() ), ZR::ZR_Number::fromString( ui.bid_amount->text() ) );
+    doOrder( bids, OrderBook::Order::BID, ZR::ZR_Number::fromDecimalString( ui.bid_price->text() ), ZR::ZR_Number::fromDecimalString( ui.bid_amount->text() ) );
 }
 
 void ZeroReserveDialog::addAsk()
 {
     OrderBook * asks = static_cast<OrderBook*>(ui.asksTableView->model());
-    doOrder( asks, OrderBook::Order::ASK, ZR::ZR_Number::fromString( ui.ask_price->text() ), ZR::ZR_Number::fromString( ui.ask_amount->text() ) );
+    doOrder( asks, OrderBook::Order::ASK, ZR::ZR_Number::fromDecimalString( ui.ask_price->text() ), ZR::ZR_Number::fromDecimalString( ui.ask_amount->text() ) );
 }
 
 void ZeroReserveDialog::cancelOrder()

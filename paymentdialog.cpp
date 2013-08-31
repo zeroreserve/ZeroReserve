@@ -55,7 +55,7 @@ void PaymentDialog::payTo()
 {
     TransactionManager * tm = new TransactionManager();
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
-    Payment * payment = new PaymentSpender( m_payee, ZR::ZR_Number::fromString( ui->amount->text() ), Currency::currencySymbols[ sym ], Payment::PAYMENT );
+    Payment * payment = new PaymentSpender( m_payee, ZR::ZR_Number::fromDecimalString( ui->amount->text() ), Currency::currencySymbols[ sym ], Payment::PAYMENT );
     if( ! tm->initCoordinator( payment ) ) delete tm;
 }
 
