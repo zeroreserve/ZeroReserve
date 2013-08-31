@@ -30,6 +30,15 @@ extern const uint16_t RS_SERVICE_TYPE_ZERORESERVE_PLUGIN;
 extern const uint32_t CONFIG_TYPE_ZERORESERVE_PLUGIN;
 
 
+/** Base class of all ZeroReserve Items, i.e. all classes related to sending stuff
+ *  over the net and receiving from the net using RetroShare.
+ *  TODO: This will have a protocol_version attribute once we reach version 1, and
+ *        logic to handle newer / older protocol versions. Protocol version 1 will
+ *        be the first version that handles multi-hop fully encrypted. Crypto will
+ *        happen here, as will plausibility checking and checking for attacks like
+ *        SQL injection so the inner classes can rely on the integrity of the data.
+ */
+
 class RsZeroReserveItem: public RsItem
 {
 public:
