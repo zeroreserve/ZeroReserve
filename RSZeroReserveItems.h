@@ -63,6 +63,7 @@ public:
     virtual uint32_t serial_size() const = 0 ;
 
     static const uint8_t PROTOCOL_VERSION;
+    static const uint8_t headersOffset;
 };
 
 
@@ -118,7 +119,6 @@ protected:
     TransactionManager::TxPhase m_TxPhase;
     uint32_t m_offset;
     std::string m_txId;
-
 };
 
 

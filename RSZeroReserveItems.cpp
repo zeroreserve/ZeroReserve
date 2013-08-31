@@ -27,7 +27,9 @@
 
 const uint16_t RS_SERVICE_TYPE_ZERORESERVE_PLUGIN = 0xBEEF;
 const uint32_t CONFIG_TYPE_ZERORESERVE_PLUGIN     = 0xDEADBEEF;
-const uint8_t PROTOCOL_VERSION = 0;
+const uint8_t RsZeroReserveItem::PROTOCOL_VERSION = 0;
+const uint8_t RsZeroReserveItem::headersOffset = 9;
+
 
 
 #define CURRENCY_STRLEN 3
@@ -96,7 +98,7 @@ std::ostream& RsZeroReserveOrderBookItem::print(std::ostream &out, uint16_t inde
 
 uint32_t RsZeroReserveOrderBookItem::serial_size() const
 {
-        uint32_t s = 8; /* header */
+        uint32_t s = headersOffset; /* header */
         s += m_order->m_amount.length() + HOLLERITH_LEN_SPEC;
         s += m_order->m_price.length() + HOLLERITH_LEN_SPEC;
         s += sizeof(uint8_t); // the type (BID / ASK)
@@ -121,7 +123,7 @@ bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
 
         ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
 
-        uint32_t offset = 8;  // skip header
+        uint32_t offset = headersOffset;  // skip header
 
         std::string buf = m_order->m_amount.toStdString();
         ok &= setRawString( data, tlvsize, &offset, buf );
@@ -153,7 +155,7 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
     uint32_t rstype = getRsItemId(data);
     uint32_t rssize = getRsItemSize(data);
 
-    uint32_t offset = 8;
+    uint32_t offset = headersOffset;
 
 
     if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_ORDERBOOK_ITEM != getRsItemSubType(rstype)))
@@ -225,7 +227,7 @@ std::ostream& RsZeroReserveMsgItem::print(std::ostream &out, uint16_t indent)
 
 uint32_t RsZeroReserveMsgItem::serial_size() const
 {
-        uint32_t s = 8; /* header */
+        uint32_t s = headersOffset; /* header */
         s += sizeof(uint8_t); // the type
         s += m_msg.length() + HOLLERITH_LEN_SPEC;
 
@@ -245,7 +247,7 @@ bool RsZeroReserveMsgItem::serialise(void *data, uint32_t& pktsize)
 
         ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
 
-        uint32_t offset = 8;  // skip header
+        uint32_t offset = headersOffset;  // skip header
 
         ok &= setRawUInt8( data, tlvsize, &offset, m_msgType );
         ok &= setRawString( data, tlvsize, &offset, m_msg );
@@ -265,7 +267,7 @@ RsZeroReserveMsgItem::RsZeroReserveMsgItem(void *data, uint32_t pktsize)
     uint32_t rstype = getRsItemId(data);
     uint32_t rssize = getRsItemSize(data);
 
-    uint32_t offset = 8;
+    uint32_t offset = headersOffset;
 
 
     if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_MSG_ITEM != getRsItemSubType(rstype)))
@@ -318,7 +320,7 @@ std::ostream& RsZeroReserveCreditItem::print(std::ostream &out, uint16_t indent)
 
 uint32_t RsZeroReserveCreditItem::serial_size() const
 {
-        uint32_t s = 8; /* header */
+        uint32_t s = headersOffset; /* header */
         s += CURRENCY_STRLEN + HOLLERITH_LEN_SPEC;
         s += m_credit->m_credit.length() + HOLLERITH_LEN_SPEC;
         s += m_credit->m_our_credit.length() + HOLLERITH_LEN_SPEC;
@@ -340,7 +342,7 @@ bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
 
         ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
 
-        uint32_t offset = 8;  // skip header
+        uint32_t offset = headersOffset;  // skip header
 
         ok &= setRawString( data, tlvsize, &offset, m_credit->m_currency );
         std::string buf = m_credit->m_credit.toStdString();
@@ -366,7 +368,7 @@ RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
     uint32_t rssize = getRsItemSize(data);
 
     bool ok = true;
-    uint32_t offset = 8;
+    uint32_t offset = headersOffset;
 
     std::string currency;
 
@@ -428,7 +430,7 @@ RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SU
             throw std::runtime_error("Not enough size!") ;
     }
 
-    m_offset = 8;
+    m_offset = headersOffset;
     bool ok = true;
 
     uint8_t txPhase;
@@ -443,7 +445,7 @@ RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SU
 
 uint32_t RsZeroReserveTxItem::serial_size() const
 {
-    return 8                    //  header
+    return headersOffset                    //  header
             + sizeof(uint8_t)   // TX Phase
             + m_txId.length() + HOLLERITH_LEN_SPEC;
 }
@@ -463,7 +465,7 @@ bool RsZeroReserveTxItem::serialise(void *data, uint32_t& pktsize)
 
     ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
 
-    m_offset = 8;  // skip header
+    m_offset = headersOffset;  // skip header
 
     ok &= setRawUInt8( data, tlvsize, &m_offset, m_TxPhase );
     ok &= setRawString(data, tlvsize, &m_offset, m_txId );
