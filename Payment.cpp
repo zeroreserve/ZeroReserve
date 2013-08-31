@@ -85,7 +85,7 @@ int PaymentReceiver::commit()
     ZrDB::Instance()->appendTx( m_credit.m_id, m_credit.m_currency, m_amount );
 
     if( txLogView ){
-        txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : +" + m_amount.toQString() );
+        txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : +" + m_amount.toDecimalQString() );
     }
 
     switch( m_category )
@@ -128,7 +128,7 @@ int PaymentSpender::commit()
     ZrDB::Instance()->appendTx( m_credit.m_id, m_credit.m_currency,  -m_amount );
 
     if( txLogView ){
-        txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : -" + m_amount.toQString() );
+        txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : -" + m_amount.toDecimalQString() );
     }
 
     return ZR::ZR_SUCCESS;
