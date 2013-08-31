@@ -49,7 +49,7 @@ static int txlog_callback(void *, int argc, char ** argv, char ** )
         item.id = argv[0];
         item.currency = argv[1];
         item.m_amount = ZR::ZR_Number::fromDecimalString( std::string(argv[2]) );
-        item.timestamp = QDateTime::fromString( argv[3] );
+        item.timestamp = QDateTime::fromString( argv[3], "yyyy-MM-dd HH:mm:ss" );
 
         ZrDB::Instance()->addToTxList( item );
     }

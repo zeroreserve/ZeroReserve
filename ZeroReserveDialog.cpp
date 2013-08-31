@@ -112,7 +112,7 @@ void ZeroReserveDialog::loadTxLog()
 
     for( std::list< ZrDB::TxLogItem >::const_iterator it = txList.begin(); it != txList.end(); it++ ){
         const ZrDB::TxLogItem & item = *it;
-        txStringList.append( item.timestamp.toString() + " : " + item.currency + item.m_amount.toDecimalQString() + ": " );
+        txStringList.append( item.timestamp.toString() + " : " + item.currency + " : " + item.m_amount.toDecimalQString() );
     }
     ui.paymentHistoryList->insertItems( 0, txStringList );
 }
