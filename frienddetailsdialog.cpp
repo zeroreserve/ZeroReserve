@@ -71,7 +71,7 @@ void FriendDetailsDialog::editFriend()
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
     Credit peerCredit( m_id, Currency::currencySymbols[ sym ] );
     peerCredit.loadPeer();
-    peerCredit.m_credit = ZR::ZR_Number::fromString( ui->creditSpinBox->text() );
+    peerCredit.m_credit = ZR::ZR_Number::fromDecimalString( ui->creditSpinBox->text() );
     try {
         peerCredit.updateCredit();
         peerCredit.publish();
