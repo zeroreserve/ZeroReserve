@@ -18,7 +18,9 @@ SOURCES = ZeroReserveDialog.cpp \
     zrdb.cpp \
     MyOrders.cpp \
     Credit.cpp \
-    dbconfig.cpp
+    dbconfig.cpp \
+    Router.cpp \
+    TraceRouter.cpp
 
 LIBS += -lsqlite3
 
@@ -38,7 +40,9 @@ HEADERS = ZeroReserveDialog.h \
     zrtypes.h \
     MyOrders.h \
     Credit.h \
-    dbconfig.h
+    dbconfig.h \
+    Router.h \
+    TraceRouter.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \

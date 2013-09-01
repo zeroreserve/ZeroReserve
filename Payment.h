@@ -51,14 +51,14 @@ public:
     const std::string & getCurrency(){ return m_credit.m_currency; }
     ZR::ZR_Number getAmount(){ return m_amount; }
     Category getCategory(){ return m_category; }
-    void setText( const std::string & text ){ m_text = text; }
-    const std::string & getText(){ return m_text; }
+    void referrerId( const std::string & referrer ){ m_referrer = referrer; }
+    const std::string & referrerId(){ return m_referrer; }
 
 protected:
     Credit m_credit;
     ZR::ZR_Number m_amount;
     Category m_category;
-    std::string m_text;  // this is freeform data which the category
+    std::string m_referrer;  // this is freeform data which the category
 
 public:
     static QListWidget * txLogView;

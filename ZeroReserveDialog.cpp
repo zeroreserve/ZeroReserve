@@ -206,6 +206,6 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
     order->m_orderType = type;
     order->sent = false;
     order->m_timeStamp = QDateTime::currentMSecsSinceEpoch();
-    order->m_trader_id = p3zr->getOwnId();
+    order->setOrderId();
     book->processOrder( order );
 }

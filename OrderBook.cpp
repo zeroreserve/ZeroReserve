@@ -19,6 +19,7 @@
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 
+#include <openssl/sha.h>
 #include <iostream>
 
 
@@ -125,7 +126,7 @@ void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::Curren
 }
 
 
-int OrderBook::processOrder( Order* order )
+ZR::RetVal OrderBook::processOrder( Order* order )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
@@ -159,7 +160,7 @@ int OrderBook::processOrder( Order* order )
         if( *order == *(*it) ) return ZR::ZR_FINISH;
     }
 
-    if( isOwnOrder( order) ){
+    if( order->m_isMyOrder ){
         if( ZR::ZR_FINISH == m_myOrders->match( order ) ){
             return ZR::ZR_FINISH; // completely executed - do not add
         }
@@ -195,24 +196,6 @@ int OrderBook::addOrder( Order * order )
 }
 
 
-bool OrderBook::Order::operator == ( const OrderBook::Order & other )
-{
-    if(m_trader_id == other.m_trader_id &&
-       m_timeStamp == other.m_timeStamp &&
-       m_currency == other.m_currency )
-        return true;
-    else
-        return false;
-}
-
-
-bool OrderBook::isOwnOrder( Order * order )
-{
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    if( order->m_trader_id != p3zr->getOwnId() ) return false;
-
-    return true;
-}
 
 OrderBook::Order * OrderBook::remove( Order * order )
 {
@@ -228,4 +211,41 @@ OrderBook::Order * OrderBook::remove( Order * order )
     return NULL;
 }
 
+OrderBook::Order * OrderBook::remove( const std::string & order_id )
+{
+    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+        if( order_id == (*it)->m_order_id ){
+            m_orders.erase( it );
+            beginResetModel();
+            filterOrders( m_filteredOrders, m_currency );
+            endResetModel();
+            return *it;
+        }
+    }
+    return NULL;
+}
 
+
+// Order implementation
+
+void OrderBook::Order::setOrderId()
+{
+    unsigned char md[SHA256_DIGEST_LENGTH];
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    std::ostringstream dataStream;
+    dataStream << p3zr->getOwnId()  << m_timeStamp << rand() << m_currency << m_orderType;
+    std::string data = dataStream.str();
+    if(!SHA256((unsigned char *)data.c_str(), data.length(), md))
+    {
+        std::cerr << "Zero Reserve: cannot create a hash for the Order ID" << std::endl;
+    }
+}
+
+
+bool OrderBook::Order::operator == ( const OrderBook::Order & other )
+{
+    if(m_order_id == other.m_order_id )
+        return true;
+    else
+        return false;
+}

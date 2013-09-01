@@ -17,6 +17,8 @@
 
 #include "p3ZeroReserverRS.h"
 #include "Credit.h"
+#include "zrtypes.h"
+#include "Router.h"
 
 #include "pqi/p3linkmgr.h"
 
@@ -129,13 +131,20 @@ void p3ZeroReserveRS::handleMessage( RsZeroReserveMsgItem *item )
 void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
 {
     std::cerr << "Zero Reserve: Received Orderbook Item" << std::endl;
+    ZR::RetVal result;
     item->print( std::cerr );
     OrderBook::Order * order = item->getOrder();
     if( order->m_orderType == OrderBook::Order::ASK ){
-        m_asks->processOrder( order );
+        result = m_asks->processOrder( order );
     }
     else{
-        m_bids->processOrder( order );
+        result = m_bids->processOrder( order );
+    }
+
+    // scavenge the info we get from order propagation for routing. In effect, this is a Turtle
+    // router, just that network layers are messed up by not dedicating the packets to routing.
+    if( ZR::ZR_SUCCESS == result ){
+        Router::Instance()->addRoute( item->getOrder()->m_order_id, item->PeerId() );
     }
 }
 

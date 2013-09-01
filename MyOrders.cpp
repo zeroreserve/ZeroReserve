@@ -20,6 +20,7 @@
 #include "p3ZeroReserverRS.h"
 #include "Payment.h"
 #include "TransactionManager.h"
+#include "Router.h"
 
 #include <iostream>
 #include <sstream>
@@ -98,7 +99,7 @@ int MyOrders::matchOther( Order * other )
         return ZR::ZR_FAILURE; // TODO
     }
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    if( other->m_trader_id == p3zr->getOwnId() ) return ZR::ZR_FAILURE; // don't fill own orders
+    if( other->m_isMyOrder ) return ZR::ZR_FAILURE; // don't fill own orders
 
     Order * order = NULL;
     for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
@@ -134,12 +135,11 @@ int MyOrders::match( Order * order )
         return ZR::ZR_FAILURE; // throw?
     }
 
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     OrderList asks;
     m_asks->filterOrders( asks, order->m_currency );
     for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){
         Order * other = *askIt;
-        if( other->m_trader_id == p3zr->getOwnId() ) continue; // don't fill own orders
+        if( other->m_isMyOrder ) continue; // don't fill own orders
         if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
 
@@ -163,10 +163,10 @@ void MyOrders::buy( Order * order, ZR::ZR_Number amount )
     TransactionManager * tm = new TransactionManager();
     ZR::ZR_Number amountToPay = amount * order->m_price;
 
-    Payment * payment = new PaymentSpender( order->m_trader_id, amountToPay, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
+    Payment * payment = new PaymentSpender( Router::Instance()->nextHop( order->m_order_id), amountToPay, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
     std::ostringstream timestamp;
     timestamp << order->m_timeStamp;
-    payment->setText( timestamp.str() );
+    payment->referrerId( order->m_order_id );
     if( ZR::ZR_FAILURE == tm->initCoordinator( payment ) ) delete tm;
 }
 
@@ -175,18 +175,12 @@ void MyOrders::buy( Order * order, ZR::ZR_Number amount )
 int MyOrders::startExecute( Payment * payment )
 {
     // TODO: start 2/3 Bitcoin TX here
-    std::cerr << "Zero Reserve: Starting Order execution for " << payment->getText() << std::endl;
+    std::cerr << "Zero Reserve: Starting Order execution for " << payment->referrerId() << std::endl;
     ZR::RetVal result = ZR::ZR_FAILURE;
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
     // find out if the payment really refers to an order of ours...
-    Order order;
-    std::stringstream s_timestamp( payment->getText() );
-    s_timestamp >> order.m_timeStamp;
-    order.m_trader_id = p3zr->getOwnId();
-    order.m_currency = Currency::getCurrencyBySymbol( payment->getCurrency() );
     for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
-        if( order == *(*it) ){
+        if( (*it)->m_order_id == payment->referrerId() ){
             // ... and if the amount to buy does not exceed the order.
             result = ( (*it)->m_price * (*it)->m_amount < payment->getAmount() )? ZR::ZR_FAILURE : ZR::ZR_SUCCESS;
             break;
@@ -200,15 +194,11 @@ int MyOrders::startExecute( Payment * payment )
 int MyOrders::finishExecute( Payment * payment )
 {
     // TODO: sign 2/3 Bitcoin TX here
-    std::cerr << "Zero Reserve: Finishing Order execution for " << payment->getText() << std::endl;
+    std::cerr << "Zero Reserve: Finishing Order execution for " << payment->referrerId() << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    Order order;
-    std::stringstream s_timestamp( payment->getText() );
-    s_timestamp >> order.m_timeStamp;
-    order.m_trader_id = p3zr->getOwnId();
-    order.m_currency = Currency::getCurrencyBySymbol( payment->getCurrency() );
-    remove( &order );
-    Order * oldOrder = m_asks->remove( &order );
+
+    remove( payment->referrerId() );
+    Order * oldOrder = m_asks->remove( payment->referrerId() );
     // TODO: publish delete order and possibly updated order
     if( NULL != oldOrder ){
         if( oldOrder->m_amount * oldOrder->m_price >  payment->getAmount() ){ // order only partly filled

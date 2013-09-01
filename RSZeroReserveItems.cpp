@@ -80,7 +80,7 @@ std::ostream& RsZeroReserveOrderBookItem::print(std::ostream &out, uint16_t inde
         out << "Amount  : " << m_order->m_amount << std::endl;
 
         printIndent(out, int_Indent);
-        out << "ID      : " << m_order->m_trader_id << std::endl;
+        out << "ID      : " << m_order->m_order_id << std::endl;
 
         printIndent(out, int_Indent);
         out << "Price   : " << m_order->m_price << std::endl;
@@ -104,7 +104,7 @@ uint32_t RsZeroReserveOrderBookItem::serial_size() const
         s += sizeof(uint8_t); // the type (BID / ASK)
         s += CURRENCY_STRLEN + HOLLERITH_LEN_SPEC;
         s += sizeof(uint64_t);
-        s += m_order->m_trader_id.length() + HOLLERITH_LEN_SPEC;
+        s += m_order->m_order_id.length() + HOLLERITH_LEN_SPEC;
         s += sizeof( uint8_t );  // purpose
 
         return s;
@@ -137,7 +137,7 @@ bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
         ok &= setRawString( data, tlvsize, &offset, buf );
 
         ok &= setRawUInt64( data, tlvsize, &offset, m_order->m_timeStamp );
-        ok &= setRawString( data, tlvsize, &offset, m_order->m_trader_id );
+        ok &= setRawString( data, tlvsize, &offset, m_order->m_order_id );
         ok &= setRawUInt8( data, tlvsize, &offset, m_order->m_purpose );
 
         if (offset != tlvsize){
@@ -188,9 +188,9 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
     ok &= getRawUInt64(data, rssize, &offset, &timestamp );
     m_order->m_timeStamp = timestamp;
 
-    std::string trader_id;
-    ok &= getRawString(data, rssize, &offset, trader_id);
-    m_order->m_trader_id = trader_id;
+    std::string order_id;
+    ok &= getRawString(data, rssize, &offset, order_id);
+    m_order->m_order_id = order_id;
 
     uint8_t order_purpose;
     ok &= getRawUInt8(data, rssize, &offset, &order_purpose );
@@ -514,14 +514,14 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
     ok &= getRawString(data, rssize, &m_offset, currency );
     uint8_t category;
     ok &= getRawUInt8(data, rssize, &m_offset, &category );
-    std::string freeformText;
-    ok &= getRawString(data, rssize, &m_offset, freeformText );
+    std::string referrer;
+    ok &= getRawString(data, rssize, &m_offset, referrer );
 
     if ( !ok )
         throw std::runtime_error("Deserialisation error!") ;
 
     m_payment = new PaymentReceiver( "", amount, currency, (Payment::Category)category );
-    m_payment->setText( freeformText );
+    m_payment->referrerId( referrer );
 }
 
 
@@ -539,7 +539,7 @@ uint32_t RsZeroReserveInitTxItem::serial_size() const
             + CURRENCY_STRLEN + HOLLERITH_LEN_SPEC     // currency
             + m_payment->getAmount().length() + HOLLERITH_LEN_SPEC  // amount
             + sizeof(uint8_t)                          // Category
-            + m_payment->getText().length() + HOLLERITH_LEN_SPEC; // freeform data
+            + m_payment->referrerId().length() + HOLLERITH_LEN_SPEC; // freeform data
 }
 
 
@@ -561,8 +561,8 @@ bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
 
     ok &= setRawUInt8( data, tlvsize, &m_offset, m_payment->getCategory() );
 
-    std::string freeformText = m_payment->getText();
-    ok &= setRawString( data, tlvsize, &m_offset, freeformText );
+    std::string referrer = m_payment->referrerId();
+    ok &= setRawString( data, tlvsize, &m_offset, referrer );
 
     if (m_offset != tlvsize){
         ok = false;

@@ -51,8 +51,10 @@ public:
                                         // an ask market order will not be published
                                         // bid market orders go to execution right away.
                      };
+        Order( bool isMyOrder = false ){ m_isMyOrder = isMyOrder; }
 
-        std::string m_trader_id;
+        std::string m_order_id;
+        bool m_isMyOrder;
         OrderType m_orderType;
         ZR::ZR_Number m_amount;
         ZR::ZR_Number m_price;     // the amount as number for sorting
@@ -62,6 +64,7 @@ public:
         OrderBook::Order::Purpose m_purpose;
 
         bool operator == (const Order & other);
+        void setOrderId();
     };
 
 public:
@@ -84,13 +87,14 @@ public:
     void setMyOrders( OrderBook * myOrders ){ m_myOrders = myOrders; }
 
     /** @return ZR::ZR_FINISH if this order has been completed */
-    virtual int processOrder( Order* order );
+    virtual ZR::RetVal processOrder( Order* order );
     void filterOrders(OrderList & filteredOrders , const Currency::CurrencySymbols currencySym);
 
     /** remove an order from the book
      *  @param order Template for the order to match. Relevant fields: Id, timestamp and currency
      *  @return a pointer to the removed order */
     virtual Order * remove( Order * order );
+    virtual Order * remove( const std::string & order_id );
 
 
 protected:
@@ -101,7 +105,6 @@ protected:
 
 protected:
     virtual int addOrder( Order* order );
-    bool isOwnOrder( Order * order );
     /** Matches our new order with all others  */
     virtual int match( Order * ){ return ZR::ZR_FAILURE; }
     /** Matches incoming new order with ours */
