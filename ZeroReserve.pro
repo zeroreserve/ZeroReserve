@@ -20,7 +20,9 @@ SOURCES = ZeroReserveDialog.cpp \
     Credit.cpp \
     dbconfig.cpp \
     Router.cpp \
-    TraceRouter.cpp
+    TraceRouter.cpp \
+    RemotePaymentDialog.cpp \
+    RemotePaymentRequestDialog.cpp
 
 LIBS += -lsqlite3
 
@@ -42,12 +44,16 @@ HEADERS = ZeroReserveDialog.h \
     Credit.h \
     dbconfig.h \
     Router.h \
-    TraceRouter.h
+    TraceRouter.h \
+    RemotePaymentDialog.h \
+    RemotePaymentRequestDialog.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
     paymentdialog.ui \
-    ZeroReserveConfig.ui
+    ZeroReserveConfig.ui \
+    RemotePaymentDialog.ui \
+    RemotePaymentRequestDialog.ui
 
 TARGET = ZeroReserve
 

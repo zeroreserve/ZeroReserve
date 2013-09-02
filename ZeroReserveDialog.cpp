@@ -24,6 +24,8 @@
 #include "p3ZeroReserverRS.h"
 #include "zrdb.h"
 #include "Payment.h"
+#include "RemotePaymentDialog.h"
+#include "RemotePaymentRequestDialog.h"
 
 #include <QMenu>
 #include <QStandardItem>
@@ -65,14 +67,16 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     MyOrders * myOrders = new MyOrders( bids, asks );
 
-    connect(ui.friendSelectionWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuFriendList(QPoint)));
-    connect(ui.friendSelectionWidget, SIGNAL(doubleClicked(int,QString)), this, SLOT(friendDetails()));
-    connect(ui.askButton, SIGNAL(clicked()), this, SLOT(addAsk()));
-    connect(ui.bidButton, SIGNAL(clicked()), this, SLOT(addBid()));
-    connect(ui.currencySelector2, SIGNAL(currentIndexChanged(QString)), this, SLOT(loadGrandTotal(QString) ) );
-    connect(ui.currencySelector1, SIGNAL(currentIndexChanged(QString)), bids, SLOT(setCurrency(QString) ) );
-    connect(ui.currencySelector1, SIGNAL(currentIndexChanged(QString)), asks, SLOT(setCurrency(QString) ) );
-    connect(ui.currencySelector1, SIGNAL(currentIndexChanged(QString)), myOrders, SLOT(setCurrency(QString) ) );
+    connect( ui.friendSelectionWidget, SIGNAL( customContextMenuRequested(QPoint) ), this, SLOT(contextMenuFriendList(QPoint) ) );
+    connect( ui.friendSelectionWidget, SIGNAL( doubleClicked(int,QString) ), this, SLOT( friendDetails() ) );
+    connect( ui.askButton, SIGNAL( clicked() ), this, SLOT( addAsk() ) );
+    connect( ui.bidButton, SIGNAL( clicked() ), this, SLOT( addBid() ) );
+    connect( ui.currencySelector2, SIGNAL( currentIndexChanged(QString) ), this, SLOT( loadGrandTotal(QString) ) );
+    connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), bids, SLOT( setCurrency(QString) ) );
+    connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), asks, SLOT( setCurrency(QString) ) );
+    connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), myOrders, SLOT( setCurrency(QString) ) );
+    connect( ui.remotePayment, SIGNAL( clicked() ), this, SLOT( remotePayment() ) );
+    connect( ui.remoteRequest, SIGNAL( clicked() ), this, SLOT( remoteRequest() ) );
 
     ui.myOrders->setContextMenuPolicy( Qt::CustomContextMenu );
     ui.myOrders->setSelectionBehavior( QAbstractItemView::SelectRows );
@@ -204,8 +208,22 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
     order->m_currency = Currency::getCurrencyByName( ui.currencySelector1->currentText().toStdString() );
     order->m_amount = amount;
     order->m_orderType = type;
-    order->sent = false;
+    order->m_isMyOrder = true;
+    order->m_purpose = OrderBook::Order::NEW;
     order->m_timeStamp = QDateTime::currentMSecsSinceEpoch();
     order->setOrderId();
     book->processOrder( order );
+}
+
+
+void ZeroReserveDialog::remoteRequest()
+{
+    RemotePaymentRequestDialog d;
+    d.exec();
+}
+
+void ZeroReserveDialog::remotePayment()
+{
+    RemotePaymentDialog d;
+    d.exec();
 }

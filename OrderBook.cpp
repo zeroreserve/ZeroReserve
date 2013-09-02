@@ -19,6 +19,8 @@
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 
+#include "util/radix64.h"
+
 #include <openssl/sha.h>
 #include <iostream>
 
@@ -199,7 +201,7 @@ int OrderBook::addOrder( Order * order )
 
 OrderBook::Order * OrderBook::remove( Order * order )
 {
-    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
         if( *order == *(*it) ){
             m_orders.erase( it );
             beginResetModel();
@@ -213,7 +215,7 @@ OrderBook::Order * OrderBook::remove( Order * order )
 
 OrderBook::Order * OrderBook::remove( const std::string & order_id )
 {
-    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
         if( order_id == (*it)->m_order_id ){
             m_orders.erase( it );
             beginResetModel();
@@ -230,21 +232,25 @@ OrderBook::Order * OrderBook::remove( const std::string & order_id )
 
 void OrderBook::Order::setOrderId()
 {
-    unsigned char md[SHA256_DIGEST_LENGTH];
+    unsigned char md[ SHA256_DIGEST_LENGTH ];
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     std::ostringstream dataStream;
-    dataStream << p3zr->getOwnId()  << m_timeStamp << rand() << m_currency << m_orderType;
+    // FIXME: the getOwnId() must be replaced by a secret - else the originator of the order can be calculated
+    // FIXME: by friends and friends of friends
+    dataStream << p3zr->getOwnId() << m_timeStamp << m_currency << m_orderType << m_amount << m_price;
     std::string data = dataStream.str();
-    if(!SHA256((unsigned char *)data.c_str(), data.length(), md))
-    {
-        std::cerr << "Zero Reserve: cannot create a hash for the Order ID" << std::endl;
-    }
+    int length = data.length();
+    unsigned char * buff = new unsigned char[ length ];
+    memcpy( buff, data.c_str(), length );
+    SHA256( buff, length, md);
+    Radix64::encode( (const char*)md, SHA256_DIGEST_LENGTH, m_order_id );
+    delete [] buff;
 }
 
 
 bool OrderBook::Order::operator == ( const OrderBook::Order & other )
 {
-    if(m_order_id == other.m_order_id )
+    if( m_order_id == other.m_order_id )
         return true;
     else
         return false;

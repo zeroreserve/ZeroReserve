@@ -47,6 +47,8 @@ private slots:
     void loadGrandTotal( QString currency = "" );
     void cancelOrder();
     void contextMenuMyOrders(const QPoint & );
+    void remoteRequest();
+    void remotePayment();
 
 private:
     void doOrder(OrderBook * book, OrderBook::Order::OrderType type, ZR::ZR_Number price, ZR::ZR_Number amount );

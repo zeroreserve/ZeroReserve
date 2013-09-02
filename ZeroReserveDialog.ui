@@ -76,7 +76,7 @@ p, li { white-space: pre-wrap; }
    <item>
     <widget class="QTabWidget" name="ZeroReserveTabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="BitcoinTab">
       <attribute name="title">
@@ -411,6 +411,20 @@ p, li { white-space: pre-wrap; }
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <widget class="QComboBox" name="currencySelector2"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="remoteRequest">
+           <property name="text">
+            <string>Remote Request</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="remotePayment">
+           <property name="text">
+            <string>Remote Payment</string>
+           </property>
+          </widget>
          </item>
          <item>
           <spacer name="verticalSpacer">

@@ -53,7 +53,7 @@ public:
                      };
         Order( bool isMyOrder = false ){ m_isMyOrder = isMyOrder; }
 
-        std::string m_order_id;
+        std::string m_order_id; // hashed from order attributes, a secret and randomness
         bool m_isMyOrder;
         OrderType m_orderType;
         ZR::ZR_Number m_amount;
