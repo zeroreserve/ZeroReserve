@@ -198,3 +198,14 @@ void p3ZeroReserveRS::publishOrder( OrderBook::Order * order )
         sendOrder( *it, order );
     }
 }
+
+
+void p3ZeroReserveRS::sendRemote( const RSZRRemoteItem::VirtualAddress & address, ZR::ZR_Number amount, const std::string & currency )
+{
+    std::list< std::string > sendList;
+    m_peers->getOnlineList(sendList);
+    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
+        RSZRPayRequestItem * item = new RSZRPayRequestItem( address, amount, currency );
+        sendItem( item );
+    }
+}

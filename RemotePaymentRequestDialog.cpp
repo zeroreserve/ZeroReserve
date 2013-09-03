@@ -1,7 +1,27 @@
+/*
+    This file is part of the Zero Reserve Plugin for Retroshare.
+
+    Zero Reserve is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Zero Reserve is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with Zero Reserve.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
 #include "RemotePaymentRequestDialog.h"
 #include "ui_RemotePaymentRequestDialog.h"
 
 #include "Currency.h"
+#include "p3ZeroReserverRS.h"
+#include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 #include "ZeroReservePlugin.h"
 
@@ -70,5 +90,9 @@ QString RemotePaymentRequestDialog::getPayAddress( QString amount, QString curre
 
 void RemotePaymentRequestDialog::sendRequest()
 {
-
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    RSZRRemoteItem::VirtualAddress address = ui->payAddress->text().toStdString();
+    ZR::ZR_Number amount = ZR::ZR_Number::fromDecimalString( ui->amount->text() );
+    std::string currency = Currency::currencySymbols[ Currency::getCurrencyByName(ui->currencySelector->currentText().toStdString() ) ];
+    p3zr->sendRemote( address, amount, currency );
 }

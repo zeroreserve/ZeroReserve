@@ -23,6 +23,7 @@
 #include "OrderBook.h"
 #include "Credit.h"
 #include "TransactionManager.h"
+#include "RSZeroReserveItems.h"
 
 
 const uint8_t QOS_PRIORITY_RS_ZERORESERVE = 3;
@@ -39,31 +40,39 @@ extern const uint32_t CONFIG_TYPE_ZERORESERVE_PLUGIN;
  *        SQL injection so the inner classes can rely on the integrity of the data.
  */
 
-class RsZeroReserveItem: public RsItem
+class RsZeroReserveItem : public RsItem
 {
 public:
-    RsZeroReserveItem(uint8_t zeroreserve_subtype)
-        : RsItem(RS_PKT_VERSION_SERVICE,RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, zeroreserve_subtype)
-    {
-        setPriorityLevel(QOS_PRIORITY_RS_ZERORESERVE) ;
-    }
+    RsZeroReserveItem(void *data, uint32_t &size, uint8_t zeroreserve_subtype );
+    RsZeroReserveItem( uint8_t zeroreserve_subtype ) :
+        RsItem(RS_PKT_VERSION_SERVICE,RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, zeroreserve_subtype)
+    {}
+
     enum RS_PKT_SUBTYPE {
         ZERORESERVE_ORDERBOOK_ITEM = 0x01,
         ZERORESERVE_TX_ITEM,
         ZERORESERVE_TX_INIT_ITEM,
         ZERORESERVE_CREDIT_ITEM,
-        ZERORESERVE_MSG_ITEM
+        ZERORESERVE_MSG_ITEM,
+
+        ZR_REMOTE_PAYREQUEST_ITEM,
+        ZR_REMOTE_TX_ITEM
     };
 
     virtual ~RsZeroReserveItem() {};
     virtual void clear() {};
     virtual std::ostream& print(std::ostream &out, uint16_t indent = 0) = 0 ;
 
-    virtual bool serialise(void *data,uint32_t& size) = 0 ;
-    virtual uint32_t serial_size() const = 0 ;
+    virtual bool serialise(void *data,uint32_t& size);
+    virtual uint32_t serial_size() const { return headersOffset + 1; }
 
     static const uint8_t PROTOCOL_VERSION;
     static const uint8_t headersOffset;
+    static const int CURRENCY_STRLEN;
+    static const int HOLLERITH_LEN_SPEC;
+
+protected:
+    uint32_t m_Offset;
 };
 
 
@@ -117,7 +126,6 @@ public:
 
 protected:
     TransactionManager::TxPhase m_TxPhase;
-    uint32_t m_offset;
     std::string m_txId;
 };
 

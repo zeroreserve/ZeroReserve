@@ -18,8 +18,10 @@
 
 #include "RSZeroReserveItems.h"
 #include "OrderBook.h"
-#include "serialiser/rsbaseserial.h"
 #include "Payment.h"
+#include "RSZRRemoteItems.h"
+
+#include "serialiser/rsbaseserial.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -28,12 +30,9 @@
 const uint16_t RS_SERVICE_TYPE_ZERORESERVE_PLUGIN = 0xBEEF;
 const uint32_t CONFIG_TYPE_ZERORESERVE_PLUGIN     = 0xDEADBEEF;
 const uint8_t RsZeroReserveItem::PROTOCOL_VERSION = 0;
-const uint8_t RsZeroReserveItem::headersOffset = 9;
-
-
-
-#define CURRENCY_STRLEN 3
-#define HOLLERITH_LEN_SPEC 4
+const uint8_t RsZeroReserveItem::headersOffset = 8;
+const int RsZeroReserveItem::CURRENCY_STRLEN = 3;
+const int RsZeroReserveItem::HOLLERITH_LEN_SPEC = 4;
 
 RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
 {
@@ -58,6 +57,8 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
             return new RsZeroReserveCreditItem(data, *pktsize);
         case RsZeroReserveItem::ZERORESERVE_MSG_ITEM:
             return new RsZeroReserveMsgItem(data, *pktsize);
+        case RsZeroReserveItem::ZR_REMOTE_PAYREQUEST_ITEM:
+            return new RSZRPayRequestItem( data, *pktsize );
         default:
             return NULL;
         }
@@ -65,6 +66,32 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
     catch(std::exception& e){
         std::cerr << "RsZeroReserveSerialiser: deserialization error: " << e.what() << std::endl;
         return NULL;
+    }
+}
+
+// TODO: make all serialise() below use this
+
+bool RsZeroReserveItem::serialise(void *data,uint32_t& size)
+{
+    bool ok = true;
+    m_Offset = headersOffset;
+    uint32_t tlvsize = serial_size();
+    ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
+    ok &= setRawUInt8( data, tlvsize, &m_Offset, PROTOCOL_VERSION );
+    return ok;
+}
+
+RsZeroReserveItem::RsZeroReserveItem( void *data,uint32_t& size, uint8_t zeroreserve_subtype ) :
+    RsItem(RS_PKT_VERSION_SERVICE,RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, zeroreserve_subtype)
+{
+    setPriorityLevel(QOS_PRIORITY_RS_ZERORESERVE);
+    uint32_t rssize = getRsItemSize(data);
+    m_Offset = headersOffset;
+    uint8_t protocolVersion;
+    getRawUInt8(data, rssize, &m_Offset, &protocolVersion );
+    if( protocolVersion != PROTOCOL_VERSION ){
+        std::cerr << "Unknown protocol version: " << protocolVersion << std::endl;
+        throw std::runtime_error( "Unknown protocol version" );
     }
 }
 
@@ -98,7 +125,7 @@ std::ostream& RsZeroReserveOrderBookItem::print(std::ostream &out, uint16_t inde
 
 uint32_t RsZeroReserveOrderBookItem::serial_size() const
 {
-        uint32_t s = headersOffset; /* header */
+        uint32_t s = RsZeroReserveItem::serial_size();
         s += m_order->m_amount.length() + HOLLERITH_LEN_SPEC;
         s += m_order->m_price.length() + HOLLERITH_LEN_SPEC;
         s += sizeof(uint8_t); // the type (BID / ASK)
@@ -119,28 +146,25 @@ bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
 
         pktsize = tlvsize;
 
-        bool ok = true;
+        bool ok = RsZeroReserveItem::serialise( data, pktsize );
 
-        ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
-
-        uint32_t offset = headersOffset;  // skip header
 
         std::string buf = m_order->m_amount.toStdString();
-        ok &= setRawString( data, tlvsize, &offset, buf );
+        ok &= setRawString( data, tlvsize, &m_Offset, buf );
 
         buf = Currency::currencySymbols[m_order->m_currency];
-        ok &= setRawString( data, tlvsize, &offset, buf );
+        ok &= setRawString( data, tlvsize, &m_Offset, buf );
 
-        ok &= setRawUInt8( data, tlvsize, &offset, m_order->m_orderType );
+        ok &= setRawUInt8( data, tlvsize, &m_Offset, m_order->m_orderType );
 
         buf = m_order->m_price.toStdString();
-        ok &= setRawString( data, tlvsize, &offset, buf );
+        ok &= setRawString( data, tlvsize, &m_Offset, buf );
 
-        ok &= setRawUInt64( data, tlvsize, &offset, m_order->m_timeStamp );
-        ok &= setRawString( data, tlvsize, &offset, m_order->m_order_id );
-        ok &= setRawUInt8( data, tlvsize, &offset, m_order->m_purpose );
+        ok &= setRawUInt64( data, tlvsize, &m_Offset, m_order->m_timeStamp );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_order->m_order_id );
+        ok &= setRawUInt8( data, tlvsize, &m_Offset, m_order->m_purpose );
 
-        if (offset != tlvsize){
+        if (m_Offset != tlvsize){
                 ok = false;
                 std::cerr << "RsZeroReserveOrderBookItem::serialise() Size Error! " << std::endl;
         }
@@ -155,9 +179,6 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
     uint32_t rstype = getRsItemId(data);
     uint32_t rssize = getRsItemSize(data);
 
-    uint32_t offset = headersOffset;
-
-
     if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_ORDERBOOK_ITEM != getRsItemSubType(rstype)))
         throw std::runtime_error("Wrong packet type!") ;
 
@@ -169,34 +190,34 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
     m_order = new OrderBook::Order;
 
     std::string amount;
-    ok &= getRawString(data, rssize, &offset, amount);
+    ok &= getRawString(data, rssize, &m_Offset, amount);
     m_order->m_amount = ZR::ZR_Number::fromFractionString( amount );
 
     std::string currency;
-    ok &= getRawString(data, rssize, &offset, currency);
+    ok &= getRawString(data, rssize, &m_Offset, currency);
     m_order->m_currency = Currency::getCurrencyBySymbol( currency );  // TODO: Check error "no such symbol"
 
     uint8_t order_type;
-    ok &= getRawUInt8(data, rssize, &offset, &order_type );
+    ok &= getRawUInt8(data, rssize, &m_Offset, &order_type );
     m_order->m_orderType = (OrderBook::Order::OrderType) order_type;
 
     std::string price;
-    ok &= getRawString(data, rssize, &offset, price);
+    ok &= getRawString(data, rssize, &m_Offset, price);
     m_order->m_price = ZR::ZR_Number::fromFractionString( price );
 
     uint64_t timestamp;
-    ok &= getRawUInt64(data, rssize, &offset, &timestamp );
+    ok &= getRawUInt64(data, rssize, &m_Offset, &timestamp );
     m_order->m_timeStamp = timestamp;
 
     std::string order_id;
-    ok &= getRawString(data, rssize, &offset, order_id);
+    ok &= getRawString(data, rssize, &m_Offset, order_id);
     m_order->m_order_id = order_id;
 
     uint8_t order_purpose;
-    ok &= getRawUInt8(data, rssize, &offset, &order_purpose );
+    ok &= getRawUInt8(data, rssize, &m_Offset, &order_purpose );
     m_order->m_purpose = (OrderBook::Order::Purpose) order_purpose;
 
-    if (offset != rssize || !ok )
+    if (m_Offset != rssize || !ok )
         throw std::runtime_error("Deserialisation error!") ;
 }
 
@@ -430,14 +451,14 @@ RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SU
             throw std::runtime_error("Not enough size!") ;
     }
 
-    m_offset = headersOffset;
+    m_Offset = headersOffset;
     bool ok = true;
 
     uint8_t txPhase;
-    ok &= getRawUInt8(data, rssize, &m_offset, &txPhase );
+    ok &= getRawUInt8(data, rssize, &m_Offset, &txPhase );
     m_TxPhase = (TransactionManager::TxPhase) txPhase;
 
-    ok &= getRawString(data, rssize, &m_offset, m_txId );
+    ok &= getRawString(data, rssize, &m_Offset, m_txId );
 
     if ( !ok )
         throw std::runtime_error("Deserialisation error!") ;
@@ -461,14 +482,10 @@ bool RsZeroReserveTxItem::serialise(void *data, uint32_t& pktsize)
 
     pktsize = tlvsize;
 
-    bool ok = true;
+    bool ok = RsZeroReserveItem::serialise( data, pktsize );
 
-    ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
-
-    m_offset = headersOffset;  // skip header
-
-    ok &= setRawUInt8( data, tlvsize, &m_offset, m_TxPhase );
-    ok &= setRawString(data, tlvsize, &m_offset, m_txId );
+    ok &= setRawUInt8( data, tlvsize, &m_Offset, m_TxPhase );
+    ok &= setRawString(data, tlvsize, &m_Offset, m_txId );
 
     return ok;
 }
@@ -505,17 +522,17 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
     bool ok = true;
 
     uint8_t role;
-    ok &= getRawUInt8(data, rssize, &m_offset, &role );
+    ok &= getRawUInt8(data, rssize, &m_Offset, &role );
     m_Role = (TransactionManager::Role) role;
     std::string s_amount;
-    ok &= getRawString(data, rssize, &m_offset, s_amount );
+    ok &= getRawString(data, rssize, &m_Offset, s_amount );
     ZR::ZR_Number amount = ZR::ZR_Number::fromFractionString( s_amount );
     std::string currency;
-    ok &= getRawString(data, rssize, &m_offset, currency );
+    ok &= getRawString(data, rssize, &m_Offset, currency );
     uint8_t category;
-    ok &= getRawUInt8(data, rssize, &m_offset, &category );
+    ok &= getRawUInt8(data, rssize, &m_Offset, &category );
     std::string referrer;
-    ok &= getRawString(data, rssize, &m_offset, referrer );
+    ok &= getRawString(data, rssize, &m_Offset, referrer );
 
     if ( !ok )
         throw std::runtime_error("Deserialisation error!") ;
@@ -551,20 +568,20 @@ bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
 
     uint32_t tlvsize = serial_size() ;
 
-    ok &= setRawUInt8( data, tlvsize, &m_offset, m_Role );
+    ok &= setRawUInt8( data, tlvsize, &m_Offset, m_Role );
 
     std::string amount = m_payment->getAmount().toStdString();
-    ok &= setRawString( data, tlvsize, &m_offset, amount );
+    ok &= setRawString( data, tlvsize, &m_Offset, amount );
 
     std::string currency = m_payment->getCurrency();
-    ok &= setRawString( data, tlvsize, &m_offset, currency );
+    ok &= setRawString( data, tlvsize, &m_Offset, currency );
 
-    ok &= setRawUInt8( data, tlvsize, &m_offset, m_payment->getCategory() );
+    ok &= setRawUInt8( data, tlvsize, &m_Offset, m_payment->getCategory() );
 
     std::string referrer = m_payment->referrerId();
-    ok &= setRawString( data, tlvsize, &m_offset, referrer );
+    ok &= setRawString( data, tlvsize, &m_Offset, referrer );
 
-    if (m_offset != tlvsize){
+    if (m_Offset != tlvsize){
         ok = false;
         std::cerr << "RsZeroReserveInitTxItem::serialise() Size Error! " << std::endl;
     }

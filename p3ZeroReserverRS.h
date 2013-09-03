@@ -24,6 +24,7 @@
 #include "retroshare/rspeers.h"
 #include "plugins/rspqiservice.h"
 #include "pqi/pqimonitor.h"
+#include "RSZRRemoteItems.h"
 
 
 
@@ -44,6 +45,8 @@ public:
     std::string getOwnId(){ return m_peers->getOwnId(); }
     virtual void statusChange(const std::list<pqipeer> &plist);
 
+// remote stuff
+    void sendRemote( const RSZRRemoteItem::VirtualAddress & address, ZR::ZR_Number amount, const std::string & currency );
 
 private:
 

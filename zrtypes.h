@@ -55,7 +55,7 @@ public:
         return fromDecimalString( s_num.toStdString() );
     }
 
-    std::string toStdString()
+    std::string toStdString() const
     {
         std::ostringstream o;
         o << *this;

@@ -203,7 +203,6 @@ void ZeroReserveDialog::contextMenuMyOrders( const QPoint & )
 void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType type, ZR::ZR_Number price, ZR::ZR_Number amount )
 {
     OrderBook::Order * order = new OrderBook::Order();
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     order->m_price = price;
     order->m_currency = Currency::getCurrencyByName( ui.currencySelector1->currentText().toStdString() );
     order->m_amount = amount;
