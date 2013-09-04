@@ -48,6 +48,14 @@ void Payment::setCounterparty( const std::string & counterparty )
 }
 
 
+const Payment::Request Payment::getRequest( const ZR::VirtualAddress & addr )
+{
+    Requests::iterator it = requestList.find( addr );
+    if( it == requestList.end() )
+        return Request( 0, Currency::INVALID );
+    return (*it).second;
+}
+
 /////// PaymentReceiver
 
 PaymentReceiver::PaymentReceiver( const std::string & counterparty, const ZR::ZR_Number & amount, const std::string & currency, Category category) :

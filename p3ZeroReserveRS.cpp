@@ -17,6 +17,7 @@
 
 #include "p3ZeroReserverRS.h"
 #include "Credit.h"
+#include "Payment.h"
 #include "zrtypes.h"
 #include "Router.h"
 
@@ -226,7 +227,9 @@ void p3ZeroReserveRS::handlePaymentRequest( RSZRPayRequestItem * item )
     if( credit.m_credit + credit.m_balance == 0 ) return;
 
     std::cerr << "Zero Reserve: Adding address " << item->getAddress() << " to the routing table" << std::endl;
+    Currency::CurrencySymbols currency = Currency::getCurrencyBySymbol( item->getCurrency() );
     Router::Instance()->addRoute( item->getAddress(), item->PeerId() );
+    Payment::addRequest( item->getAddress(), Payment::Request( item->getAmount(), currency ) );
     std::list< std::string > sendList;
     m_peers->getOnlineList(sendList);
     for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){

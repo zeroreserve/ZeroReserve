@@ -75,6 +75,7 @@ public:
     virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
 
     const std::string & getCurrency(){ return m_Currency; }
+    const ZR::ZR_Number & getAmount(){ return m_Amount; }
 
 private:
     ZR::ZR_Number m_Amount;

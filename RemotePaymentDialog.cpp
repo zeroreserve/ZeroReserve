@@ -18,11 +18,14 @@
 #include "RemotePaymentDialog.h"
 #include "ui_RemotePaymentDialog.h"
 
+#include "Payment.h"
+
 RemotePaymentDialog::RemotePaymentDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::RemotePaymentDialog)
 {
     ui->setupUi(this);
+    connect( ui->destination, SIGNAL(textEdited(QString)), this, SLOT( loadPayment( QString ) ) );
 }
 
 RemotePaymentDialog::~RemotePaymentDialog()
@@ -34,4 +37,11 @@ RemotePaymentDialog::~RemotePaymentDialog()
 void RemotePaymentDialog::payTo()
 {
 
+}
+
+void RemotePaymentDialog::loadPayment( QString address )
+{
+    Payment::Request req = Payment::getRequest( address.toStdString() );
+    ui->amount->display( req.m_Amount.toDouble() );
+    ui->currency->setText( Currency::currencyNames[ req.m_Currency ] );
 }

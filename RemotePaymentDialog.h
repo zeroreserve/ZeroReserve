@@ -34,6 +34,7 @@ public:
 
 private slots:
     void payTo();
+    void loadPayment(QString address);
     
 private:
     Ui::RemotePaymentDialog *ui;

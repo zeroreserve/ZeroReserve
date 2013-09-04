@@ -43,6 +43,9 @@ public:
 
     class Request {
     public:
+        Request( const ZR::ZR_Number & amount, const Currency::CurrencySymbols & currency) :
+            m_Amount( amount ), m_Currency( currency ){}
+
         ZR::ZR_Number m_Amount;
         Currency::CurrencySymbols m_Currency;
     };
@@ -64,11 +67,18 @@ public:
     void referrerId( const std::string & referrer ){ m_referrer = referrer; }
     const std::string & referrerId(){ return m_referrer; }
 
+    static void addRequest( const ZR::VirtualAddress & addr, const Request & req )
+    {
+        requestList.insert( std::pair< ZR::VirtualAddress, Request >( addr, req ) );
+    }
+
+    static const Request getRequest( const ZR::VirtualAddress & addr );
+
 protected:
     Credit m_credit;
     ZR::ZR_Number m_amount;
     Category m_category;
-    std::string m_referrer;  // this is freeform data which the category
+    ZR::VirtualAddress m_referrer;
 
 public:
     static QListWidget * txLogView;

@@ -105,7 +105,7 @@
     <number>10</number>
    </property>
   </widget>
-  <widget class="QLabel" name="label_5">
+  <widget class="QLabel" name="currency">
    <property name="geometry">
     <rect>
      <x>310</x>
