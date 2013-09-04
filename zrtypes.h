@@ -88,6 +88,8 @@ enum RetVal {
     ZR_FINISH
 };
 
+typedef std::string VirtualAddress;
+
 
 }
 

@@ -91,7 +91,7 @@ QString RemotePaymentRequestDialog::getPayAddress( QString amount, QString curre
 void RemotePaymentRequestDialog::sendRequest()
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteItem::VirtualAddress address = ui->payAddress->text().toStdString();
+    ZR::VirtualAddress address = ui->payAddress->text().toStdString();
     ZR::ZR_Number amount = ZR::ZR_Number::fromDecimalString( ui->amount->text() );
     std::string currency = Currency::currencySymbols[ Currency::getCurrencyByName(ui->currencySelector->currentText().toStdString() ) ];
     p3zr->sendRemote( address, amount, currency );

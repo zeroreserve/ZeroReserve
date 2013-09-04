@@ -36,6 +36,7 @@ public:
 
     virtual void addRoute( const std::string & dest, const std::string & gateway );
     virtual const std::string nextHop( const std::string & dest );
+    virtual bool hasRoute( const std::string & dest );
 
 protected:
     /** map destinions to gateways */

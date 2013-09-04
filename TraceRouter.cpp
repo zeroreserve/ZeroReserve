@@ -36,3 +36,11 @@ const std::string TraceRouter::nextHop( const std::string & dest )
 
     return std::string();
 }
+
+bool TraceRouter::hasRoute( const std::string & dest )
+{
+    if( routingTable.find( dest ) == routingTable.end() ){
+        return false;
+    }
+    return true;
+}

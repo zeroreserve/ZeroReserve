@@ -46,7 +46,7 @@ public:
     virtual void statusChange(const std::list<pqipeer> &plist);
 
 // remote stuff
-    void sendRemote( const RSZRRemoteItem::VirtualAddress & address, ZR::ZR_Number amount, const std::string & currency );
+    void sendRemote( const ZR::VirtualAddress & address, ZR::ZR_Number amount, const std::string & currency );
 
 private:
 
@@ -55,6 +55,8 @@ private:
     void handleOrder( RsZeroReserveOrderBookItem *item );
     void handleCredit( RsZeroReserveCreditItem *item );
     void handleMessage( RsZeroReserveMsgItem *item );
+    void handlePaymentRequest( RSZRPayRequestItem * item );
+
 
     /** help our friends to bootstrap the order book */
     void sendOrderBook(const std::string &uid);

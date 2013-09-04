@@ -31,6 +31,7 @@ class Router
 public:
     virtual void addRoute( const std::string & dest, const std::string & gateway ) = 0;
     virtual const std::string nextHop( const std::string & dest ) = 0;
+    virtual bool hasRoute( const std::string & dest ) = 0;
 
     static Router * Instance();
     static Router * instance;

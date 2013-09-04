@@ -117,7 +117,7 @@ RSZRPayRequestItem::RSZRPayRequestItem(void *data, uint32_t pktsize)
         throw std::runtime_error("Deserialisation error!") ;
 }
 
-RSZRPayRequestItem::RSZRPayRequestItem( const VirtualAddress & addr, const ZR::ZR_Number & amount, const std::string & currency )
+RSZRPayRequestItem::RSZRPayRequestItem( const ZR::VirtualAddress & addr, const ZR::ZR_Number & amount, const std::string & currency )
         : RSZRRemoteItem( addr, ZR_REMOTE_PAYREQUEST_ITEM ),
         m_Amount( amount ),
         m_Currency( currency )

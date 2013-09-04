@@ -91,6 +91,9 @@ void p3ZeroReserveRS::processIncoming()
         case RsZeroReserveItem::ZERORESERVE_MSG_ITEM:
             handleMessage( dynamic_cast<RsZeroReserveMsgItem*>( item ) );
             break;
+        case RsZeroReserveItem::ZR_REMOTE_PAYREQUEST_ITEM:
+            handlePaymentRequest( dynamic_cast<RSZRPayRequestItem*>( item ) );
+            break;
         default:
             std::cerr << "Zero Reserve: Received Item unknown" << std::endl;
         }
@@ -200,12 +203,31 @@ void p3ZeroReserveRS::publishOrder( OrderBook::Order * order )
 }
 
 
-void p3ZeroReserveRS::sendRemote( const RSZRRemoteItem::VirtualAddress & address, ZR::ZR_Number amount, const std::string & currency )
+void p3ZeroReserveRS::sendRemote( const ZR::VirtualAddress & address, ZR::ZR_Number amount, const std::string & currency )
 {
     std::list< std::string > sendList;
     m_peers->getOnlineList(sendList);
     for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
         RSZRPayRequestItem * item = new RSZRPayRequestItem( address, amount, currency );
+        sendItem( item );
+    }
+}
+
+
+void p3ZeroReserveRS::handlePaymentRequest( RSZRPayRequestItem * item )
+{
+    if( Router::Instance()->hasRoute( item->getAddress() ) ){
+        return;
+    }
+    Credit credit( item->PeerId(), item->getCurrency() );
+    credit.loadPeer();
+    if( credit.m_credit + credit.m_balance == 0 ) return;
+
+    Router::Instance()->addRoute( item->getAddress(), item->PeerId() );
+    std::list< std::string > sendList;
+    m_peers->getOnlineList(sendList);
+    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
+        RSZRPayRequestItem * item = new RSZRPayRequestItem( *item );
         sendItem( item );
     }
 }

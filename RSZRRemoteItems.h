@@ -34,9 +34,8 @@ class RSZRRemoteItem : public RsZeroReserveItem
 {
     RSZRRemoteItem();
 public:
-    typedef std::string VirtualAddress;
 
-    RSZRRemoteItem( const VirtualAddress & addr, uint8_t zeroreserve_subtype ) :
+    RSZRRemoteItem( const ZR::VirtualAddress & addr, uint8_t zeroreserve_subtype ) :
         RsZeroReserveItem( zeroreserve_subtype ),
         m_Address( addr )
     {}
@@ -48,10 +47,12 @@ public:
     virtual bool serialise(void *data,uint32_t& size);
     virtual uint32_t serial_size() const = 0 ;
 
+    const ZR::VirtualAddress & getAddress(){ return m_Address; }
+
 private:
     // depending on the item type, this can be a target address or a propagation address
     // to be added to the router
-    VirtualAddress m_Address;
+    ZR::VirtualAddress m_Address;
 };
 
 
@@ -67,11 +68,13 @@ class RSZRPayRequestItem : public RSZRRemoteItem
 public:
 
     RSZRPayRequestItem(void *data,uint32_t size);
-    RSZRPayRequestItem(const VirtualAddress & addr, const ZR::ZR_Number &amount, const std::string & currencySymbol);
+    RSZRPayRequestItem(const ZR::VirtualAddress & addr, const ZR::ZR_Number &amount, const std::string & currencySymbol);
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
     virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
+
+    const std::string & getCurrency(){ return m_Currency; }
 
 private:
     ZR::ZR_Number m_Amount;

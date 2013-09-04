@@ -30,6 +30,8 @@
 
 QListWidget * Payment::txLogView = NULL;
 
+Payment::Requests Payment::requestList;
+
 
 Payment::Payment( const std::string & counterparty, const ZR::ZR_Number & amount, const std::string & currency, Category category) :
     m_credit( counterparty, currency ),

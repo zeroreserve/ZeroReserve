@@ -20,8 +20,10 @@
 
 #include "zrtypes.h"
 #include "Credit.h"
+#include "Currency.h"
 
 #include <string>
+#include <map>
 
 class QListWidget;
 
@@ -38,6 +40,14 @@ public:
         DEBT_CANCEL,  // triangle payments with the aim to cancel out debt
         BITCOIN
     };
+
+    class Request {
+    public:
+        ZR::ZR_Number m_Amount;
+        Currency::CurrencySymbols m_Currency;
+    };
+
+    typedef std::map< ZR::VirtualAddress, Request > Requests;
 
     Payment(const std::string & counterparty, const ZR::ZR_Number &amount, const std::string & currency, Category category);
     virtual ~Payment(){}
@@ -62,6 +72,9 @@ protected:
 
 public:
     static QListWidget * txLogView;
+
+private:
+    static Requests requestList;
 
 };
 
