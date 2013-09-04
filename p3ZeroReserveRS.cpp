@@ -208,7 +208,9 @@ void p3ZeroReserveRS::sendRemote( const ZR::VirtualAddress & address, ZR::ZR_Num
     std::list< std::string > sendList;
     m_peers->getOnlineList(sendList);
     for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
+        if( (*it) == getOwnId() ) continue;
         RSZRPayRequestItem * item = new RSZRPayRequestItem( address, amount, currency );
+        item->PeerId( *it );
         sendItem( item );
     }
 }
@@ -223,11 +225,14 @@ void p3ZeroReserveRS::handlePaymentRequest( RSZRPayRequestItem * item )
     credit.loadPeer();
     if( credit.m_credit + credit.m_balance == 0 ) return;
 
+    std::cerr << "Zero Reserve: Adding address " << item->getAddress() << " to the routing table" << std::endl;
     Router::Instance()->addRoute( item->getAddress(), item->PeerId() );
     std::list< std::string > sendList;
     m_peers->getOnlineList(sendList);
     for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
-        RSZRPayRequestItem * item = new RSZRPayRequestItem( *item );
-        sendItem( item );
+        if( (*it) == getOwnId() || (*it) == item->PeerId() ) continue;
+        RSZRPayRequestItem * republishItem = new RSZRPayRequestItem( *item );
+        republishItem->PeerId( *it );
+        sendItem( republishItem );
     }
 }

@@ -99,7 +99,7 @@ RSZRPayRequestItem::RSZRPayRequestItem(void *data, uint32_t pktsize)
     uint32_t rstype = getRsItemId(data);
     uint32_t rssize = getRsItemSize(data);
 
-    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_MSG_ITEM != getRsItemSubType(rstype)))
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZR_REMOTE_PAYREQUEST_ITEM != getRsItemSubType(rstype)))
         throw std::runtime_error("Wrong packet type!") ;
 
     if (pktsize < rssize)    /* check size */

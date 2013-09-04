@@ -46,7 +46,9 @@ public:
     RsZeroReserveItem(void *data, uint32_t &size, uint8_t zeroreserve_subtype );
     RsZeroReserveItem( uint8_t zeroreserve_subtype ) :
         RsItem(RS_PKT_VERSION_SERVICE,RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, zeroreserve_subtype)
-    {}
+    {
+        setPriorityLevel(QOS_PRIORITY_RS_ZERORESERVE);
+    }
 
     enum RS_PKT_SUBTYPE {
         ZERORESERVE_ORDERBOOK_ITEM = 0x01,
