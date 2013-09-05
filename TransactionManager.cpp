@@ -17,10 +17,12 @@
 
 #include "TransactionManager.h"
 #include "RSZeroReserveItems.h"
+#include "RSZRRemoteItems.h"
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 #include "Payment.h"
 #include "zrtypes.h"
+#include "Router.h"
 
 #include <stdexcept>
 #include <sstream>
@@ -30,6 +32,32 @@
 TransactionManager::TxManagers TransactionManager::currentTX;
 unsigned int TransactionManager::sequence = 1;
 
+
+/**
+ * @brief Handle remote Transaction Items
+ * @param item
+ * @return
+ */
+
+int TransactionManager::handleTxItem( RSZRRemoteTxItem * item )
+{
+    std::cerr << "Zero Reserve: TX Manger handling incoming item - Destination: " << item->getAddress() << std::endl;
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    ZR::TransactionId txId = item->getAddress();
+    ZR::PeerAddress addr = Router::Instance()->nextHop( txId );
+    if( addr.empty() )
+        return ZR::ZR_FAILURE;
+    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( txId );
+    resendItem->PeerId( addr );
+    p3zr->sendItem( resendItem );
+}
+
+
+/**
+ * @brief Handle local Transaction Items
+ * @param item
+ * @return success or failure
+ */
 
 int TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
 {

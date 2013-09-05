@@ -17,6 +17,8 @@
 
 
 #include "RSZRRemoteItems.h"
+#include "Payment.h"
+
 
 #include "serialiser/rsbaseserial.h"
 
@@ -121,4 +123,65 @@ RSZRPayRequestItem::RSZRPayRequestItem( const ZR::VirtualAddress & addr, const Z
         : RSZRRemoteItem( addr, ZR_REMOTE_PAYREQUEST_ITEM ),
         m_Amount( amount ),
         m_Currency( currency )
+{}
+
+
+//// Begin RSZRRemoteTxItem Item  /////
+
+
+std::ostream& RSZRRemoteTxItem::print(std::ostream &out, uint16_t indent)
+{
+        printRsItemBase(out, "RSZRRemoteTxItem", indent);
+        uint16_t int_Indent = indent + 2;
+        printIndent(out, int_Indent);
+        out << "Done a lot of travelling " << std::endl;
+
+        printRsItemEnd(out, "RSZRRemoteTxItem", indent);
+        return out;
+}
+
+uint32_t RSZRRemoteTxItem::serial_size() const
+{
+        return  RSZRRemoteItem::serial_size();
+}
+
+bool RSZRRemoteTxItem::serialise(void *data, uint32_t& pktsize)
+{
+        uint32_t tlvsize = serial_size() ;
+
+        if (pktsize < tlvsize)
+                return false; /* not enough space */
+
+        pktsize = tlvsize;
+
+        bool ok = RSZRRemoteItem::serialise( data,  pktsize);
+
+        if (m_Offset != tlvsize){
+                ok = false;
+                std::cerr << "RsZeroReserveMsgItem::serialise() Size Error! " << std::endl;
+        }
+
+        return ok;
+}
+
+RSZRRemoteTxItem::RSZRRemoteTxItem(void *data, uint32_t pktsize)
+        : RSZRRemoteItem( data, pktsize, ZR_REMOTE_TX_ITEM )
+{
+    /* get the type and size */
+    uint32_t rstype = getRsItemId(data);
+    uint32_t rssize = getRsItemSize(data);
+
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZR_REMOTE_TX_ITEM != getRsItemSubType(rstype)))
+        throw std::runtime_error("Wrong packet type!") ;
+
+    if (pktsize < rssize)    /* check size */
+        throw std::runtime_error("Not enough size!") ;
+
+
+    if ( m_Offset != rssize )
+        throw std::runtime_error("Deserialisation error!") ;
+}
+
+RSZRRemoteTxItem::RSZRRemoteTxItem( const ZR::VirtualAddress & addr )
+        : RSZRRemoteItem( addr, ZR_REMOTE_TX_ITEM )
 {}

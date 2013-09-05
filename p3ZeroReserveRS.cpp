@@ -95,6 +95,9 @@ void p3ZeroReserveRS::processIncoming()
         case RsZeroReserveItem::ZR_REMOTE_PAYREQUEST_ITEM:
             handlePaymentRequest( dynamic_cast<RSZRPayRequestItem*>( item ) );
             break;
+        case RsZeroReserveItem::ZR_REMOTE_TX_ITEM:
+            TransactionManager::handleTxItem( dynamic_cast<RSZRRemoteTxItem*>( item ) );
+            break;
         default:
             std::cerr << "Zero Reserve: Received Item unknown" << std::endl;
         }

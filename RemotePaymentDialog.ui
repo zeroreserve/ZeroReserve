@@ -86,32 +86,13 @@
     <string>Paste the destination address. The amount will appear automatically.</string>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="amount">
-   <property name="geometry">
-    <rect>
-     <x>150</x>
-     <y>160</y>
-     <width>141</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-color: rgb(59, 59, 59);</string>
-   </property>
-   <property name="smallDecimalPoint">
-    <bool>false</bool>
-   </property>
-   <property name="numDigits">
-    <number>10</number>
-   </property>
-  </widget>
   <widget class="QLabel" name="currency">
    <property name="geometry">
     <rect>
-     <x>310</x>
+     <x>350</x>
      <y>160</y>
      <width>111</width>
-     <height>21</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="font">
@@ -120,7 +101,17 @@
     </font>
    </property>
    <property name="text">
-    <string>none defined</string>
+    <string>-</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="amount">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>160</y>
+     <width>191</width>
+     <height>31</height>
+    </rect>
    </property>
   </widget>
  </widget>

@@ -19,6 +19,10 @@
 #include "ui_RemotePaymentDialog.h"
 
 #include "Payment.h"
+#include "TmRemoteCoordinator.h"
+#include "Router.h"
+
+#include "QMessageBox"
 
 RemotePaymentDialog::RemotePaymentDialog(QWidget *parent) :
     QDialog(parent),
@@ -26,6 +30,7 @@ RemotePaymentDialog::RemotePaymentDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     connect( ui->destination, SIGNAL(textEdited(QString)), this, SLOT( loadPayment( QString ) ) );
+    connect( ui->buttonBox, SIGNAL( accepted() ), this, SLOT( payTo() ) );
 }
 
 RemotePaymentDialog::~RemotePaymentDialog()
@@ -36,12 +41,20 @@ RemotePaymentDialog::~RemotePaymentDialog()
 
 void RemotePaymentDialog::payTo()
 {
-
+    TmRemoteCoordinator * tm = new TmRemoteCoordinator( ui->destination->text().toStdString() );
+    Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currency->text().toStdString() );
+    const std::string & nextHop = Router::Instance()->nextHop( ui->destination->text().toStdString() );
+    if( nextHop.empty() ){
+        QMessageBox::critical(0, "Router Error", "No route to destination" );
+        return;
+    }
+    Payment * payment = new PaymentSpender( nextHop, ZR::ZR_Number::fromDecimalString( ui->amount->text() ), Currency::currencySymbols[ sym ], Payment::PAYMENT );
+    if( ! tm->initCoordinator( payment ) ) delete tm;
 }
 
 void RemotePaymentDialog::loadPayment( QString address )
 {
     Payment::Request req = Payment::getRequest( address.toStdString() );
-    ui->amount->display( req.m_Amount.toDouble() );
+    ui->amount->setText( req.m_Amount.toDecimalQString() );
     ui->currency->setText( Currency::currencyNames[ req.m_Currency ] );
 }

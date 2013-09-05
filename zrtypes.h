@@ -88,8 +88,16 @@ enum RetVal {
     ZR_FINISH
 };
 
+/**
+ * @brief serves as the virtual address of a Turtle style tunnel and also as a TX id for remote payments
+ */
 typedef std::string VirtualAddress;
+/**
+ * @brief Transaction ID for local payments
+ */
 typedef std::string TransactionId;
+
+typedef std::string PeerAddress;
 
 }
 

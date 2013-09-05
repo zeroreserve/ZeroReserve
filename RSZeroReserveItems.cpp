@@ -59,6 +59,8 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
             return new RsZeroReserveMsgItem(data, *pktsize);
         case RsZeroReserveItem::ZR_REMOTE_PAYREQUEST_ITEM:
             return new RSZRPayRequestItem( data, *pktsize );
+        case RsZeroReserveItem::ZR_REMOTE_TX_ITEM:
+            return new RSZRRemoteTxItem( data, *pktsize );
         default:
             return NULL;
         }

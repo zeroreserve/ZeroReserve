@@ -26,6 +26,7 @@
 
 class RsZeroReserveTxItem;
 class RsZeroReserveInitTxItem;
+class RSZRRemoteTxItem;
 class Payment;
 
 /**
@@ -58,6 +59,7 @@ public:
     virtual int initCoordinator( Payment * payment );
 
     static int handleTxItem( RsZeroReserveTxItem * item );
+    static int handleTxItem(RSZRRemoteTxItem *item );
 
 protected:
     void setTxId( const ZR::TransactionId & id ){ m_TxId = id; }

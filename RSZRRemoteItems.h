@@ -49,7 +49,7 @@ public:
 
     const ZR::VirtualAddress & getAddress(){ return m_Address; }
 
-private:
+protected:
     // depending on the item type, this can be a target address or a propagation address
     // to be added to the router
     ZR::VirtualAddress m_Address;
@@ -59,9 +59,10 @@ private:
 /**
  * @brief propagate a payment request through the network.
  *
- * This will be picked up by the payer. This guarantees that a possible payment route exists,
+ *  The RSZRPayRequestItem will be picked up by the payer. This guarantees that a possible payment route exists,
  * possibly more than one.
  */
+
 class RSZRPayRequestItem : public RSZRRemoteItem
 {
     RSZRPayRequestItem();
@@ -82,6 +83,19 @@ private:
     std::string m_Currency;
 };
 
+
+class RSZRRemoteTxItem : public RSZRRemoteItem
+{
+    RSZRRemoteTxItem();
+public:
+
+    RSZRRemoteTxItem(void *data,uint32_t size);
+    RSZRRemoteTxItem(const ZR::VirtualAddress & addr );
+
+    virtual bool serialise(void *data,uint32_t& size) ;
+    virtual uint32_t serial_size() const ;
+    virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
+};
 
 // TODO: move Order item here
 
