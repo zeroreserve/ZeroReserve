@@ -89,7 +89,7 @@ enum RetVal {
 };
 
 typedef std::string VirtualAddress;
-
+typedef std::string TransactionId;
 
 }
 

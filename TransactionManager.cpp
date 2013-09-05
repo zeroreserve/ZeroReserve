@@ -34,7 +34,7 @@ unsigned int TransactionManager::sequence = 1;
 int TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
 {
     std::cerr << "Zero Reserve: TX Manger handling incoming item id = " << item->getTxId() << std::endl;
-    std::string txId = item->getTxId();
+    ZR::TransactionId txId = item->getTxId();
     TxManagers::iterator it = currentTX.find( txId );
     if( it == currentTX.end() ){
         if( item->getTxPhase() == QUERY ){  // a new request to receive or forward payment

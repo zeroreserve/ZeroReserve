@@ -53,22 +53,22 @@ public:
     };
 
     TransactionManager();
-    ~TransactionManager();
+    virtual ~TransactionManager();
 
-    int initCoordinator( Payment * payment );
+    virtual int initCoordinator( Payment * payment );
 
     static int handleTxItem( RsZeroReserveTxItem * item );
 
-private:
-    void setTxId( const std::string & id ){ m_TxId = id; }
+protected:
+    void setTxId( const ZR::TransactionId & id ){ m_TxId = id; }
 
-    int initCohort( RsZeroReserveInitTxItem * item );
-    int processItem( RsZeroReserveTxItem * item );
-    ZR::RetVal abortTx( RsZeroReserveTxItem * item );
+    virtual int initCohort( RsZeroReserveInitTxItem * item );
+    virtual int processItem( RsZeroReserveTxItem * item );
+    virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item );
 
     Role m_role;
     Payment * m_payment;
-    std::string m_TxId;
+    ZR::TransactionId m_TxId;
 
 
     static TxManagers currentTX;
