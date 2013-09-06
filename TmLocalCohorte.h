@@ -27,9 +27,8 @@ class Payment;
 
 class TmLocalCohorte : public TransactionManager
 {
-    TmLocalCohorte();
 public:
-    TmLocalCohorte( RsZeroReserveInitTxItem * item );
+    TmLocalCohorte();
     virtual ~TmLocalCohorte();
 
     virtual ZR::RetVal init();

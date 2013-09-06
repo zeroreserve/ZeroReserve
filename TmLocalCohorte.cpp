@@ -23,9 +23,8 @@
 #include "ZeroReservePlugin.h"
 
 
-TmLocalCohorte::TmLocalCohorte(RsZeroReserveInitTxItem *item )
+TmLocalCohorte::TmLocalCohorte()
 {
-    m_payment = item->getPayment();
 }
 
 TmLocalCohorte::~TmLocalCohorte()
@@ -75,10 +74,19 @@ ZR::RetVal TmLocalCohorte::processItem( RsZeroReserveTxItem * item )
     switch( item->getTxPhase() )
     {
     case QUERY:
-        abortTx( item ); // we should never get here
-        throw std::runtime_error( "Dit not expect QUERY" );
+    {
+        RsZeroReserveInitTxItem * initItem = dynamic_cast< RsZeroReserveInitTxItem *> ( item );
+        if( m_Phase != INIT || initItem == NULL )
+            return abortTx( item );
+        m_Phase = QUERY;
+        m_payment = initItem->getPayment();
+        return init();
+    }
     case COMMIT:
         std::cerr << "Zero Reserve: TX Cohorte: Received Command: COMMIT" << std::endl;
+        if( m_Phase != QUERY )
+            return abortTx( item );
+        m_Phase = COMMIT;
         reply = new RsZeroReserveTxItem( ACK_COMMIT );
         reply->PeerId( m_payment->getCounterparty() );
         reply->setTxId( m_TxId );
@@ -87,7 +95,7 @@ ZR::RetVal TmLocalCohorte::processItem( RsZeroReserveTxItem * item )
         m_payment->commit();
         return ZR::ZR_FINISH;
     case ABORT:
-        return abortTx( item );
+        return ZR::ZR_FINISH;
     default:
         throw std::runtime_error( "Unknown Transaction Phase");
     }
@@ -97,6 +105,11 @@ ZR::RetVal TmLocalCohorte::processItem( RsZeroReserveTxItem * item )
 ZR::RetVal TmLocalCohorte::abortTx( RsZeroReserveTxItem * item )
 {
      std::cerr << "Zero Reserve: TX Manger:Error happened. Aborting." << std::endl;
+     RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( ABORT );
+     p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+     reply->PeerId( m_payment->getCounterparty() );
+     reply->setTxId( m_TxId );
+     p3zs->sendItem( reply );
      return ZR::ZR_FAILURE;
 }
 

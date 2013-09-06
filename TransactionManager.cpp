@@ -67,18 +67,13 @@ int TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
     TransactionManager * tm;
     TxManagers::iterator it = currentTX.find( txId );
     if( it == currentTX.end() ){
-        RsZeroReserveInitTxItem * initItem = dynamic_cast< RsZeroReserveInitTxItem *> ( item );
-        if( NULL == initItem )
-            return ZR::ZR_FAILURE;
-        tm = new TmLocalCohorte( initItem );
+        tm = new TmLocalCohorte();
         tm->setTxId( txId );
-        if( tm->init() == ZR::ZR_FAILURE ){
-            delete tm;
-            return ZR::ZR_FAILURE;
-        }
         currentTX[ txId ] = tm;
     }
-    tm = (*it).second;
+    else {
+        tm = (*it).second;
+    }
     ZR::RetVal retVal = tm->processItem( item );
     if( retVal != ZR::ZR_SUCCESS ){
         currentTX.erase( txId );

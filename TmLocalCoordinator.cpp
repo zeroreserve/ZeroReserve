@@ -92,13 +92,6 @@ ZR::RetVal TmLocalCoordinator::processItem( RsZeroReserveTxItem * item )
 ZR::RetVal TmLocalCoordinator::abortTx( RsZeroReserveTxItem * item )
 {
     std::cerr << "Zero Reserve: TX Manger:Error happened. Aborting." << std::endl;
-
-    RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( ABORT );
-    p3ZeroReserveRS * p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    reply->PeerId( m_payment->getCounterparty() );
-    reply->setTxId( m_TxId );
-    p3zs->sendItem( reply );
-
     return ZR::ZR_FAILURE;
 }
 
