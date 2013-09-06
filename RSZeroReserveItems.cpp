@@ -468,7 +468,7 @@ RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SU
 
 uint32_t RsZeroReserveTxItem::serial_size() const
 {
-    return headersOffset                    //  header
+    return RsZeroReserveItem::serial_size()
             + sizeof(uint8_t)   // TX Phase
             + m_txId.length() + HOLLERITH_LEN_SPEC;
 }
