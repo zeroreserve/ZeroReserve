@@ -15,29 +15,29 @@
     along with Zero Reserve.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TMREMOTECOORDINATOR_H
-#define TMREMOTECOORDINATOR_H
 
-#include "TransactionManager.h"
+#ifndef TMLOCALCOHORTE_H
+#define TMLOCALCOHORTE_H
+
 #include "zrtypes.h"
+#include "TransactionManager.h"
 
+class RsZeroReserveInitTxItem;
 class Payment;
 
-
-class TmRemoteCoordinator : public TransactionManager
+class TmLocalCohorte : public TransactionManager
 {
-    TmRemoteCoordinator();
+    TmLocalCohorte();
 public:
-    TmRemoteCoordinator(const ZR::VirtualAddress &addr, Payment * payment);
-    virtual ~TmRemoteCoordinator();
+    TmLocalCohorte( RsZeroReserveInitTxItem * item );
+    virtual ~TmLocalCohorte();
 
     virtual ZR::RetVal init();
     virtual ZR::RetVal processItem( RsZeroReserveTxItem * item );
     virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item );
 
 private:
-    ZR::VirtualAddress m_Destination;
-    Payment * m_Payment;
+    Payment * m_payment;
 };
 
-#endif // TMREMOTECOORDINATOR_H
+#endif // TMLOCALCOHORTE_H

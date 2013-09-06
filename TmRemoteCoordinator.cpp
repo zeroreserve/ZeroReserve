@@ -21,12 +21,18 @@
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 
-TmRemoteCoordinator::TmRemoteCoordinator( const ZR::VirtualAddress & addr ) :
-    m_Destination( addr )
+TmRemoteCoordinator::TmRemoteCoordinator(const ZR::VirtualAddress & addr , Payment *payment) :
+    m_Destination( addr ),
+    m_Payment( payment )
 {
 }
 
-int TmRemoteCoordinator::initCoordinator( Payment * payment )
+TmRemoteCoordinator::~TmRemoteCoordinator()
+{
+    delete m_Payment;
+}
+
+ZR::RetVal TmRemoteCoordinator::init()
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
@@ -37,4 +43,15 @@ int TmRemoteCoordinator::initCoordinator( Payment * payment )
     item->PeerId( addr );
     p3zr->sendItem( item );
     return ZR::ZR_SUCCESS;
+}
+
+
+ZR::RetVal TmRemoteCoordinator::processItem( RsZeroReserveTxItem * item )
+{
+
+}
+
+ZR::RetVal TmRemoteCoordinator::abortTx( RsZeroReserveTxItem * item )
+{
+
 }

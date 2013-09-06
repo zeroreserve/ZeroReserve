@@ -27,7 +27,6 @@
 class RsZeroReserveTxItem;
 class RsZeroReserveInitTxItem;
 class RSZRRemoteTxItem;
-class Payment;
 
 /**
   Manage multi hop transaction. The payer is the coordiantor, all in between
@@ -37,9 +36,11 @@ class Payment;
 
 class TransactionManager
 {
+    TransactionManager( const TransactionManager &);
 public:
     typedef std::map< std::string, TransactionManager *> TxManagers;
     enum TxPhase {
+        INIT,
         QUERY,
         VOTE_YES,
         VOTE_NO,
@@ -56,7 +57,7 @@ public:
     TransactionManager();
     virtual ~TransactionManager();
 
-    virtual int initCoordinator( Payment * payment );
+    virtual ZR::RetVal init() = 0;
 
     static int handleTxItem( RsZeroReserveTxItem * item );
     static int handleTxItem(RSZRRemoteTxItem *item );
@@ -64,17 +65,13 @@ public:
 protected:
     void setTxId( const ZR::TransactionId & id ){ m_TxId = id; }
 
-    virtual int initCohort( RsZeroReserveInitTxItem * item );
-    virtual int processItem( RsZeroReserveTxItem * item );
-    virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item );
+    virtual ZR::RetVal processItem( RsZeroReserveTxItem * item ) = 0;
+    virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item ) = 0;
 
-    Role m_role;
-    Payment * m_payment;
     ZR::TransactionId m_TxId;
-
+    TxPhase m_Phase;
 
     static TxManagers currentTX;
-    static unsigned int sequence;
 };
 
 #endif // TRANSACTIONMANAGER_H

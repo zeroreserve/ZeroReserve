@@ -25,6 +25,7 @@
 #include "TransactionManager.h"
 #include "RSZeroReserveItems.h"
 
+class Payment;
 
 const uint8_t QOS_PRIORITY_RS_ZERORESERVE = 3;
 extern const uint16_t RS_SERVICE_TYPE_ZERORESERVE_PLUGIN;
@@ -65,7 +66,7 @@ public:
     virtual void clear() {};
     virtual std::ostream& print(std::ostream &out, uint16_t indent = 0) = 0 ;
 
-    virtual bool serialise(void *data,uint32_t& size);
+    virtual bool serialise(void *data, uint32_t & /*size */ );
     virtual uint32_t serial_size() const { return headersOffset + 1; }
 
     static const uint8_t PROTOCOL_VERSION;

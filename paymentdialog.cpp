@@ -18,7 +18,7 @@
 #include "paymentdialog.h"
 #include "ui_paymentdialog.h"
 #include "Currency.h"
-#include "TransactionManager.h"
+#include "TmLocalCoordinator.h"
 #include "Credit.h"
 #include "zrtypes.h"
 #include "Payment.h"
@@ -53,10 +53,10 @@ PaymentDialog::~PaymentDialog()
 
 void PaymentDialog::payTo()
 {
-    TransactionManager * tm = new TransactionManager();
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
     Payment * payment = new PaymentSpender( m_payee, ZR::ZR_Number::fromDecimalString( ui->amount->text() ), Currency::currencySymbols[ sym ], Payment::PAYMENT );
-    if( ! tm->initCoordinator( payment ) ) delete tm;
+    TmLocalCoordinator * tm = new TmLocalCoordinator( payment );
+    if( ! tm->init() ) delete tm;
 }
 
 void PaymentDialog::loadAvailableFunds(QString arg)

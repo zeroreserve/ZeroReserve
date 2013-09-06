@@ -73,7 +73,7 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
 
 // TODO: make all serialise() below use this
 
-bool RsZeroReserveItem::serialise(void *data,uint32_t& size)
+bool RsZeroReserveItem::serialise(void *data,uint32_t & /* size */)
 {
     bool ok = true;
     m_Offset = headersOffset;

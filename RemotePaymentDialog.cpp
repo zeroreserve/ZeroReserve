@@ -41,7 +41,6 @@ RemotePaymentDialog::~RemotePaymentDialog()
 
 void RemotePaymentDialog::payTo()
 {
-    TmRemoteCoordinator * tm = new TmRemoteCoordinator( ui->destination->text().toStdString() );
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currency->text().toStdString() );
     const std::string & nextHop = Router::Instance()->nextHop( ui->destination->text().toStdString() );
     if( nextHop.empty() ){
@@ -49,7 +48,8 @@ void RemotePaymentDialog::payTo()
         return;
     }
     Payment * payment = new PaymentSpender( nextHop, ZR::ZR_Number::fromDecimalString( ui->amount->text() ), Currency::currencySymbols[ sym ], Payment::PAYMENT );
-    if( ! tm->initCoordinator( payment ) ) delete tm;
+    TmRemoteCoordinator * tm = new TmRemoteCoordinator( ui->destination->text().toStdString(), payment );
+    if( ! tm->init() ) delete tm;
 }
 
 void RemotePaymentDialog::loadPayment( QString address )

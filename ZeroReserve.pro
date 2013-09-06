@@ -24,7 +24,9 @@ SOURCES = ZeroReserveDialog.cpp \
     RemotePaymentDialog.cpp \
     RemotePaymentRequestDialog.cpp \
     RSZRRemoteItems.cpp \
-    TmRemoteCoordinator.cpp
+    TmRemoteCoordinator.cpp \
+    TmLocalCoordinator.cpp \
+    TmLocalCohorte.cpp
 
 LIBS += -lsqlite3
 
@@ -50,7 +52,9 @@ HEADERS = ZeroReserveDialog.h \
     RemotePaymentDialog.h \
     RemotePaymentRequestDialog.h \
     RSZRRemoteItems.h \
-    TmRemoteCoordinator.h
+    TmRemoteCoordinator.h \
+    TmLocalCoordinator.h \
+    TmLocalCohorte.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
