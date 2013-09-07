@@ -439,7 +439,7 @@ RsZeroReserveTxItem::RsZeroReserveTxItem( TransactionManager::TxPhase phase, RS_
 
 
 RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SUBTYPE zeroreserve_subtype )
-        : RsZeroReserveItem( zeroreserve_subtype )
+        : RsZeroReserveItem( data, pktsize, zeroreserve_subtype )
 {
     uint32_t rssize = getRsItemSize(data);
     if( zeroreserve_subtype == ZERORESERVE_TX_ITEM ){
@@ -453,7 +453,6 @@ RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SU
             throw std::runtime_error("Not enough size!") ;
     }
 
-    m_Offset = headersOffset;
     bool ok = true;
 
     uint8_t txPhase;
