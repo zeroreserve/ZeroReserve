@@ -90,11 +90,16 @@ class RSZRRemoteTxItem : public RSZRRemoteItem
 public:
 
     RSZRRemoteTxItem(void *data,uint32_t size);
-    RSZRRemoteTxItem(const ZR::VirtualAddress & addr );
+    RSZRRemoteTxItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase );
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
     virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
+
+    TransactionManager::TxPhase getTxPhase() { return m_TxPhase; }
+
+protected:
+    TransactionManager::TxPhase m_TxPhase;
 };
 
 // TODO: move Order item here

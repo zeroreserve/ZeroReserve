@@ -32,8 +32,8 @@ public:
     virtual ~TmRemoteCoordinator();
 
     virtual ZR::RetVal init();
-    virtual ZR::RetVal processItem( RsZeroReserveTxItem * item );
-    virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item );
+    virtual ZR::RetVal processItem( RSZRRemoteTxItem * item );
+    virtual ZR::RetVal abortTx( RSZRRemoteTxItem * item );
 
 private:
     ZR::VirtualAddress m_Destination;

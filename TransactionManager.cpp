@@ -45,13 +45,19 @@ int TransactionManager::handleTxItem( RSZRRemoteTxItem * item )
     std::cerr << "Zero Reserve: TX Manger handling incoming item - Destination: " << item->getAddress() << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     ZR::TransactionId txId = item->getAddress();
-    ZR::PeerAddress addr = Router::Instance()->nextHop( txId );
-    if( addr.empty() )
-        return ZR::ZR_FAILURE;
-    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( txId );
-    resendItem->PeerId( addr );
-    p3zr->sendItem( resendItem );
-    return ZR::ZR_SUCCESS;
+    TransactionManager * tm;
+    TxManagers::iterator it = currentTX.find( txId );
+    if( it == currentTX.end() ){
+        tm = new TmRemoteCohorte( txId );
+    }
+    else {
+        tm = (*it).second;
+    }
+    ZR::RetVal retVal = tm->processItem( item );
+    if( retVal != ZR::ZR_SUCCESS ){
+        delete tm;
+    }
+    return retVal;
 }
 
 

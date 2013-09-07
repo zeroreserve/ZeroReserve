@@ -30,8 +30,8 @@ public:
     virtual ZR::RetVal init();
 
 protected:
-    virtual ZR::RetVal processItem( RsZeroReserveTxItem * item );
-    virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item );
+    virtual ZR::RetVal processItem(RSZRRemoteTxItem *item );
+    virtual ZR::RetVal abortTx( RSZRRemoteTxItem * item );
 };
 
 #endif // TMREMOTECOHORTE_H

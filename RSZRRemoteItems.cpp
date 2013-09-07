@@ -142,7 +142,8 @@ std::ostream& RSZRRemoteTxItem::print(std::ostream &out, uint16_t indent)
 
 uint32_t RSZRRemoteTxItem::serial_size() const
 {
-        return  RSZRRemoteItem::serial_size();
+        return  RSZRRemoteItem::serial_size()
+                + sizeof(uint8_t); // tx phase
 }
 
 bool RSZRRemoteTxItem::serialise(void *data, uint32_t& pktsize)
@@ -155,6 +156,7 @@ bool RSZRRemoteTxItem::serialise(void *data, uint32_t& pktsize)
         pktsize = tlvsize;
 
         bool ok = RSZRRemoteItem::serialise( data,  pktsize);
+        ok &= setRawUInt8( data, tlvsize, &m_Offset, m_TxPhase );
 
         if (m_Offset != tlvsize){
                 ok = false;
@@ -177,11 +179,15 @@ RSZRRemoteTxItem::RSZRRemoteTxItem(void *data, uint32_t pktsize)
     if (pktsize < rssize)    /* check size */
         throw std::runtime_error("Not enough size!") ;
 
+    uint8_t txPhase;
+    bool ok = getRawUInt8(data, rssize, &m_Offset, &txPhase );
+    m_TxPhase = (TransactionManager::TxPhase) txPhase;
 
     if ( m_Offset != rssize )
         throw std::runtime_error("Deserialisation error!") ;
 }
 
-RSZRRemoteTxItem::RSZRRemoteTxItem( const ZR::VirtualAddress & addr )
-        : RSZRRemoteItem( addr, ZR_REMOTE_TX_ITEM )
+RSZRRemoteTxItem::RSZRRemoteTxItem( const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase )
+        : RSZRRemoteItem( addr, ZR_REMOTE_TX_ITEM ),
+          m_TxPhase( txPhase )
 {}
