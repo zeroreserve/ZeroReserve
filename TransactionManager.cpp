@@ -17,6 +17,7 @@
 
 #include "TransactionManager.h"
 #include "TmLocalCohorte.h"
+#include "TmRemoteCohorte.h"
 #include "RSZeroReserveItems.h"
 #include "RSZRRemoteItems.h"
 #include "ZeroReservePlugin.h"
@@ -67,16 +68,13 @@ int TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
     TransactionManager * tm;
     TxManagers::iterator it = currentTX.find( txId );
     if( it == currentTX.end() ){
-        tm = new TmLocalCohorte();
-        tm->setTxId( txId );
-        currentTX[ txId ] = tm;
+        tm = new TmLocalCohorte( txId );
     }
     else {
         tm = (*it).second;
     }
     ZR::RetVal retVal = tm->processItem( item );
     if( retVal != ZR::ZR_SUCCESS ){
-        currentTX.erase( txId );
         delete tm;
     }
     return retVal;
@@ -84,14 +82,17 @@ int TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
 
 
 
-TransactionManager::TransactionManager() :
+TransactionManager::TransactionManager( const ZR::TransactionId & txId ) :
+    m_TxId( txId ),
     m_Phase( INIT )
 {
+    currentTX[ txId ] = this;
     // TODO: QTimer
 }
 
 TransactionManager::~TransactionManager()
 {
     std::cerr << "Zero Reserve: TX Manager: Cleaning up." << std::endl;
+    currentTX.erase( m_TxId );
 }
 

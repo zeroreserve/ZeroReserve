@@ -26,7 +26,8 @@ SOURCES = ZeroReserveDialog.cpp \
     RSZRRemoteItems.cpp \
     TmRemoteCoordinator.cpp \
     TmLocalCoordinator.cpp \
-    TmLocalCohorte.cpp
+    TmLocalCohorte.cpp \
+    TmRemoteCohorte.cpp
 
 LIBS += -lsqlite3
 
@@ -54,7 +55,8 @@ HEADERS = ZeroReserveDialog.h \
     RSZRRemoteItems.h \
     TmRemoteCoordinator.h \
     TmLocalCoordinator.h \
-    TmLocalCohorte.h
+    TmLocalCohorte.h \
+    TmRemoteCohorte.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \

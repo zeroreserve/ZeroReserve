@@ -28,10 +28,12 @@ class Payment;
 class TmLocalCohorte : public TransactionManager
 {
 public:
-    TmLocalCohorte();
+    TmLocalCohorte( const ZR::TransactionId & txId );
     virtual ~TmLocalCohorte();
 
     virtual ZR::RetVal init();
+
+protected:
     virtual ZR::RetVal processItem( RsZeroReserveTxItem * item );
     virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item );
 

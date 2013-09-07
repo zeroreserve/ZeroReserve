@@ -29,8 +29,12 @@ public:
     virtual ~TmLocalCoordinator();
 
     virtual ZR::RetVal init();
+
+protected:
     virtual ZR::RetVal processItem( RsZeroReserveTxItem * item );
     virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item );
+
+    static const ZR::TransactionId mkId();
 
 private:
     Payment * m_payment;

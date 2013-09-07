@@ -37,6 +37,7 @@ class RSZRRemoteTxItem;
 class TransactionManager
 {
     TransactionManager( const TransactionManager &);
+    TransactionManager();
 public:
     typedef std::map< std::string, TransactionManager *> TxManagers;
     enum TxPhase {
@@ -54,7 +55,7 @@ public:
          Hop
     };
 
-    TransactionManager();
+    TransactionManager( const ZR::TransactionId & txId );
     virtual ~TransactionManager();
 
     virtual ZR::RetVal init() = 0;
@@ -63,12 +64,11 @@ public:
     static int handleTxItem(RSZRRemoteTxItem *item );
 
 protected:
-    void setTxId( const ZR::TransactionId & id ){ m_TxId = id; }
 
     virtual ZR::RetVal processItem( RsZeroReserveTxItem * item ) = 0;
     virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item ) = 0;
 
-    ZR::TransactionId m_TxId;
+    const ZR::TransactionId m_TxId;
     TxPhase m_Phase;
 
     static TxManagers currentTX;

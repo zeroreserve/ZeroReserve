@@ -22,6 +22,7 @@
 #include "p3ZeroReserverRS.h"
 
 TmRemoteCoordinator::TmRemoteCoordinator(const ZR::VirtualAddress & addr , Payment *payment) :
+    TransactionManager( addr ),
     m_Destination( addr ),
     m_Payment( payment )
 {

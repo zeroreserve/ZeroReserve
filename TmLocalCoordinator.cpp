@@ -24,8 +24,17 @@
 
 unsigned int TmLocalCoordinator::sequence = 1;
 
+const ZR::TransactionId TmLocalCoordinator::mkId()
+{
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+
+    std::ostringstream txId;
+    txId << p3zr->getOwnId() << ":" << ++sequence;
+    return txId.str();
+}
 
 TmLocalCoordinator::TmLocalCoordinator( Payment *payment ) :
+    TransactionManager( mkId() ),
     m_payment( payment )
 {
 }
@@ -36,18 +45,11 @@ TmLocalCoordinator::~TmLocalCoordinator()
 }
 
 
+
 ZR::RetVal TmLocalCoordinator::init()
 {
-    std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
+    std::cerr << "Zero Reserve: Setting TX manager up as coordinator. ID: " << m_TxId << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-
-    std::ostringstream txId;
-    txId << p3zr->getOwnId() << ":" << ++sequence;
-    m_TxId = txId.str();
-
-    std::cerr << "Zero Reserve: Id = " << m_TxId << std::endl;
-
-    currentTX[ m_TxId ] = this;
     if ( m_payment->init() == ZR::ZR_FAILURE ){
         std::cerr << "Zero Reserve: Error, not enough Credit " << std::endl;
         return ZR::ZR_FAILURE;

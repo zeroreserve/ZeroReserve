@@ -23,7 +23,8 @@
 #include "ZeroReservePlugin.h"
 
 
-TmLocalCohorte::TmLocalCohorte()
+TmLocalCohorte::TmLocalCohorte( const ZR::TransactionId & txId ) :
+    TransactionManager( txId )
 {
 }
 
