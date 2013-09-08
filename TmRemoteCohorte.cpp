@@ -37,6 +37,8 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 ;
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_TxId );
+    if( addr.empty() )
+        return ZR::ZR_FAILURE;
 
     // TODO: Timeout
     switch( item->getTxPhase() )
@@ -47,9 +49,6 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
         if( m_Phase != INIT || initItem == NULL )
             return abortTx( item );
         m_Phase = QUERY;
-
-        if( addr.empty() )
-            return ZR::ZR_FAILURE;
         RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_TxId, VOTE_YES );
         resendItem->PeerId( addr );
         p3zr->sendItem( resendItem );

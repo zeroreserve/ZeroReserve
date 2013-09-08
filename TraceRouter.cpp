@@ -21,13 +21,13 @@ TraceRouter::TraceRouter()
 {
 }
 
-void TraceRouter::addRoute( const std::string & dest, const std::string & gateway )
+void TraceRouter::addRoute( const ZR::VirtualAddress &dest, const std::string & gateway )
 {
     routingTable[ dest ] = gateway;
 }
 
 
-const std::string TraceRouter::nextHop( const std::string & dest )
+const std::string TraceRouter::nextHop( const ZR::VirtualAddress &dest )
 {
     RoutingTable::const_iterator it = routingTable.find( dest );
     if( it != routingTable.end() ){
@@ -37,7 +37,7 @@ const std::string TraceRouter::nextHop( const std::string & dest )
     return std::string();
 }
 
-bool TraceRouter::hasRoute( const std::string & dest )
+bool TraceRouter::hasRoute( const ZR::VirtualAddress & dest )
 {
     if( routingTable.find( dest ) == routingTable.end() ){
         return false;

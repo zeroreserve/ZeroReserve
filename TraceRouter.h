@@ -19,6 +19,7 @@
 #define TRACEROUTER_H
 
 #include "Router.h"
+#include "zrtypes.h"
 
 #include <string>
 #include <map>
@@ -32,11 +33,11 @@ class TraceRouter : public Router
 public:
     TraceRouter();
 
-    typedef std::map< std::string, std::string > RoutingTable;
+    typedef std::map< ZR::VirtualAddress, std::string > RoutingTable;
 
-    virtual void addRoute( const std::string & dest, const std::string & gateway );
-    virtual const std::string nextHop( const std::string & dest );
-    virtual bool hasRoute( const std::string & dest );
+    virtual void addRoute( const ZR::VirtualAddress & dest, const std::string & gateway );
+    virtual const std::string nextHop( const ZR::VirtualAddress & dest );
+    virtual bool hasRoute(const ZR::VirtualAddress &dest );
 
 protected:
     /** map destinions to gateways */
