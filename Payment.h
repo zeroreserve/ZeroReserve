@@ -46,6 +46,8 @@ public:
         Request( const ZR::ZR_Number & amount, const Currency::CurrencySymbols & currency) :
             m_Amount( amount ), m_Currency( currency ){}
 
+        bool isValid(){ return !(m_Currency == Currency::INVALID ); }
+
         ZR::ZR_Number m_Amount;
         Currency::CurrencySymbols m_Currency;
     };
@@ -71,8 +73,12 @@ public:
     {
         requestList.insert( std::pair< ZR::VirtualAddress, Request >( addr, req ) );
     }
-
+    static void addMyRequest( const ZR::VirtualAddress & addr, const Request & req )
+    {
+        myRequests.insert( std::pair< ZR::VirtualAddress, Request >( addr, req ) );
+    }
     static const Request getRequest( const ZR::VirtualAddress & addr );
+    static const Request getMyRequest( const ZR::VirtualAddress & addr );
 
 protected:
     Credit m_credit;
@@ -85,6 +91,7 @@ public:
 
 private:
     static Requests requestList;
+    static Requests myRequests;
 
 };
 

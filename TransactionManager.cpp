@@ -42,6 +42,7 @@ TransactionManager::TxManagers TransactionManager::currentTX;
 
 int TransactionManager::handleTxItem( RSZRRemoteTxItem * item )
 {
+    ZR::RetVal retVal;
     std::cerr << "Zero Reserve: TX Manger handling incoming item - Destination: " << item->getAddress() << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     ZR::TransactionId txId = item->getAddress();
@@ -53,7 +54,14 @@ int TransactionManager::handleTxItem( RSZRRemoteTxItem * item )
     else {
         tm = (*it).second;
     }
-    ZR::RetVal retVal = tm->processItem( item );
+    try{
+        retVal = tm->processItem( item );
+    }
+    catch( std::runtime_error e){
+        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+        return ZR::ZR_FAILURE;
+    }
+
     if( retVal != ZR::ZR_SUCCESS ){
         delete tm;
     }

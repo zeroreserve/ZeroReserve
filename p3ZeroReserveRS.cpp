@@ -96,6 +96,7 @@ void p3ZeroReserveRS::processIncoming()
             handlePaymentRequest( dynamic_cast<RSZRPayRequestItem*>( item ) );
             break;
         case RsZeroReserveItem::ZR_REMOTE_TX_ITEM:
+        case RsZeroReserveItem::ZR_REMOTE_TX_INIT_ITEM:
             TransactionManager::handleTxItem( dynamic_cast<RSZRRemoteTxItem*>( item ) );
             break;
         default:

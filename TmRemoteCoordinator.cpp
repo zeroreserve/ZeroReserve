@@ -38,7 +38,7 @@ ZR::RetVal TmRemoteCoordinator::init()
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteTxItem * item = new RSZRRemoteTxItem( m_Destination, QUERY );
+    RSZRRemoteTxInitItem * item = new RSZRRemoteTxInitItem( m_Destination, QUERY, Router::SERVER );
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
     if( addr.empty() )
         return ZR::ZR_FAILURE;
@@ -50,10 +50,26 @@ ZR::RetVal TmRemoteCoordinator::init()
 
 ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
 {
-
+    switch( item->getTxPhase() )
+    {
+    case VOTE_YES:
+        std::cerr << "Zero Reserve: TX Coordinator: Received Vote: YES" << std::endl;
+        return ZR::ZR_SUCCESS;
+    case VOTE_NO:
+        std::cerr << "Zero Reserve: TX Coordinator: Received Vote: NO" << std::endl;
+        return abortTx( item );
+    case ACK_COMMIT:
+        std::cerr << "Zero Reserve: TX Coordinator: Received Acknowledgement, Committing" << std::endl;
+        return ZR::ZR_FINISH;
+    case ABORT:
+        return abortTx( item );
+    default:
+        throw std::runtime_error( "Unknown Transaction Phase");
+    }
+    return ZR::ZR_SUCCESS;
 }
 
 ZR::RetVal TmRemoteCoordinator::abortTx( RSZRRemoteTxItem *item )
 {
-
+    return ZR::ZR_FAILURE;
 }

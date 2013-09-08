@@ -143,7 +143,8 @@ std::ostream& RSZRRemoteTxItem::print(std::ostream &out, uint16_t indent)
 uint32_t RSZRRemoteTxItem::serial_size() const
 {
         return  RSZRRemoteItem::serial_size()
-                + sizeof(uint8_t); // tx phase
+                + sizeof(uint8_t)   // tx phase
+                + sizeof(uint8_t);  // direction
 }
 
 bool RSZRRemoteTxItem::serialise(void *data, uint32_t& pktsize)
@@ -157,23 +158,24 @@ bool RSZRRemoteTxItem::serialise(void *data, uint32_t& pktsize)
 
         bool ok = RSZRRemoteItem::serialise( data,  pktsize);
         ok &= setRawUInt8( data, tlvsize, &m_Offset, m_TxPhase );
+        ok &= setRawUInt8( data, tlvsize, &m_Offset, m_Direction );
 
         if (m_Offset != tlvsize){
                 ok = false;
-                std::cerr << "RsZeroReserveMsgItem::serialise() Size Error! " << std::endl;
+                std::cerr << "RSZRRemoteTxItem::serialise() Size Error! " << std::endl;
         }
 
         return ok;
 }
 
-RSZRRemoteTxItem::RSZRRemoteTxItem(void *data, uint32_t pktsize)
-        : RSZRRemoteItem( data, pktsize, ZR_REMOTE_TX_ITEM )
+RSZRRemoteTxItem::RSZRRemoteTxItem(void *data, uint32_t pktsize, uint8_t itemType )
+        : RSZRRemoteItem( data, pktsize, itemType )
 {
     /* get the type and size */
     uint32_t rstype = getRsItemId(data);
     uint32_t rssize = getRsItemSize(data);
 
-    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZR_REMOTE_TX_ITEM != getRsItemSubType(rstype)))
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)))
         throw std::runtime_error("Wrong packet type!") ;
 
     if (pktsize < rssize)    /* check size */
@@ -182,12 +184,79 @@ RSZRRemoteTxItem::RSZRRemoteTxItem(void *data, uint32_t pktsize)
     uint8_t txPhase;
     bool ok = getRawUInt8(data, rssize, &m_Offset, &txPhase );
     m_TxPhase = (TransactionManager::TxPhase) txPhase;
+    uint8_t direction;
+    ok &= getRawUInt8(data, rssize, &m_Offset, &direction );
+    m_Direction = ( Router::TunnelDirection ) direction;
 
     if ( m_Offset != rssize )
         throw std::runtime_error("Deserialisation error!") ;
 }
 
-RSZRRemoteTxItem::RSZRRemoteTxItem( const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase )
-        : RSZRRemoteItem( addr, ZR_REMOTE_TX_ITEM ),
-          m_TxPhase( txPhase )
+RSZRRemoteTxItem::RSZRRemoteTxItem( const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase , Router::TunnelDirection direction, uint8_t itemType )
+        : RSZRRemoteItem( addr, itemType ),
+          m_TxPhase( txPhase ),
+          m_Direction( direction )
+{}
+
+
+//// Begin RSZRRemoteTxInitItem Item  /////
+
+
+std::ostream& RSZRRemoteTxInitItem::print(std::ostream &out, uint16_t indent)
+{
+        printRsItemBase(out, "RSZRRemoteTxInitItem", indent);
+        uint16_t int_Indent = indent + 2;
+        printIndent(out, int_Indent);
+        out << "Done a lot of travelling " << std::endl;
+
+        printRsItemEnd(out, "RSZRRemoteTxInitItem", indent);
+        return out;
+}
+
+uint32_t RSZRRemoteTxInitItem::serial_size() const
+{
+        return  RSZRRemoteTxItem::serial_size();
+}
+
+bool RSZRRemoteTxInitItem::serialise(void *data, uint32_t& pktsize)
+{
+        uint32_t tlvsize = serial_size() ;
+
+        if (pktsize < tlvsize)
+                return false; /* not enough space */
+
+        pktsize = tlvsize;
+
+        bool ok = RSZRRemoteTxItem::serialise( data,  pktsize);
+
+
+        if (m_Offset != tlvsize){
+                ok = false;
+                std::cerr << "RSZRRemoteTxInitItem::serialise() Size Error! " << std::endl;
+        }
+
+        return ok;
+}
+
+RSZRRemoteTxInitItem::RSZRRemoteTxInitItem(void *data, uint32_t pktsize )
+        : RSZRRemoteTxItem( data, pktsize, ZR_REMOTE_TX_INIT_ITEM )
+{
+    /* get the type and size */
+    uint32_t rstype = getRsItemId(data);
+    uint32_t rssize = getRsItemSize(data);
+
+    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZR_REMOTE_TX_INIT_ITEM != getRsItemSubType(rstype)))
+        throw std::runtime_error("Wrong packet type!") ;
+
+    if (pktsize < rssize)    /* check size */
+        throw std::runtime_error("Not enough size!") ;
+
+
+
+    if ( m_Offset != rssize )
+        throw std::runtime_error("Deserialisation error!") ;
+}
+
+RSZRRemoteTxInitItem::RSZRRemoteTxInitItem( const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase , Router::TunnelDirection direction )
+        : RSZRRemoteTxItem( addr, txPhase, direction, ZR_REMOTE_TX_INIT_ITEM )
 {}

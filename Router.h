@@ -39,6 +39,10 @@ class Router
 {
 public:
     typedef std::map< ZR::VirtualAddress, std::pair< std::string, std::string > > TunnelList;
+    enum TunnelDirection {
+        SERVER = 0,
+        CLIENT
+    };
 
     virtual void addRoute( const ZR::VirtualAddress & dest, const std::string & gateway ) = 0;
 

@@ -22,6 +22,7 @@
 
 #include "TransactionManager.h"
 
+class RSZRRemoteTxInitItem;
 
 class TmRemoteCohorte : public TransactionManager
 {
@@ -30,8 +31,12 @@ public:
     virtual ZR::RetVal init();
 
 protected:
-    virtual ZR::RetVal processItem(RSZRRemoteTxItem *item );
+    virtual ZR::RetVal processItem( RSZRRemoteTxItem *item );
     virtual ZR::RetVal abortTx( RSZRRemoteTxItem * item );
+
+private:
+    ZR::RetVal setup( RSZRRemoteTxInitItem *item );
+    bool m_IsHop;
 };
 
 #endif // TMREMOTECOHORTE_H

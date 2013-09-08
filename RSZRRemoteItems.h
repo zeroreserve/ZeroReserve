@@ -21,6 +21,7 @@
 
 #include "zrtypes.h"
 #include "RSZeroReserveItems.h"
+#include "Router.h"
 
 #include <string>
 
@@ -89,17 +90,38 @@ class RSZRRemoteTxItem : public RSZRRemoteItem
     RSZRRemoteTxItem();
 public:
 
-    RSZRRemoteTxItem(void *data,uint32_t size);
-    RSZRRemoteTxItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase );
+    RSZRRemoteTxItem( void *data, uint32_t size, uint8_t itemType = ZR_REMOTE_TX_ITEM );
+    RSZRRemoteTxItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase, Router::TunnelDirection direction, uint8_t itemType = ZR_REMOTE_TX_ITEM );
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
     virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
 
     TransactionManager::TxPhase getTxPhase() { return m_TxPhase; }
+    Router::TunnelDirection getDirection() { return m_Direction; }
 
 protected:
     TransactionManager::TxPhase m_TxPhase;
+    Router::TunnelDirection m_Direction;
+};
+
+
+class RSZRRemoteTxInitItem : public RSZRRemoteTxItem
+{
+    RSZRRemoteTxInitItem();
+public:
+
+    RSZRRemoteTxInitItem( void *data, uint32_t size );
+    RSZRRemoteTxInitItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase, Router::TunnelDirection direction );
+
+    virtual bool serialise(void *data,uint32_t& size) ;
+    virtual uint32_t serial_size() const ;
+    virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
+
+
+protected:
+    ZR::ZR_Number amount;
+    Currency::CurrencySymbols currency;
 };
 
 // TODO: move Order item here

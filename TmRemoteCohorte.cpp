@@ -19,6 +19,8 @@
 #include "p3ZeroReserverRS.h"
 #include "ZeroReservePlugin.h"
 #include "Router.h"
+#include "Payment.h"
+
 
 TmRemoteCohorte::TmRemoteCohorte( const ZR::TransactionId & txId ) :
     TransactionManager( txId )
@@ -26,7 +28,32 @@ TmRemoteCohorte::TmRemoteCohorte( const ZR::TransactionId & txId ) :
 }
 
 ZR::RetVal TmRemoteCohorte::init()
+{  
+    return ZR::ZR_SUCCESS;
+}
+
+
+ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
 {
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, VOTE_YES, Router::CLIENT );
+
+    Payment::Request req = Payment::getMyRequest( item->getAddress() );
+    if( req.isValid() ){   // we are the payee
+        m_Phase = QUERY;
+        m_IsHop = false;
+        resendItem->PeerId( item->PeerId() );
+    }
+    else{ // we are a hop
+        m_IsHop = true;
+        ZR::PeerAddress nextAddr = Router::Instance()->nextHop( m_TxId );
+        ZR::PeerAddress prevAddr = item->PeerId();
+        std::pair< ZR::PeerAddress, ZR::PeerAddress > route( prevAddr, nextAddr );
+        Router::Instance()->addTunnel( item->getAddress(), route );
+        resendItem->PeerId( nextAddr );
+    }
+
+    p3zr->sendItem( resendItem );
     return ZR::ZR_SUCCESS;
 }
 
@@ -35,32 +62,34 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
 {
     RSZRRemoteTxItem * reply;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-;
-    ZR::PeerAddress addr = Router::Instance()->nextHop( m_TxId );
-    if( addr.empty() )
-        return ZR::ZR_FAILURE;
 
     // TODO: Timeout
     switch( item->getTxPhase() )
     {
     case QUERY:
     {
-        RsZeroReserveInitTxItem * initItem = dynamic_cast< RsZeroReserveInitTxItem *> ( item );
+        RSZRRemoteTxInitItem * initItem = dynamic_cast< RSZRRemoteTxInitItem *> ( item );
         if( m_Phase != INIT || initItem == NULL )
             return abortTx( item );
+        if( item->getDirection() == Router::SERVER )
+            return setup( initItem );
+
+        // process the return item
         m_Phase = QUERY;
-        RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_TxId, VOTE_YES );
-        resendItem->PeerId( addr );
-        p3zr->sendItem( resendItem );
-        return init();
+        init();
+//        RsZeroReserveInitTxItem * resendItem = new RsZeroReserveInitTxItem( *initItem );
+//        resendItem->PeerId( addr );
+//        p3zr->sendItem( resendItem );
+        return ZR::ZR_SUCCESS;
+
     }
     case COMMIT:
         std::cerr << "Zero Reserve: TX Cohorte: Received Command: COMMIT" << std::endl;
         if( m_Phase != QUERY )
             return abortTx( item );
         m_Phase = COMMIT;
-        reply = new RSZRRemoteTxItem( m_TxId, ACK_COMMIT );
-        reply->PeerId( addr );
+        reply = new RSZRRemoteTxItem( m_TxId, ACK_COMMIT, Router::SERVER );
+//        reply->PeerId( addr );
         p3zr->sendItem( reply );
         return ZR::ZR_FINISH;
     case ABORT:
@@ -68,10 +97,9 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
     default:
         throw std::runtime_error( "Unknown Transaction Phase");
     }
-    return ZR::ZR_SUCCESS;
 }
 
 ZR::RetVal TmRemoteCohorte::abortTx(RSZRRemoteTxItem *item )
 {
-
+    return ZR::ZR_FAILURE;
 }

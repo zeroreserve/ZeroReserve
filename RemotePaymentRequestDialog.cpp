@@ -24,6 +24,7 @@
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 #include "ZeroReservePlugin.h"
+#include "Payment.h"
 
 #include "util/radix64.h"
 
@@ -93,6 +94,8 @@ void RemotePaymentRequestDialog::sendRequest()
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     ZR::VirtualAddress address = ui->payAddress->text().toStdString();
     ZR::ZR_Number amount = ZR::ZR_Number::fromDecimalString( ui->amount->text() );
-    std::string currency = Currency::currencySymbols[ Currency::getCurrencyByName(ui->currencySelector->currentText().toStdString() ) ];
+    Currency::CurrencySymbols currencySym = Currency::getCurrencyByName(ui->currencySelector->currentText().toStdString() );
+    std::string currency = Currency::currencySymbols[ currencySym ];
     p3zr->sendRemote( address, amount, currency );
+    Payment::addMyRequest( address, Payment::Request( amount, currencySym ));
 }
