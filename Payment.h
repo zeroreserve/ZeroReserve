@@ -43,6 +43,8 @@ public:
 
     class Request {
     public:
+        Request() : m_Amount(0), m_Currency( Currency::INVALID ){}
+
         Request( const ZR::ZR_Number & amount, const Currency::CurrencySymbols & currency) :
             m_Amount( amount ), m_Currency( currency ){}
 

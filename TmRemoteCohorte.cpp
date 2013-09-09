@@ -37,11 +37,13 @@ ZR::RetVal TmRemoteCohorte::init()
 ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    m_Payment = item->getPayment();
 
     Payment::Request req = Payment::getMyRequest( item->getAddress() );
     if( req.isValid() ){   // we are the payee
-        std::cerr << "Zero Reserve: TX Cohorte: Initializing payee role" << std::endl;
-        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, VOTE_YES, Router::CLIENT );
+        std::cerr << "Zero Reserve: TX Cohorte: Initializing payee role :: Amount: "
+                  << m_Payment->getAmount() << " " << m_Payment->getCurrency() << std::endl;
+        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, VOTE_YES, Router::CLIENT, m_Payment );
         m_Phase = QUERY;
         m_IsHop = false;
         resendItem->PeerId( item->PeerId() );
@@ -50,7 +52,7 @@ ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
     else{ // we are a hop
         std::cerr << "Zero Reserve: TX Cohorte: Passing on query" << std::endl;
         m_IsHop = true;
-        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, item->getTxPhase(), item->getDirection() );
+        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, item->getTxPhase(), item->getDirection(), m_Payment );
         ZR::PeerAddress nextAddr = Router::Instance()->nextHop( m_TxId );
         ZR::PeerAddress prevAddr = item->PeerId();
         std::pair< ZR::PeerAddress, ZR::PeerAddress > route( prevAddr, nextAddr );
@@ -84,7 +86,7 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
     case VOTE_YES:
     {
         std::cerr << "Zero Reserve: TX Cohorte: Received VOTE YES" << std::endl;
-        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, item->getTxPhase(), item->getDirection() );
+        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, item->getTxPhase(), item->getDirection(), m_Payment );
         std::pair< ZR::PeerAddress, ZR::PeerAddress > route;
         if( Router::Instance()->getTunnel( item->getAddress(), route ) == ZR::ZR_FAILURE )
             return ZR::ZR_FAILURE;

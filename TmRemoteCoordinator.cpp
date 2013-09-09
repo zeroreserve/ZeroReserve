@@ -38,7 +38,7 @@ ZR::RetVal TmRemoteCoordinator::init()
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteTxInitItem * item = new RSZRRemoteTxInitItem( m_Destination, QUERY, Router::SERVER );
+    RSZRRemoteTxInitItem * item = new RSZRRemoteTxInitItem( m_Destination, QUERY, Router::SERVER, m_Payment );
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
     if( addr.empty() )
         return ZR::ZR_FAILURE;

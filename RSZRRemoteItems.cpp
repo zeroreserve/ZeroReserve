@@ -160,11 +160,6 @@ bool RSZRRemoteTxItem::serialise(void *data, uint32_t& pktsize)
         ok &= setRawUInt8( data, tlvsize, &m_Offset, m_TxPhase );
         ok &= setRawUInt8( data, tlvsize, &m_Offset, m_Direction );
 
-        if (m_Offset != tlvsize){
-                ok = false;
-                std::cerr << "RSZRRemoteTxItem::serialise() Size Error! " << std::endl;
-        }
-
         return ok;
 }
 
@@ -187,9 +182,6 @@ RSZRRemoteTxItem::RSZRRemoteTxItem(void *data, uint32_t pktsize, uint8_t itemTyp
     uint8_t direction;
     ok &= getRawUInt8(data, rssize, &m_Offset, &direction );
     m_Direction = ( Router::TunnelDirection ) direction;
-
-    if ( m_Offset != rssize )
-        throw std::runtime_error("Deserialisation error!") ;
 }
 
 RSZRRemoteTxItem::RSZRRemoteTxItem( const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase , Router::TunnelDirection direction, uint8_t itemType )
@@ -215,7 +207,11 @@ std::ostream& RSZRRemoteTxInitItem::print(std::ostream &out, uint16_t indent)
 
 uint32_t RSZRRemoteTxInitItem::serial_size() const
 {
-        return  RSZRRemoteTxItem::serial_size();
+        return  RSZRRemoteTxItem::serial_size()
+                + CURRENCY_STRLEN + HOLLERITH_LEN_SPEC                   // currency
+                + m_Payment->getAmount().length() + HOLLERITH_LEN_SPEC   // amount
+                + sizeof(uint8_t);                                       // Category
+
 }
 
 bool RSZRRemoteTxInitItem::serialise(void *data, uint32_t& pktsize)
@@ -229,12 +225,17 @@ bool RSZRRemoteTxInitItem::serialise(void *data, uint32_t& pktsize)
 
         bool ok = RSZRRemoteTxItem::serialise( data,  pktsize);
 
+        std::string amount = m_Payment->getAmount().toStdString();
+        ok &= setRawString( data, tlvsize, &m_Offset, amount );
+
+        std::string currency = m_Payment->getCurrency();
+        ok &= setRawString( data, tlvsize, &m_Offset, currency );
+        ok &= setRawUInt8( data, tlvsize, &m_Offset, m_Payment->getCategory() );
 
         if (m_Offset != tlvsize){
                 ok = false;
                 std::cerr << "RSZRRemoteTxInitItem::serialise() Size Error! " << std::endl;
         }
-
         return ok;
 }
 
@@ -251,12 +252,22 @@ RSZRRemoteTxInitItem::RSZRRemoteTxInitItem(void *data, uint32_t pktsize )
     if (pktsize < rssize)    /* check size */
         throw std::runtime_error("Not enough size!") ;
 
+    std::string s_amount;
+    bool ok = getRawString(data, rssize, &m_Offset, s_amount );
+    ZR::ZR_Number amount = ZR::ZR_Number::fromFractionString( s_amount );
+    std::string currency;
+    ok &= getRawString(data, rssize, &m_Offset, currency );
+    uint8_t category;
+    ok &= getRawUInt8(data, rssize, &m_Offset, &category );
 
+    m_Payment = new PaymentReceiver( "", amount, currency, (Payment::Category)category );
+    m_Payment->referrerId( m_Address );
 
     if ( m_Offset != rssize )
         throw std::runtime_error("Deserialisation error!") ;
 }
 
-RSZRRemoteTxInitItem::RSZRRemoteTxInitItem( const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase , Router::TunnelDirection direction )
-        : RSZRRemoteTxItem( addr, txPhase, direction, ZR_REMOTE_TX_INIT_ITEM )
+RSZRRemoteTxInitItem::RSZRRemoteTxInitItem( const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase , Router::TunnelDirection direction, Payment * payment )
+        : RSZRRemoteTxItem( addr, txPhase, direction, ZR_REMOTE_TX_INIT_ITEM ),
+        m_Payment( payment )
 {}

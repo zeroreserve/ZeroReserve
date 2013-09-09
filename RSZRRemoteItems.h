@@ -22,6 +22,7 @@
 #include "zrtypes.h"
 #include "RSZeroReserveItems.h"
 #include "Router.h"
+#include "Payment.h"
 
 #include <string>
 
@@ -112,16 +113,16 @@ class RSZRRemoteTxInitItem : public RSZRRemoteTxItem
 public:
 
     RSZRRemoteTxInitItem( void *data, uint32_t size );
-    RSZRRemoteTxInitItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase, Router::TunnelDirection direction );
+    RSZRRemoteTxInitItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase, Router::TunnelDirection direction, Payment * payment );
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
     virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
 
+    Payment * getPayment(){ return m_Payment; }
 
 protected:
-    ZR::ZR_Number amount;
-    Currency::CurrencySymbols currency;
+    Payment * m_Payment;
 };
 
 // TODO: move Order item here

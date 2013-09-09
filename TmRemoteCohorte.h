@@ -23,6 +23,7 @@
 #include "TransactionManager.h"
 
 class RSZRRemoteTxInitItem;
+class Payment;
 
 class TmRemoteCohorte : public TransactionManager
 {
@@ -37,6 +38,7 @@ protected:
 private:
     ZR::RetVal setup( RSZRRemoteTxInitItem *item );
     bool m_IsHop;
+    Payment * m_Payment;
 };
 
 #endif // TMREMOTECOHORTE_H
