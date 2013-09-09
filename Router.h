@@ -55,8 +55,8 @@ public:
      * @arg dest: the virtual address
      * @arg gateways: a pair of the IDs of the hop forward and the hop backward
      */
-    virtual void addTunnel( const ZR::VirtualAddress & dest, std::pair< std::string, std::string > & gateways ){ m_Tunnels[ dest ] = gateways; }
-    virtual ZR::RetVal getTunnel( const ZR::VirtualAddress & dest, std::pair< std::string, std::string > & gateways )
+    virtual void addTunnel( const ZR::VirtualAddress & dest, std::pair< ZR::PeerAddress, ZR::PeerAddress > & gateways ){ m_Tunnels[ dest ] = gateways; }
+    virtual ZR::RetVal getTunnel( const ZR::VirtualAddress & dest, std::pair< ZR::PeerAddress, ZR::PeerAddress > & gateways )
     {
         TunnelList::iterator it = m_Tunnels.find( dest );
         if( it == m_Tunnels.end() )

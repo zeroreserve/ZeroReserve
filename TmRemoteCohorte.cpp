@@ -28,7 +28,8 @@ TmRemoteCohorte::TmRemoteCohorte( const ZR::TransactionId & txId ) :
 }
 
 ZR::RetVal TmRemoteCohorte::init()
-{  
+{
+    std::cerr << "Zero Reserve: TX Cohorte: Initializing... checking available funds" << std::endl;
     return ZR::ZR_SUCCESS;
 }
 
@@ -36,24 +37,28 @@ ZR::RetVal TmRemoteCohorte::init()
 ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, VOTE_YES, Router::CLIENT );
 
     Payment::Request req = Payment::getMyRequest( item->getAddress() );
     if( req.isValid() ){   // we are the payee
+        std::cerr << "Zero Reserve: TX Cohorte: Initializing payee role" << std::endl;
+        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, VOTE_YES, Router::CLIENT );
         m_Phase = QUERY;
         m_IsHop = false;
         resendItem->PeerId( item->PeerId() );
+        p3zr->sendItem( resendItem );
     }
     else{ // we are a hop
+        std::cerr << "Zero Reserve: TX Cohorte: Passing on query" << std::endl;
         m_IsHop = true;
+        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, item->getTxPhase(), item->getDirection() );
         ZR::PeerAddress nextAddr = Router::Instance()->nextHop( m_TxId );
         ZR::PeerAddress prevAddr = item->PeerId();
         std::pair< ZR::PeerAddress, ZR::PeerAddress > route( prevAddr, nextAddr );
         Router::Instance()->addTunnel( item->getAddress(), route );
         resendItem->PeerId( nextAddr );
+        p3zr->sendItem( resendItem );
     }
 
-    p3zr->sendItem( resendItem );
     return ZR::ZR_SUCCESS;
 }
 
@@ -74,14 +79,18 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
         if( item->getDirection() == Router::SERVER )
             return setup( initItem );
 
-        // process the return item
-        m_Phase = QUERY;
-        init();
-//        RsZeroReserveInitTxItem * resendItem = new RsZeroReserveInitTxItem( *initItem );
-//        resendItem->PeerId( addr );
-//        p3zr->sendItem( resendItem );
         return ZR::ZR_SUCCESS;
-
+    }
+    case VOTE_YES:
+    {
+        std::cerr << "Zero Reserve: TX Cohorte: Received VOTE YES" << std::endl;
+        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, item->getTxPhase(), item->getDirection() );
+        std::pair< ZR::PeerAddress, ZR::PeerAddress > route;
+        if( Router::Instance()->getTunnel( item->getAddress(), route ) == ZR::ZR_FAILURE )
+            return ZR::ZR_FAILURE;
+        resendItem->PeerId( route.first );
+        p3zr->sendItem( resendItem );
+        return ZR::ZR_SUCCESS;
     }
     case COMMIT:
         std::cerr << "Zero Reserve: TX Cohorte: Received Command: COMMIT" << std::endl;

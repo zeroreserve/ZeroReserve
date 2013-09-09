@@ -60,7 +60,7 @@ const Payment::Request Payment::getRequest( const ZR::VirtualAddress & addr )
 const Payment::Request Payment::getMyRequest( const ZR::VirtualAddress & addr )
 {
     Requests::iterator it = myRequests.find( addr );
-    if( it == requestList.end() )
+    if( it == myRequests.end() )
         return Request( 0, Currency::INVALID );
     return (*it).second;
 }

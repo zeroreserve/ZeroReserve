@@ -46,7 +46,7 @@ public:
         Request( const ZR::ZR_Number & amount, const Currency::CurrencySymbols & currency) :
             m_Amount( amount ), m_Currency( currency ){}
 
-        bool isValid(){ return !(m_Currency == Currency::INVALID ); }
+        bool isValid(){ return (m_Currency != Currency::INVALID ); }
 
         ZR::ZR_Number m_Amount;
         Currency::CurrencySymbols m_Currency;
