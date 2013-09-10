@@ -50,10 +50,16 @@ ZR::RetVal TmRemoteCoordinator::init()
 
 ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
 {
+    RSZRRemoteTxItem * reply;
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+
     switch( item->getTxPhase() )
     {
     case VOTE_YES:
         std::cerr << "Zero Reserve: TX Coordinator: Received Vote: YES" << std::endl;
+        reply = new RSZRRemoteTxItem( m_Destination, COMMIT, Router::SERVER );
+        reply->PeerId( m_Payment->getCounterparty() );
+        p3zr->sendItem( reply );
         return ZR::ZR_SUCCESS;
     case VOTE_NO:
         std::cerr << "Zero Reserve: TX Coordinator: Received Vote: NO" << std::endl;

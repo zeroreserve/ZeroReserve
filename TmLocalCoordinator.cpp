@@ -64,7 +64,7 @@ ZR::RetVal TmLocalCoordinator::init()
 ZR::RetVal TmLocalCoordinator::processItem( RsZeroReserveTxItem * item )
 {
     RsZeroReserveTxItem * reply;
-    p3ZeroReserveRS * p3zs;
+    p3ZeroReserveRS * p3zr;
 
     // TODO: Timeout
     switch( item->getTxPhase() )
@@ -74,8 +74,8 @@ ZR::RetVal TmLocalCoordinator::processItem( RsZeroReserveTxItem * item )
         reply = new RsZeroReserveTxItem( COMMIT );
         reply->PeerId( m_payment->getCounterparty() );
         reply->setTxId( m_TxId );
-        p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-        p3zs->sendItem( reply );
+        p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+        p3zr->sendItem( reply );
         return ZR::ZR_SUCCESS;
     case VOTE_NO:
         return abortTx( item );

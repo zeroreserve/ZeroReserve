@@ -35,6 +35,8 @@ protected:
     virtual ZR::RetVal processItem( RSZRRemoteTxItem *item );
     virtual ZR::RetVal abortTx( RSZRRemoteTxItem * item );
 
+    ZR::RetVal forwardItem( RSZRRemoteTxItem *item );
+
 private:
     ZR::RetVal setup( RSZRRemoteTxInitItem *item );
     bool m_IsHop;
