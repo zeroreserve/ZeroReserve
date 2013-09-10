@@ -119,7 +119,10 @@ public:
     virtual uint32_t serial_size() const ;
     virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
 
-    Payment * getPayment(){ return m_Payment; }
+    Payment * getPayment(){
+        m_Payment->setCounterparty( PeerId() );
+        return m_Payment;
+    }
 
 protected:
     Payment * m_Payment;
