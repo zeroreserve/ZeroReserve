@@ -66,6 +66,7 @@ ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
         return abortTx( item );
     case ACK_COMMIT:
         std::cerr << "Zero Reserve: TX Coordinator: Received Acknowledgement, Committing" << std::endl;
+        m_Payment->commit();
         return ZR::ZR_FINISH;
     case ABORT:
         return abortTx( item );

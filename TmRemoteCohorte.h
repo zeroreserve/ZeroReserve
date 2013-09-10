@@ -40,7 +40,8 @@ protected:
 private:
     ZR::RetVal setup( RSZRRemoteTxInitItem *item );
     bool m_IsHop;
-    Payment * m_Payment;
+    Payment * m_PaymentReceiver;
+    Payment * m_PaymentSpender;
 };
 
 #endif // TMREMOTECOHORTE_H
