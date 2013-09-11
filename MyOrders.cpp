@@ -19,7 +19,7 @@
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 #include "Payment.h"
-#include "TransactionManager.h"
+#include "TmRemoteCoordinator.h"
 #include "Router.h"
 
 #include <iostream>
@@ -160,14 +160,11 @@ int MyOrders::match( Order * order )
 
 void MyOrders::buy( Order * order, ZR::ZR_Number amount )
 {
-//    TransactionManager * tm = new TransactionManager();
-//    ZR::ZR_Number amountToPay = amount * order->m_price;
-
-//    Payment * payment = new PaymentSpender( Router::Instance()->nextHop( order->m_order_id), amountToPay, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
-//    std::ostringstream timestamp;
-//    timestamp << order->m_timeStamp;
-//    payment->referrerId( order->m_order_id );
-//    if( ZR::ZR_FAILURE == tm->initCoordinator( payment ) ) delete tm;
+    ZR::ZR_Number amountToPay = amount * order->m_price;
+    Payment * payment = new PaymentSpender( Router::Instance()->nextHop( order->m_order_id), amountToPay, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
+    payment->referrerId( order->m_order_id );
+    TmRemoteCoordinator * tm = new TmRemoteCoordinator( order->m_order_id, payment );
+    if( ZR::ZR_FAILURE == tm->init() ) delete tm;
 }
 
 
