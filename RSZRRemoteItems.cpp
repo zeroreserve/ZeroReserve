@@ -324,7 +324,7 @@ bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
 
         pktsize = tlvsize;
 
-        bool ok = RsZeroReserveItem::serialise( data, pktsize );
+        bool ok = RSZRRemoteItem::serialise( data, pktsize );
 
 
         std::string buf = m_order->m_amount.toStdString();

@@ -92,7 +92,6 @@ private:
 class RsZeroReserveOrderBookItem: public RSZRRemoteItem
 {
     RsZeroReserveOrderBookItem();
-
 public:
     RsZeroReserveOrderBookItem(void *data,uint32_t size) ;
     RsZeroReserveOrderBookItem( OrderBook::Order * order) ;
