@@ -166,7 +166,7 @@ QDialog * ZeroReservePlugin::qt_about_page() const
         return about_dialog ;
 }
 
-void ZeroReservePlugin::stop() const
+void ZeroReservePlugin::stop()
 {
     std::cerr << "Zero Reserve: Closing Database" << std::endl;
     // TODO: Stop taking TX, try to finish all ongoing TX and send out errors to all

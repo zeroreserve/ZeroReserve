@@ -36,7 +36,7 @@ public:
     virtual QTranslator    *qt_translator(QApplication *app, const QString& languageCode, const QString& externalDir) const;
     virtual QDialog * qt_about_page() const;
     virtual ConfigPage *qt_config_page() const ;
-    virtual void stop() const;
+    virtual void stop();
 
     virtual void getPluginVersion(int& major,int& minor,int& svn_rev) const ;
     virtual void setPlugInHandler(RsPluginHandler *pgHandler);
