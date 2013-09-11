@@ -47,7 +47,7 @@ public:
     virtual std::ostream& print(std::ostream &out, uint16_t indent = 0) = 0 ;
 
     virtual bool serialise(void *data,uint32_t& size);
-    virtual uint32_t serial_size() const = 0 ;
+    virtual uint32_t serial_size() const;
 
     const ZR::VirtualAddress & getAddress(){ return m_Address; }
 
@@ -60,9 +60,8 @@ protected:
 
 /**
  * @brief propagate a payment request through the network.
+ * @see RsZeroReserveOrderBookItem
  *
- *  The RSZRPayRequestItem will be picked up by the payer. This guarantees that a possible payment route exists,
- * possibly more than one.
  */
 
 class RSZRPayRequestItem : public RSZRRemoteItem
@@ -85,6 +84,35 @@ private:
     std::string m_Currency;
 };
 
+/**
+ * @brief propagate Bitcoin bid and ask orders through the network
+ * @see RSZRPayRequestItem
+ */
+
+class RsZeroReserveOrderBookItem: public RSZRRemoteItem
+{
+    RsZeroReserveOrderBookItem();
+
+public:
+    RsZeroReserveOrderBookItem(void *data,uint32_t size) ;
+    RsZeroReserveOrderBookItem( OrderBook::Order * order) ;
+
+    virtual bool serialise(void *data,uint32_t& size) ;
+    virtual uint32_t serial_size() const ;
+
+    virtual ~RsZeroReserveOrderBookItem() {}
+    virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
+    OrderBook::Order * getOrder(){ return m_order; }
+
+private:
+    OrderBook::Order * m_order;
+    uint32_t m_data_size ;
+};
+
+/**
+ * @brief follows a route from the coordinator of a transaction (payer) to the payee and back.
+ * @see RSZRRemoteTxInitItem
+ */
 
 class RSZRRemoteTxItem : public RSZRRemoteItem
 {
@@ -106,6 +134,12 @@ protected:
     Router::TunnelDirection m_Direction;
 };
 
+/**
+ * @brief follows a route from the coordinator of a transaction (payer) to the payee and back.
+ * @see RSZRRemoteTxItem
+ * This item sets up the transaction. It carries payment information of the TX which the hops
+ * need to VOTE on.
+ */
 
 class RSZRRemoteTxInitItem : public RSZRRemoteTxItem
 {

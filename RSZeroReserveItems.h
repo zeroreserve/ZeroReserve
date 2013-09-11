@@ -156,25 +156,6 @@ private:
 };
 
 
-class RsZeroReserveOrderBookItem: public RsZeroReserveItem
-{
-public:
-    RsZeroReserveOrderBookItem() :RsZeroReserveItem( ZERORESERVE_ORDERBOOK_ITEM ) {}
-    RsZeroReserveOrderBookItem(void *data,uint32_t size) ;
-    RsZeroReserveOrderBookItem( OrderBook::Order * order) ;
-
-    virtual bool serialise(void *data,uint32_t& size) ;
-    virtual uint32_t serial_size() const ;
-
-    virtual ~RsZeroReserveOrderBookItem() {}
-    virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
-    OrderBook::Order * getOrder(){ return m_order; }
-
-private:
-    OrderBook::Order * m_order;
-    uint32_t m_data_size ;
-};
-
 
 class RsZeroReserveCreditItem: public RsZeroReserveItem
 {
