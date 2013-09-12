@@ -132,7 +132,7 @@ int MyOrders::matchOther( Order * other )
 int MyOrders::match( Order * order )
 {
     if( order->m_orderType == Order::ASK ){
-        return ZR::ZR_FAILURE; // throw?
+        return ZR::ZR_FAILURE;
     }
 
     OrderList asks;
@@ -194,16 +194,21 @@ int MyOrders::finishExecute( Payment * payment )
     std::cerr << "Zero Reserve: Finishing Order execution for " << payment->referrerId() << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
-    remove( payment->referrerId() );
-    Order * oldOrder = m_asks->remove( payment->referrerId() );
+    Order * oldOrder = *( find( payment->referrerId() ) );
     // TODO: publish delete order and possibly updated order
     if( NULL != oldOrder ){
         if( oldOrder->m_amount * oldOrder->m_price >  payment->getAmount() ){ // order only partly filled
+            beginResetModel();
+            m_asks->beginReset();
             oldOrder->m_purpose = Order::PARTLY_FILLED;
             oldOrder->m_amount = oldOrder->m_amount - payment->getAmount() / oldOrder->m_price;
+            m_asks->beginReset();
+            endResetModel();
         }
         else {  // completely filled
             oldOrder->m_purpose = Order::FILLED;
+            remove( payment->referrerId() );
+            m_asks->remove( payment->referrerId() );
         }
         p3zr->publishOrder( oldOrder );
     }

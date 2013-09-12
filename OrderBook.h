@@ -97,6 +97,9 @@ public:
     virtual Order * remove( const std::string & order_id );
     OrderIterator find( const std::string & order_id );
 
+    void beginReset(){ beginResetModel(); }
+    void endReset(){ endResetModel(); }
+
 
 protected:
     OrderList m_orders;
