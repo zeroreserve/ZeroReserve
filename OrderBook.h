@@ -95,6 +95,7 @@ public:
      *  @return a pointer to the removed order */
     virtual Order * remove( Order * order );
     virtual Order * remove( const std::string & order_id );
+    OrderIterator find( const std::string & order_id );
 
 
 protected:

@@ -26,22 +26,10 @@
 
 
 bool OrderBook::compareOrder( const Order * left, const Order * right ){
-    if(left->m_orderType == Order::ASK){
-        if( left->m_price < right->m_price){
-            return true;
-        }
-        else {
-            return false;
-        }
+    if( left->m_order_id == right->m_order_id ){
+        return true;
     }
-    else {
-        if( left->m_price < right->m_price){
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
+    return false;
 }
 
 OrderBook::OrderBook()
@@ -201,31 +189,40 @@ int OrderBook::addOrder( Order * order )
 
 OrderBook::Order * OrderBook::remove( Order * order )
 {
-    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
-        if( *order == *(*it) ){
-            m_orders.erase( it );
-            beginResetModel();
-            filterOrders( m_filteredOrders, m_currency );
-            endResetModel();
-            return *it;
-        }
+    OrderIterator it = find( order->m_order_id );
+    if( it != m_orders.end() ){
+        m_orders.erase( it );
+        beginResetModel();
+        filterOrders( m_filteredOrders, m_currency );
+        endResetModel();
+        return *it;
     }
     return NULL;
 }
 
 OrderBook::Order * OrderBook::remove( const std::string & order_id )
 {
-    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
-        if( order_id == (*it)->m_order_id ){
-            m_orders.erase( it );
-            beginResetModel();
-            filterOrders( m_filteredOrders, m_currency );
-            endResetModel();
-            return *it;
-        }
+    OrderIterator it = find( order_id );
+    if( it != m_orders.end() ){
+        m_orders.erase( it );
+        beginResetModel();
+        filterOrders( m_filteredOrders, m_currency );
+        endResetModel();
+        return *it;
     }
     return NULL;
 }
+
+OrderBook::OrderIterator OrderBook::find( const std::string & order_id )
+{
+    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
+        if( order_id == (*it)->m_order_id ){
+            return it;
+        }
+    }
+    return m_orders.end();
+}
+
 
 
 // Order implementation

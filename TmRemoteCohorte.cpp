@@ -20,6 +20,7 @@
 #include "ZeroReservePlugin.h"
 #include "Router.h"
 #include "Payment.h"
+#include "MyOrders.h"
 
 
 TmRemoteCohorte::TmRemoteCohorte( const ZR::TransactionId & txId ) :
@@ -41,9 +42,12 @@ ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     m_PaymentReceiver = item->getPayment();
     m_Phase = QUERY;
+    if( m_PaymentReceiver->getAmount() < ZR::ZR_Number(1, 1000000)){
+        return abortTx( item );  // minimum is 1E-6 in any currency, in particular, this checks if amount < 0
+    }
 
     Payment::Request req = Payment::getMyRequest( item->getAddress() );
-    if( req.isValid() ){   // we are the payee
+    if( isPayee( item->getAddress() ) == ZR::ZR_SUCCESS ){   // we are the payee
         std::cerr << "Zero Reserve: TX Cohorte: Initializing payee role :: Amount: "
                   << m_PaymentReceiver->getAmount() << " " << m_PaymentReceiver->getCurrency() << std::endl;
         RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( m_TxId, VOTE_YES, Router::CLIENT, m_PaymentReceiver );
@@ -58,6 +62,18 @@ ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
     }
 
     return ZR::ZR_SUCCESS;
+}
+
+ZR::RetVal TmRemoteCohorte::isPayee( const ZR::VirtualAddress & addr )
+{
+    Payment::Request req = Payment::getMyRequest( addr );
+    if( req.isValid() )
+        return ZR::ZR_SUCCESS;
+
+    if( MyOrders::Instance()->find( addr ) != MyOrders::Instance()->end() ){
+        return ZR::ZR_SUCCESS;
+    }
+    return ZR::ZR_FAILURE;
 }
 
 ZR::RetVal TmRemoteCohorte::forwardItem( RSZRRemoteTxItem * item )

@@ -71,6 +71,7 @@ private:
     // but I have no idea how PaymentReceiver can have a reference to this.
     // since there is only ever one object we get away with it for now.
     friend class PaymentReceiver;
+    friend class TmRemoteCohorte;
     static MyOrders * Instance();
     static MyOrders * me;
 };

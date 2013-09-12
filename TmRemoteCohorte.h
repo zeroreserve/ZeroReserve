@@ -39,6 +39,8 @@ protected:
 
 private:
     ZR::RetVal setup( RSZRRemoteTxInitItem *item );
+    ZR::RetVal isPayee( const ZR::VirtualAddress & addr );
+
     bool m_IsHop;
     Payment * m_PaymentReceiver;
     Payment * m_PaymentSpender;
