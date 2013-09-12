@@ -36,8 +36,7 @@ public:
 
     static ZR_Number fromDecimalString( const std::string & s_num )
     {
-      // TODO locale doesn't quite work. We need to accomodate any of dot or comma
-        char delim = '.';
+        const char delim = ( s_num.find( ',' ) != std::string::npos ) ? ',' : '.';
         std::istringstream iss( s_num );
         std::string sIntPart;
         std::string sFracPart;
