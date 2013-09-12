@@ -95,6 +95,9 @@ void p3ZeroReserveRS::processIncoming()
         case RsZeroReserveItem::ZR_REMOTE_PAYREQUEST_ITEM:
             handlePaymentRequest( dynamic_cast<RSZRPayRequestItem*>( item ) );
             break;
+        case RsZeroReserveItem::ZR_REMOTE_BUYREQUEST_ITEM:
+            handleBuyRequest( dynamic_cast < RSZRBuyRequestItem *>( item ) );
+            break;
         case RsZeroReserveItem::ZR_REMOTE_TX_ITEM:
         case RsZeroReserveItem::ZR_REMOTE_TX_INIT_ITEM:
             TransactionManager::handleTxItem( dynamic_cast<RSZRRemoteTxItem*>( item ) );
@@ -104,6 +107,19 @@ void p3ZeroReserveRS::processIncoming()
         }
         delete item;
     }
+}
+
+
+void p3ZeroReserveRS::handleBuyRequest( RSZRBuyRequestItem * item )
+{
+#warning "IMPLEMENT"
+}
+
+
+
+ZR::RetVal p3ZeroReserveRS::sendBuyMsg( const ZR::VirtualAddress & ourAddress, const ZR::VirtualAddress & theirAddress, const ZR::ZR_Number & amount )
+{
+#warning "IMPLEMENT"
 }
 
 

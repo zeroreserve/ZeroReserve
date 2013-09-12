@@ -96,7 +96,7 @@ QVariant MyOrders::data( const QModelIndex& index, int role ) const
 int MyOrders::matchOther( Order * other )
 {
     if( other->m_orderType == Order::BID ){
-        return ZR::ZR_FAILURE; // TODO
+        return ZR::ZR_FAILURE;
     }
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     if( other->m_isMyOrder ) return ZR::ZR_FAILURE; // don't fill own orders
@@ -129,10 +129,30 @@ int MyOrders::matchOther( Order * other )
 }
 
 
+
 int MyOrders::match( Order * order )
 {
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     if( order->m_orderType == Order::ASK ){
-        return ZR::ZR_FAILURE;
+        // send messages to potiential buyers
+        ZR::ZR_Number amountBtc = order->m_amount;
+        OrderList bids;
+        m_bids->filterOrders( bids, order->m_currency );
+        for( OrderIterator bidIt = bids.begin(); bidIt != bids.end(); bidIt++ ){
+            Order * other = *bidIt;
+            if( other->m_isMyOrder ) continue; // don't fill own orders
+            if( order->m_price > other->m_price ) break;    // no need to try and find matches beyond
+            std::cerr << "Zero Reserve: Match at bid price " << other->m_price.toStdString() << std::endl;
+            if( amountBtc > other->m_amount ){
+                amountBtc = amountBtc - other->m_amount;
+                p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, other->m_amount );
+            }
+            else {
+                p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, amountBtc );
+                return ZR::ZR_SUCCESS;
+            }
+        }
+        return ZR::ZR_SUCCESS;
     }
 
     OrderList asks;

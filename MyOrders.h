@@ -61,7 +61,6 @@ protected:
     /** Buyer side: start buying Bitcoins */
     void buy(Order * order, ZR::ZR_Number amount );
 
-
 private:
     OrderBook * m_bids;
     OrderBook * m_asks;
