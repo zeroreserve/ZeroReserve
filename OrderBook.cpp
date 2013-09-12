@@ -145,10 +145,10 @@ ZR::RetVal OrderBook::processOrder( Order* order )
         remove( order );  // remove so it gets reinserted with the updates values below.
     }
 
-    // do not insert an order that already exists
-    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
-        if( *order == *(*it) ) return ZR::ZR_FINISH;
-    }
+
+    if( find( order->m_order_id ) != end() )
+        return ZR::ZR_FINISH; // order already in book
+
 
     if( order->m_isMyOrder ){
         if( ZR::ZR_FINISH == m_myOrders->match( order ) ){
@@ -162,9 +162,8 @@ ZR::RetVal OrderBook::processOrder( Order* order )
         }
     }
 
-    if( ZR::ZR_FINISH != addOrder( order ) ){
-        p3zr->publishOrder( order );
-    }
+    addOrder( order );
+    p3zr->publishOrder( order );
 
     return ZR::ZR_SUCCESS;
 }

@@ -130,31 +130,32 @@ int MyOrders::matchOther( Order * other )
 
 
 
-int MyOrders::match( Order * order )
+int MyOrders::matchAsk( Order * order )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    if( order->m_orderType == Order::ASK ){
-        // send messages to potiential buyers
-        ZR::ZR_Number amountBtc = order->m_amount;
-        OrderList bids;
-        m_bids->filterOrders( bids, order->m_currency );
-        for( OrderIterator bidIt = bids.begin(); bidIt != bids.end(); bidIt++ ){
-            Order * other = *bidIt;
-            if( other->m_isMyOrder ) continue; // don't fill own orders
-            if( order->m_price > other->m_price ) break;    // no need to try and find matches beyond
-            std::cerr << "Zero Reserve: Match at bid price " << other->m_price.toStdString() << std::endl;
-            if( amountBtc > other->m_amount ){
-                amountBtc = amountBtc - other->m_amount;
-                p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, other->m_amount );
-            }
-            else {
-                p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, amountBtc );
-                return ZR::ZR_SUCCESS;
-            }
-        }
-        return ZR::ZR_SUCCESS;
-    }
 
+    ZR::ZR_Number amountBtc = order->m_amount;
+    OrderList bids;
+    m_bids->filterOrders( bids, order->m_currency );
+    for( OrderIterator bidIt = bids.begin(); bidIt != bids.end(); bidIt++ ){
+        Order * other = *bidIt;
+        if( other->m_isMyOrder ) continue; // don't fill own orders
+        if( order->m_price > other->m_price ) break;    // no need to try and find matches beyond
+        std::cerr << "Zero Reserve: Match at bid price " << other->m_price.toStdString() << std::endl;
+        if( amountBtc > other->m_amount ){
+            amountBtc = amountBtc - other->m_amount;
+            p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, other->m_amount );
+        }
+        else {
+            p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, amountBtc );
+            return ZR::ZR_SUCCESS;
+        }
+    }
+    return ZR::ZR_SUCCESS;
+}
+
+int MyOrders::match( Order * order )
+{
     OrderList asks;
     m_asks->filterOrders( asks, order->m_currency );
     for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){

@@ -53,6 +53,7 @@ public:
 protected:
     /** Matches our new order with all others  */
     virtual int match(Order *order);
+    virtual int matchAsk(Order *order);
 
     /** Matches incoming new order with ours */
     virtual int matchOther( Order * other );
