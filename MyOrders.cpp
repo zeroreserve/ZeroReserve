@@ -102,7 +102,9 @@ int MyOrders::matchOther( Order * other )
     if( other->m_isMyOrder ) return ZR::ZR_FAILURE; // don't fill own orders
 
     Order * order = NULL;
-    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
+    OrderList bids;
+    filterOrders( bids, other->m_currency );
+    for( OrderIterator it = bids.begin(); it != bids.end(); it++ ){
         order = *it;
         if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << order->m_price.toStdString() << std::endl;
@@ -115,15 +117,15 @@ int MyOrders::matchOther( Order * other )
             buy( other, order->m_amount );
             order->m_amount = 0;
             // FIXME - wait until deal closed
-            order->m_purpose = Order::FILLED;
-            p3zr->publishOrder( order );
+//            order->m_purpose = Order::FILLED;
+//            p3zr->publishOrder( order );
             return ZR::ZR_FINISH;
         }
     }
     // FIXME - wait until deal closed
     if( order ){
-        order->m_purpose = Order::PARTLY_FILLED;
-        p3zr->publishOrder( order );
+//        order->m_purpose = Order::PARTLY_FILLED;
+//        p3zr->publishOrder( order );
     }
     return ZR::ZR_SUCCESS;
 }
