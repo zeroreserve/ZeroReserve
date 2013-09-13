@@ -158,17 +158,16 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
     ZR::RetVal result;
     item->print( std::cerr );
     OrderBook::Order * order = item->getOrder();
+
+    if( !Router::Instance()->hasRoute( order->m_order_id ) ){
+        Router::Instance()->addRoute( order->m_order_id, item->PeerId() );
+    }
+
     if( order->m_orderType == OrderBook::Order::ASK ){
         result = m_asks->processOrder( order );
     }
     else{
         result = m_bids->processOrder( order );
-    }
-
-    // scavenge the info we get from order propagation for routing. In effect, this is a Turtle
-    // router, just that network layers are messed up by not dedicating the packets to routing.
-    if( ZR::ZR_SUCCESS == result ){
-        Router::Instance()->addRoute( item->getOrder()->m_order_id, item->PeerId() );
     }
 }
 
