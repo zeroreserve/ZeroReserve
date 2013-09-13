@@ -22,6 +22,7 @@
 #include "OrderBook.h"
 #include "Payment.h"
 
+#include <map>
 
 /**
  * @brief Holds pointers to all orders from myself.
@@ -66,6 +67,8 @@ protected:
 private:
     OrderBook * m_bids;
     OrderBook * m_asks;
+
+    std::map< ZR::VirtualAddress, ZR::VirtualAddress > m_CurrentTxRef;
 
 private:
     // FIXME: ugly hack - this class is not supposed to be a singleton.

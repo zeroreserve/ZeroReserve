@@ -109,6 +109,8 @@ int MyOrders::matchOther( Order * other )
         if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << order->m_price.toStdString() << std::endl;
 
+        m_CurrentTxRef[ other->m_order_id ] = order->m_order_id; // remember the matched order pair for later
+
         if( order->m_amount > other->m_amount ){
             buy( other, other->m_amount );
             order->m_amount = order->m_amount - other->m_amount;
@@ -116,16 +118,8 @@ int MyOrders::matchOther( Order * other )
         else {
             buy( other, order->m_amount );
             order->m_amount = 0;
-            // FIXME - wait until deal closed
-//            order->m_purpose = Order::FILLED;
-//            p3zr->publishOrder( order );
             return ZR::ZR_FINISH;
         }
-    }
-    // FIXME - wait until deal closed
-    if( order ){
-//        order->m_purpose = Order::PARTLY_FILLED;
-//        p3zr->publishOrder( order );
     }
     return ZR::ZR_SUCCESS;
 }
@@ -246,7 +240,12 @@ int MyOrders::finishExecute( Payment * payment )
 ZR::RetVal MyOrders::updateOrders( Payment * payment )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    OrderIterator it = find( payment->referrerId() );
+    std::map< ZR::VirtualAddress, ZR::VirtualAddress >::const_iterator refIt = m_CurrentTxRef.find( payment->referrerId() );
+    if( refIt == m_CurrentTxRef.end() ){
+        std::cerr << "Zero Reserve: Could not find Reference" << std::endl;
+        return ZR::ZR_FAILURE;
+    }
+    OrderIterator it = find( (*refIt).second );
     if( it != end() ){
         Order * order = *it;
         ZR::ZR_Number fiatAmount = order->m_amount * order->m_price;
