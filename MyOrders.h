@@ -47,6 +47,7 @@ public:
      * a new order, finish Bitcoin payment
      */
     int finishExecute( Payment *payment );
+    ZR::RetVal updateOrders( Payment * payment );
 
     void cancelOrder( int index );
 
@@ -70,6 +71,7 @@ private:
     // FIXME: ugly hack - this class is not supposed to be a singleton.
     // but I have no idea how PaymentReceiver can have a reference to this.
     // since there is only ever one object we get away with it for now.
+    friend class PaymentSpender;
     friend class PaymentReceiver;
     friend class TmRemoteCohorte;
     static MyOrders * Instance();

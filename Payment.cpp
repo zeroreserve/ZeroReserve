@@ -150,6 +150,15 @@ int PaymentSpender::commit()
         txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : -" + m_amount.toDecimalQString() );
     }
 
+    switch( m_category )
+    {
+    case BITCOIN:
+        return MyOrders::Instance()->updateOrders( this );
+    case PAYMENT:
+        return ZR::ZR_SUCCESS;
+    default:
+        return ZR::ZR_FAILURE;
+    }
     return ZR::ZR_SUCCESS;
 }
 

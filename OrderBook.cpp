@@ -151,10 +151,20 @@ ZR::RetVal OrderBook::processOrder( Order* order )
 
 
     if( order->m_isMyOrder ){
-        if( ZR::ZR_FINISH == m_myOrders->match( order ) ){
-            return ZR::ZR_FINISH; // completely executed - do not add
+        if( order->m_orderType == Order::BID ){
+            if( ZR::ZR_FINISH == m_myOrders->match( order ) ){
+                return ZR::ZR_FINISH; // completely executed - do not add
+            }
+            m_myOrders->addOrder( order );
         }
-        m_myOrders->addOrder( order );
+        else {
+            // TODO: Re-enable this:
+            // m_myOrders->matchAsk( order );
+            m_myOrders->addOrder( order );
+            // addOrder( order );
+            // TODO: Add a publisher queue for the case that counterparty doesn't respond
+            // return ZR::ZR_FINISH;
+        }
     }
     else{
         if( ZR::ZR_FINISH == m_myOrders->matchOther( order ) ){

@@ -94,7 +94,6 @@ public:
 private:
     static Requests requestList;
     static Requests myRequests;
-
 };
 
 

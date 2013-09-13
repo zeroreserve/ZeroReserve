@@ -215,15 +215,15 @@ int MyOrders::finishExecute( Payment * payment )
     std::cerr << "Zero Reserve: Finishing Order execution for " << payment->referrerId() << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
-    Order * oldOrder = *( find( payment->referrerId() ) );
-    // TODO: publish delete order and possibly updated order
-    if( NULL != oldOrder ){
+    OrderIterator it = find( payment->referrerId() );
+    if( it != end() ){
+        Order * oldOrder = *it;
         if( oldOrder->m_amount * oldOrder->m_price >  payment->getAmount() ){ // order only partly filled
             beginResetModel();
             m_asks->beginReset();
             oldOrder->m_purpose = Order::PARTLY_FILLED;
-            oldOrder->m_amount = oldOrder->m_amount - payment->getAmount() / oldOrder->m_price;
-            m_asks->beginReset();
+            oldOrder->m_amount -= payment->getAmount() / oldOrder->m_price;
+            m_asks->endReset();
             endResetModel();
         }
         else {  // completely filled
@@ -239,6 +239,38 @@ int MyOrders::finishExecute( Payment * payment )
     }
     return ZR::ZR_SUCCESS;
 }
+
+
+ZR::RetVal MyOrders::updateOrders( Payment * payment )
+{
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    OrderIterator it = find( payment->referrerId() );
+    if( it != end() ){
+        Order * order = *it;
+        ZR::ZR_Number fiatAmount = order->m_amount * order->m_price;
+        if( fiatAmount > payment->getAmount() ){
+            beginResetModel();
+            m_bids->beginReset();
+            order->m_amount -= payment->getAmount() / order->m_price;
+            order->m_purpose = Order::PARTLY_FILLED;
+            m_bids->endReset();
+            endResetModel();
+        }
+        else{
+            m_bids->remove( order );
+            remove( order );
+            order->m_purpose = Order::FILLED;
+        }
+        p3zr->publishOrder( order );
+    }
+    else {
+        std::cerr << "Zero Reserve: Could not find order" << std::endl;
+        return ZR::ZR_FAILURE;
+    }
+    return ZR::ZR_SUCCESS;
+}
+
+
 
 void MyOrders::cancelOrder( int index )
 {
