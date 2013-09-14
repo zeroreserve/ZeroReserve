@@ -82,8 +82,7 @@ bool RSZRPayRequestItem::serialise(void *data, uint32_t& pktsize)
 
         bool ok = RSZRRemoteItem::serialise( data,  pktsize);
 
-        std::string amount = m_Amount.toStdString();
-        ok &= setRawString( data, tlvsize, &m_Offset, amount );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_Amount.toStdString() );
         ok &= setRawString( data, tlvsize, &m_Offset, m_Currency );
 
         if (m_Offset != tlvsize){
@@ -225,11 +224,8 @@ bool RSZRRemoteTxInitItem::serialise(void *data, uint32_t& pktsize)
 
         bool ok = RSZRRemoteTxItem::serialise( data,  pktsize);
 
-        std::string amount = m_Payment->getAmount().toStdString();
-        ok &= setRawString( data, tlvsize, &m_Offset, amount );
-
-        std::string currency = m_Payment->getCurrency();
-        ok &= setRawString( data, tlvsize, &m_Offset, currency );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_Payment->getAmount().toStdString() );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_Payment->getCurrency() );
         ok &= setRawUInt8( data, tlvsize, &m_Offset, m_Payment->getCategory() );
 
         if (m_Offset != tlvsize){
@@ -326,18 +322,10 @@ bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
 
         bool ok = RSZRRemoteItem::serialise( data, pktsize );
 
-
-        std::string buf = m_order->m_amount.toStdString();
-        ok &= setRawString( data, tlvsize, &m_Offset, buf );
-
-        buf = Currency::currencySymbols[m_order->m_currency];
-        ok &= setRawString( data, tlvsize, &m_Offset, buf );
-
+        ok &= setRawString( data, tlvsize, &m_Offset, m_order->m_amount.toStdString() );
+        ok &= setRawString( data, tlvsize, &m_Offset, Currency::currencySymbols[m_order->m_currency] );
         ok &= setRawUInt8( data, tlvsize, &m_Offset, m_order->m_orderType );
-
-        buf = m_order->m_price.toStdString();
-        ok &= setRawString( data, tlvsize, &m_Offset, buf );
-
+        ok &= setRawString( data, tlvsize, &m_Offset, m_order->m_price.toStdString() );
         ok &= setRawUInt64( data, tlvsize, &m_Offset, m_order->m_timeStamp );
         ok &= setRawString( data, tlvsize, &m_Offset, m_order->m_order_id );
         ok &= setRawUInt8( data, tlvsize, &m_Offset, m_order->m_purpose );

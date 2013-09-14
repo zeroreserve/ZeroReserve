@@ -240,12 +240,9 @@ bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
         uint32_t offset = headersOffset;  // skip header
 
         ok &= setRawString( data, tlvsize, &offset, m_credit->m_currency );
-        std::string buf = m_credit->m_credit.toStdString();
-        ok &= setRawString( data, tlvsize, &offset, buf );
-        buf = m_credit->m_our_credit.toStdString();
-        ok &= setRawString( data, tlvsize, &offset, buf );
-        buf = m_credit->m_balance.toStdString();
-        ok &= setRawString( data, tlvsize, &offset, buf );
+        ok &= setRawString( data, tlvsize, &offset, m_credit->m_credit.toStdString() );
+        ok &= setRawString( data, tlvsize, &offset, m_credit->m_our_credit.toStdString() );
+        ok &= setRawString( data, tlvsize, &offset, m_credit->m_balance.toStdString() );
 
         if (offset != tlvsize){
                 ok = false;
@@ -442,17 +439,10 @@ bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
     uint32_t tlvsize = serial_size() ;
 
     ok &= setRawUInt8( data, tlvsize, &m_Offset, m_Role );
-
-    std::string amount = m_payment->getAmount().toStdString();
-    ok &= setRawString( data, tlvsize, &m_Offset, amount );
-
-    std::string currency = m_payment->getCurrency();
-    ok &= setRawString( data, tlvsize, &m_Offset, currency );
-
+    ok &= setRawString( data, tlvsize, &m_Offset, m_payment->getAmount().toStdString() );
+    ok &= setRawString( data, tlvsize, &m_Offset, m_payment->getCurrency() );
     ok &= setRawUInt8( data, tlvsize, &m_Offset, m_payment->getCategory() );
-
-    std::string referrer = m_payment->referrerId();
-    ok &= setRawString( data, tlvsize, &m_Offset, referrer );
+    ok &= setRawString( data, tlvsize, &m_Offset, m_payment->referrerId() );
 
     if (m_Offset != tlvsize){
         ok = false;
