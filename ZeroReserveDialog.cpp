@@ -71,12 +71,13 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     connect( ui.friendSelectionWidget, SIGNAL( doubleClicked(int,QString) ), this, SLOT( friendDetails() ) );
     connect( ui.askButton, SIGNAL( clicked() ), this, SLOT( addAsk() ) );
     connect( ui.bidButton, SIGNAL( clicked() ), this, SLOT( addBid() ) );
-    connect( ui.currencySelector2, SIGNAL( currentIndexChanged(QString) ), this, SLOT( loadGrandTotal(QString) ) );
+    connect( ui.currencySelector2, SIGNAL( currentIndexChanged(QString) ), this, SLOT( loadGrandTotal() ) );
     connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), bids, SLOT( setCurrency(QString) ) );
     connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), asks, SLOT( setCurrency(QString) ) );
     connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), myOrders, SLOT( setCurrency(QString) ) );
     connect( ui.remotePayment, SIGNAL( clicked() ), this, SLOT( remotePayment() ) );
     connect( ui.remoteRequest, SIGNAL( clicked() ), this, SLOT( remoteRequest() ) );
+    connect( ui.paymentHistoryList, SIGNAL( currentItemChanged(QListWidgetItem*,QListWidgetItem*) ), this, SLOT( loadGrandTotal() ) );
 
     ui.myOrders->setContextMenuPolicy( Qt::CustomContextMenu );
     ui.myOrders->setSelectionBehavior( QAbstractItemView::SelectRows );
@@ -122,7 +123,7 @@ void ZeroReserveDialog::loadTxLog()
 }
 
 
-void ZeroReserveDialog::loadGrandTotal(QString)
+void ZeroReserveDialog::loadGrandTotal()
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui.currencySelector2->currentText().toStdString() );
     std::string currencySym = Currency::currencySymbols[ sym ];

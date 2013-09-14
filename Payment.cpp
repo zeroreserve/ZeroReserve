@@ -105,6 +105,7 @@ int PaymentReceiver::commit()
 
     if( txLogView ){
         txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : +" + m_amount.toDecimalQString() );
+        txLogView->setCurrentRow( 0 ); // make the view emit currentItemChanged()
     }
 
     switch( m_category )
@@ -148,6 +149,7 @@ int PaymentSpender::commit()
 
     if( txLogView ){
         txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : -" + m_amount.toDecimalQString() );
+        txLogView->setCurrentRow( 0 ); // make the view emit currentItemChanged()
     }
 
     switch( m_category )

@@ -44,7 +44,7 @@ private slots:
     void contextMenuFriendList(QPoint);
     void friendDetails();
     void payTo();
-    void loadGrandTotal( QString currency = "" );
+    void loadGrandTotal();
     void cancelOrder();
     void contextMenuMyOrders(const QPoint & );
     void remoteRequest();
