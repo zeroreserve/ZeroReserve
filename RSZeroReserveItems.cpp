@@ -75,7 +75,6 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
     }
 }
 
-// TODO: make all serialise() below use this
 
 bool RsZeroReserveItem::serialise(void *data,uint32_t & /* size */)
 {
@@ -122,7 +121,7 @@ std::ostream& RsZeroReserveMsgItem::print(std::ostream &out, uint16_t indent)
 
 uint32_t RsZeroReserveMsgItem::serial_size() const
 {
-        uint32_t s = headersOffset; /* header */
+        uint32_t s = RsZeroReserveItem::serial_size();
         s += sizeof(uint8_t); // the type
         s += m_msg.length() + HOLLERITH_LEN_SPEC;
 
@@ -138,16 +137,12 @@ bool RsZeroReserveMsgItem::serialise(void *data, uint32_t& pktsize)
 
         pktsize = tlvsize;
 
-        bool ok = true;
+        bool ok = RsZeroReserveItem::serialise( data, pktsize );
 
-        ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
+        ok &= setRawUInt8( data, tlvsize, &m_Offset, m_msgType );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_msg );
 
-        uint32_t offset = headersOffset;  // skip header
-
-        ok &= setRawUInt8( data, tlvsize, &offset, m_msgType );
-        ok &= setRawString( data, tlvsize, &offset, m_msg );
-
-        if (offset != tlvsize){
+        if (m_Offset != tlvsize){
                 ok = false;
                 std::cerr << "RsZeroReserveMsgItem::serialise() Size Error! " << std::endl;
         }
@@ -156,14 +151,11 @@ bool RsZeroReserveMsgItem::serialise(void *data, uint32_t& pktsize)
 }
 
 RsZeroReserveMsgItem::RsZeroReserveMsgItem(void *data, uint32_t pktsize)
-        : RsZeroReserveItem( ZERORESERVE_MSG_ITEM )
+        : RsZeroReserveItem( data, pktsize, ZERORESERVE_MSG_ITEM )
 {
     /* get the type and size */
     uint32_t rstype = getRsItemId(data);
     uint32_t rssize = getRsItemSize(data);
-
-    uint32_t offset = headersOffset;
-
 
     if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_MSG_ITEM != getRsItemSubType(rstype)))
         throw std::runtime_error("Wrong packet type!") ;
@@ -171,14 +163,12 @@ RsZeroReserveMsgItem::RsZeroReserveMsgItem(void *data, uint32_t pktsize)
     if (pktsize < rssize)    /* check size */
         throw std::runtime_error("Not enough size!") ;
 
-    bool ok = true;
-
     uint8_t msgType;
-    ok &= getRawUInt8(data, rssize, &offset, &msgType );
+    bool ok = getRawUInt8(data, rssize, &m_Offset, &msgType );
     m_msgType = (MsgType) msgType;
-    ok &= getRawString(data, rssize, &offset, m_msg );
+    ok &= getRawString(data, rssize, &m_Offset, m_msg );
 
-    if (offset != rssize || !ok )
+    if (m_Offset != rssize || !ok )
         throw std::runtime_error("Deserialisation error!") ;
 }
 
@@ -215,7 +205,7 @@ std::ostream& RsZeroReserveCreditItem::print(std::ostream &out, uint16_t indent)
 
 uint32_t RsZeroReserveCreditItem::serial_size() const
 {
-        uint32_t s = headersOffset; /* header */
+        uint32_t s = RsZeroReserveItem::serial_size();
         s += CURRENCY_STRLEN + HOLLERITH_LEN_SPEC;
         s += m_credit->m_credit.length() + HOLLERITH_LEN_SPEC;
         s += m_credit->m_our_credit.length() + HOLLERITH_LEN_SPEC;
@@ -233,18 +223,14 @@ bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
 
         pktsize = tlvsize;
 
-        bool ok = true;
+        bool ok = RsZeroReserveItem::serialise( data, pktsize );
 
-        ok &= setRsItemHeader(data, tlvsize, PacketId(), tlvsize);
+        ok &= setRawString( data, tlvsize, &m_Offset, m_credit->m_currency );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_credit->m_credit.toStdString() );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_credit->m_our_credit.toStdString() );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_credit->m_balance.toStdString() );
 
-        uint32_t offset = headersOffset;  // skip header
-
-        ok &= setRawString( data, tlvsize, &offset, m_credit->m_currency );
-        ok &= setRawString( data, tlvsize, &offset, m_credit->m_credit.toStdString() );
-        ok &= setRawString( data, tlvsize, &offset, m_credit->m_our_credit.toStdString() );
-        ok &= setRawString( data, tlvsize, &offset, m_credit->m_balance.toStdString() );
-
-        if (offset != tlvsize){
+        if (m_Offset != tlvsize){
                 ok = false;
                 std::cerr << "RsZeroReserveCreditItem::serialise() Size Error! " << std::endl;
         }
@@ -253,19 +239,11 @@ bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
 }
 
 RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
-        : RsZeroReserveItem( ZERORESERVE_CREDIT_ITEM )
+        : RsZeroReserveItem( data, pktsize, ZERORESERVE_CREDIT_ITEM )
 {
     /* get the type and size */
     uint32_t rstype = getRsItemId(data);
     uint32_t rssize = getRsItemSize(data);
-
-    bool ok = true;
-    uint32_t offset = headersOffset;
-
-    std::string currency;
-
-    ok &= getRawString( data, rssize, &offset, currency );
-    m_credit = new Credit( "", currency );  // FIXME: We can't give an ID here - add it later. Bad
 
     if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZERORESERVE_CREDIT_ITEM != getRsItemSubType(rstype)))
         throw std::runtime_error("Wrong packet type!") ;
@@ -273,15 +251,20 @@ RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
     if (pktsize < rssize)    /* check size */
         throw std::runtime_error("Not enough size!") ;
 
+
+    std::string currency;
+    bool ok = getRawString( data, rssize, &m_Offset, currency );
+    m_credit = new Credit( "", currency );  // FIXME: We can't give an ID here - add it later. Bad
+
     std::string buf;
-    ok &= getRawString( data, rssize, &offset, buf ); // these 2 need to interchange
+    ok &= getRawString( data, rssize, &m_Offset, buf ); // these 2 need to interchange
     m_credit->m_our_credit = ZR::ZR_Number::fromFractionString( buf );
-    ok &= getRawString( data, rssize, &offset, buf );     // because credit at peer is our_credit here
+    ok &= getRawString( data, rssize, &m_Offset, buf );     // because credit at peer is our_credit here
     m_credit->m_credit = ZR::ZR_Number::fromFractionString( buf );
-    ok &= getRawString( data, rssize, &offset, buf );
+    ok &= getRawString( data, rssize, &m_Offset, buf );
     m_credit->m_balance = ZR::ZR_Number::fromFractionString( buf );
 
-    if (offset != rssize || !ok )
+    if (m_Offset != rssize || !ok )
         throw std::runtime_error("Deserialisation error!") ;
 }
 
@@ -322,10 +305,8 @@ RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SU
             throw std::runtime_error("Not enough size!") ;
     }
 
-    bool ok = true;
-
     uint8_t txPhase;
-    ok &= getRawUInt8(data, rssize, &m_Offset, &txPhase );
+    bool ok = getRawUInt8(data, rssize, &m_Offset, &txPhase );
     m_TxPhase = (TransactionManager::TxPhase) txPhase;
 
     ok &= getRawString(data, rssize, &m_Offset, m_txId );
@@ -433,10 +414,9 @@ uint32_t RsZeroReserveInitTxItem::serial_size() const
 
 bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
 {
-    bool ok = true;
-    RsZeroReserveTxItem::serialise( data, pktsize);
-
     uint32_t tlvsize = serial_size() ;
+
+    bool ok = RsZeroReserveTxItem::serialise( data, pktsize);
 
     ok &= setRawUInt8( data, tlvsize, &m_Offset, m_Role );
     ok &= setRawString( data, tlvsize, &m_Offset, m_payment->getAmount().toStdString() );
