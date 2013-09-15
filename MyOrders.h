@@ -54,21 +54,24 @@ public:
 
 protected:
     /** Matches our new order with all others  */
-    virtual int match(Order *order);
-    virtual int matchAsk(Order *order);
+    virtual ZR::RetVal match(Order *order);
+    virtual ZR::RetVal matchAsk(Order *order);
 
     /** Matches incoming new order with ours */
-    virtual int matchOther( Order * other );
+    virtual ZR::RetVal matchOther( Order * other );
 
 
     /** Buyer side: start buying Bitcoins */
     void buy(Order * order, ZR::ZR_Number amount );
 
+    void filterBids( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym );
+    static bool reverseCompareOrder( const Order * left, const Order * right );
+
 private:
     OrderBook * m_bids;
     OrderBook * m_asks;
 
-    std::map< ZR::VirtualAddress, ZR::VirtualAddress > m_CurrentTxRef;
+    std::map< Order, Order > m_CurrentTxOrders;
 
 private:
     // FIXME: ugly hack - this class is not supposed to be a singleton.

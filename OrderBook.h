@@ -64,6 +64,7 @@ public:
         OrderBook::Order::Purpose m_purpose;
 
         bool operator == (const Order & other);
+        bool operator < ( const Order & other) const;
         void setOrderId();
     };
 
@@ -88,6 +89,7 @@ public:
 
     /** @return ZR::ZR_FINISH if this order has been completed */
     virtual ZR::RetVal processOrder( Order* order );
+    virtual ZR::RetVal processMyOrder( Order* order );
     void filterOrders(OrderList & filteredOrders , const Currency::CurrencySymbols currencySym);
 
     /** remove an order from the book
@@ -110,10 +112,10 @@ protected:
 protected:
     virtual int addOrder( Order* order );
     /** Matches our new order with all others  */
-    virtual int match( Order * ){ return ZR::ZR_FAILURE; }
-    virtual int matchAsk( Order * ){ return ZR::ZR_FAILURE; }
+    virtual ZR::RetVal match( Order * ){ return ZR::ZR_FAILURE; }
+    virtual ZR::RetVal matchAsk( Order * ){ return ZR::ZR_FAILURE; }
     /** Matches incoming new order with ours */
-    virtual int matchOther( Order * ){ return ZR::ZR_FAILURE; }
+    virtual ZR::RetVal matchOther( Order * ){ return ZR::ZR_FAILURE; }
 signals:
 
 public slots:

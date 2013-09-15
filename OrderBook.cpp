@@ -25,12 +25,6 @@
 #include <iostream>
 
 
-bool OrderBook::compareOrder( const Order * left, const Order * right ){
-    if( left->m_order_id == right->m_order_id ){
-        return true;
-    }
-    return false;
-}
 
 OrderBook::OrderBook()
 {
@@ -112,13 +106,37 @@ void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::Curren
         if( (*it)->m_currency == currencySym )
             filteredOrders.append( *it );
     }
-    qSort( filteredOrders.begin(), filteredOrders.end(), compareOrder);
+    qSort( filteredOrders.begin(), filteredOrders.end(), compareOrder );
 }
 
+ZR::RetVal OrderBook::processMyOrder( Order* order )
+{
+    ZR::RetVal retval;
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    m_myOrders->addOrder( order );
+    addOrder( order );
+
+    if( order->m_orderType == Order::BID ){
+        retval = m_myOrders->match( order );
+    }
+    else {
+        // TODO: Re-enable this:
+        // m_myOrders->matchAsk( order );
+        // addOrder( order );
+        // TODO: Add a publisher queue for the case that counterparty doesn't respond
+        retval = ZR::ZR_SUCCESS;
+    }
+    if( ZR::ZR_SUCCESS == retval ){
+        p3zr->publishOrder( order );
+    }
+    return ZR::ZR_SUCCESS;
+}
 
 ZR::RetVal OrderBook::processOrder( Order* order )
 {
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    if( m_myOrders->find( order->m_order_id ) != m_myOrders->end() )
+        return ZR::ZR_FAILURE; // this is my own order
+
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
     if( currentTime - order->m_timeStamp >  172800000        // older than two days
             || order->m_timeStamp - currentTime > 3600000){  // or more than an hour in the future
@@ -128,7 +146,6 @@ ZR::RetVal OrderBook::processOrder( Order* order )
     if( Order::FILLED == order->m_purpose || Order::CANCEL == order->m_purpose ){
         Order * oldOrder = remove( order );
         if( oldOrder ){
-            p3zr->publishOrder( order );
             delete oldOrder;
             return ZR::ZR_SUCCESS;
         }
@@ -143,39 +160,15 @@ ZR::RetVal OrderBook::processOrder( Order* order )
             }
         }
         remove( order );  // remove so it gets reinserted with the updates values below.
+        addOrder( order );
+        return ZR::ZR_SUCCESS;
     }
-
 
     if( find( order->m_order_id ) != end() )
         return ZR::ZR_FINISH; // order already in book
 
-
-    if( order->m_isMyOrder ){
-        if( order->m_orderType == Order::BID ){
-            if( ZR::ZR_FINISH == m_myOrders->match( order ) ){
-                return ZR::ZR_FINISH; // completely executed - do not add
-            }
-            m_myOrders->addOrder( order );
-        }
-        else {
-            // TODO: Re-enable this:
-            // m_myOrders->matchAsk( order );
-            m_myOrders->addOrder( order );
-            // addOrder( order );
-            // TODO: Add a publisher queue for the case that counterparty doesn't respond
-            // return ZR::ZR_FINISH;
-        }
-    }
-    else{
-        if( ZR::ZR_FINISH == m_myOrders->matchOther( order ) ){
-            return ZR::ZR_FINISH; // completely executed - do not add
-        }
-    }
-
     addOrder( order );
-    p3zr->publishOrder( order );
-
-    return ZR::ZR_SUCCESS;
+    return m_myOrders->matchOther( order );
 }
 
 
@@ -186,7 +179,7 @@ int OrderBook::addOrder( Order * order )
                  " Currency: " << order->m_currency << std::endl;
 
     m_orders.append(order);
-    if( order->m_currency != m_currency ) return true;
+    if( order->m_currency != m_currency ) return ZR::ZR_SUCCESS;
 
     beginInsertRows( QModelIndex(), m_filteredOrders.size(), m_filteredOrders.size());
     filterOrders( m_filteredOrders, m_currency );
@@ -232,6 +225,9 @@ OrderBook::OrderIterator OrderBook::find( const std::string & order_id )
     return m_orders.end();
 }
 
+bool OrderBook::compareOrder( const Order * left, const Order * right ){
+    return ( left->m_orderType == Order::BID ) ? left->m_price > right->m_price : left->m_price < right->m_price;
+}
 
 
 // Order implementation
@@ -260,4 +256,10 @@ bool OrderBook::Order::operator == ( const OrderBook::Order & other )
         return true;
     else
         return false;
+}
+
+
+bool OrderBook::Order::operator < ( const Order & other ) const
+{
+    return ( m_order_id.compare( other.m_order_id ) < 0 );
 }

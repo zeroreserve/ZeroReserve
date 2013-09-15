@@ -169,6 +169,10 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
     else{
         result = m_bids->processOrder( order );
     }
+
+    if( ZR::ZR_SUCCESS == result ){
+        publishOrder( order );
+    }
 }
 
 void p3ZeroReserveRS::handleCredit(RsZeroReserveCreditItem *item)
@@ -218,6 +222,7 @@ void p3ZeroReserveRS::publishOrder( OrderBook::Order * order )
     std::list< std::string > sendList;
     m_peers->getOnlineList(sendList);
     for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
+        if( (*it) == getOwnId() ) continue;
         sendOrder( *it, order );
     }
 }

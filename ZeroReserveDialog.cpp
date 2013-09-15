@@ -212,7 +212,7 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
     order->m_purpose = OrderBook::Order::NEW;
     order->m_timeStamp = QDateTime::currentMSecsSinceEpoch();
     order->setOrderId();
-    book->processOrder( order );
+    book->processMyOrder( order );
 }
 
 

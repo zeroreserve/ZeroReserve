@@ -92,41 +92,54 @@ QVariant MyOrders::data( const QModelIndex& index, int role ) const
     return QVariant();
 }
 
+bool MyOrders::reverseCompareOrder( const Order * left, const Order * right ){
+    return ( left->m_orderType == Order::BID ) ? left->m_price > right->m_price : left->m_price < right->m_price;
+}
 
-int MyOrders::matchOther( Order * other )
+void MyOrders::filterBids( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym )
+{
+    filteredOrders.clear();
+    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+        Order * order = *it;
+        if( order->m_currency == currencySym && order->m_orderType == Order::BID )
+            filteredOrders.append( *it );
+    }
+    qSort( filteredOrders.begin(), filteredOrders.end(), reverseCompareOrder );
+}
+
+ZR::RetVal MyOrders::matchOther( Order * other )
 {
     if( other->m_orderType == Order::BID ){
         return ZR::ZR_FAILURE;
     }
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     if( other->m_isMyOrder ) return ZR::ZR_FAILURE; // don't fill own orders
 
     Order * order = NULL;
     OrderList bids;
-    filterOrders( bids, other->m_currency );
+    filterBids( bids, other->m_currency );
+    ZR::ZR_Number amount = other->m_amount;
     for( OrderIterator it = bids.begin(); it != bids.end(); it++ ){
         order = *it;
         if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << order->m_price.toStdString() << std::endl;
 
-        m_CurrentTxRef[ other->m_order_id ] = order->m_order_id; // remember the matched order pair for later
+        m_CurrentTxOrders[ *other ] = *order; // remember the matched order pair for later
 
-        if( order->m_amount > other->m_amount ){
-            buy( other, other->m_amount );
-            order->m_amount = order->m_amount - other->m_amount;
-        }
-        else {
-            buy( other, order->m_amount );
-            order->m_amount = 0;
+        if( order->m_amount > amount ){
+            buy( other, amount * other->m_price );
             return ZR::ZR_FINISH;
         }
+        else {
+            buy( other, order->m_amount * other->m_price );
+        }
+        amount -= order->m_amount;
     }
     return ZR::ZR_SUCCESS;
 }
 
 
 
-int MyOrders::matchAsk( Order * order )
+ZR::RetVal MyOrders::matchAsk( Order * order )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
@@ -139,7 +152,6 @@ int MyOrders::matchAsk( Order * order )
         if( order->m_price > other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at bid price " << other->m_price.toStdString() << std::endl;
         if( amountBtc > other->m_amount ){
-            amountBtc = amountBtc - other->m_amount;
             p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, other->m_amount );
         }
         else {
@@ -150,35 +162,35 @@ int MyOrders::matchAsk( Order * order )
     return ZR::ZR_SUCCESS;
 }
 
-int MyOrders::match( Order * order )
+ZR::RetVal MyOrders::match( Order * order )
 {
     OrderList asks;
     m_asks->filterOrders( asks, order->m_currency );
+    ZR::ZR_Number amount = order->m_amount;
     for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){
         Order * other = *askIt;
         if( other->m_isMyOrder ) continue; // don't fill own orders
         if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
 
-        if( order->m_amount > other->m_amount ){
-            buy( other, other->m_amount );
-            order->m_amount = order->m_amount - other->m_amount;
+        m_CurrentTxOrders[ *other ] = *order; // remember the matched order pair for later
+
+        if( amount > other->m_amount ){
+            buy( other, other->m_amount * other->m_price );
         }
         else {
-            buy( other, order->m_amount );
-            order->m_amount = 0;
+            buy( other, amount * other->m_price );
             return ZR::ZR_FINISH;
         }
+        amount -= other->m_amount;
     }
-
     return ZR::ZR_SUCCESS;
 }
 
 
 void MyOrders::buy( Order * order, ZR::ZR_Number amount )
 {
-    ZR::ZR_Number amountToPay = amount * order->m_price;
-    Payment * payment = new PaymentSpender( Router::Instance()->nextHop( order->m_order_id), amountToPay, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
+    Payment * payment = new PaymentSpender( Router::Instance()->nextHop( order->m_order_id), amount, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
     payment->referrerId( order->m_order_id );
     TmRemoteCoordinator * tm = new TmRemoteCoordinator( order->m_order_id, payment );
     if( ZR::ZR_FAILURE == tm->init() ) delete tm;
@@ -239,35 +251,38 @@ int MyOrders::finishExecute( Payment * payment )
 
 ZR::RetVal MyOrders::updateOrders( Payment * payment )
 {
+    std::cerr << "Zero Reserve: Updating order" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    std::map< ZR::VirtualAddress, ZR::VirtualAddress >::const_iterator refIt = m_CurrentTxRef.find( payment->referrerId() );
-    if( refIt == m_CurrentTxRef.end() ){
+    Order templateOrder;
+    templateOrder.m_order_id =  payment->referrerId();
+    std::map< Order, Order >::iterator refIt = m_CurrentTxOrders.find( templateOrder );
+    if( refIt == m_CurrentTxOrders.end() ){
         std::cerr << "Zero Reserve: Could not find Reference" << std::endl;
         return ZR::ZR_FAILURE;
     }
-    OrderIterator it = find( (*refIt).second );
-    if( it != end() ){
-        Order * order = *it;
-        ZR::ZR_Number fiatAmount = order->m_amount * order->m_price;
-        if( fiatAmount > payment->getAmount() ){
-            beginResetModel();
-            m_bids->beginReset();
-            order->m_amount -= payment->getAmount() / order->m_price;
-            order->m_purpose = Order::PARTLY_FILLED;
-            m_bids->endReset();
-            endResetModel();
-        }
-        else{
-            m_bids->remove( order );
-            remove( order );
-            order->m_purpose = Order::FILLED;
-        }
-        p3zr->publishOrder( order );
+    OrderIterator orderIt = find( (*refIt).second.m_order_id );
+    Order * order = *orderIt;
+    const Order & other = (*refIt).first;
+
+
+    ZR::ZR_Number fiatAmount = order->m_amount * other.m_price;
+    if( fiatAmount > payment->getAmount() ){
+        beginResetModel();
+        m_bids->beginReset();
+        order->m_amount -= payment->getAmount() / other.m_price;
+        order->m_purpose = Order::PARTLY_FILLED;
+        m_bids->endReset();
+        endResetModel();
     }
-    else {
-        std::cerr << "Zero Reserve: Could not find order" << std::endl;
-        return ZR::ZR_FAILURE;
+    else{
+        m_bids->remove( order );
+        remove( order );
+        order->m_purpose = Order::FILLED;
     }
+    p3zr->publishOrder( order );
+
+    m_CurrentTxOrders.erase( refIt );
+
     return ZR::ZR_SUCCESS;
 }
 
