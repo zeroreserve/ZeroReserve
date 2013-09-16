@@ -22,10 +22,11 @@
 #include "p3ZeroReserverRS.h"
 #include "Payment.h"
 
-TmRemoteCoordinator::TmRemoteCoordinator(const ZR::VirtualAddress & addr , Payment *payment) :
-    TransactionManager( addr ),
+TmRemoteCoordinator::TmRemoteCoordinator(const ZR::VirtualAddress & addr , Payment *payment, const std::string & myId ) :
+    TransactionManager( addr + ':' + myId ),
     m_Destination( addr ),
-    m_Payment( payment )
+    m_Payment( payment ),
+    m_myId( myId )
 {
 }
 
@@ -38,7 +39,7 @@ ZR::RetVal TmRemoteCoordinator::init()
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteTxInitItem * item = new RSZRRemoteTxInitItem( m_Destination, QUERY, Router::SERVER, m_Payment );
+    RSZRRemoteTxInitItem * item = new RSZRRemoteTxInitItem( m_Destination, QUERY, Router::SERVER, m_Payment, m_myId );
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
     if( addr.empty() )
         return ZR::ZR_FAILURE;
@@ -57,7 +58,7 @@ ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
     {
     case VOTE_YES:
         std::cerr << "Zero Reserve: TX Coordinator: Received Vote: YES" << std::endl;
-        reply = new RSZRRemoteTxItem( m_Destination, COMMIT, Router::SERVER );
+        reply = new RSZRRemoteTxItem( m_Destination, COMMIT, Router::SERVER, item->getPayerId() );
         reply->PeerId( m_Payment->getCounterparty() );
         p3zr->sendItem( reply );
         return ZR::ZR_SUCCESS;

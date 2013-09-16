@@ -62,7 +62,7 @@ protected:
 
 
     /** Buyer side: start buying Bitcoins */
-    void buy(Order * order, ZR::ZR_Number amount );
+    void buy( Order * order, ZR::ZR_Number amount , const Order::ID &myId );
 
     void filterBids( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym );
     static bool reverseCompareOrder( const Order * left, const Order * right );

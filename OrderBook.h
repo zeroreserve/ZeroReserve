@@ -42,6 +42,7 @@ public:
     class Order
     {
     public:
+        typedef std::string ID;
         enum OrderType { BID = 0, ASK };
         enum Purpose { NEW = 0,         // new order
                        CANCEL,          // tell everyone I changed my mind
@@ -51,17 +52,19 @@ public:
                                         // an ask market order will not be published
                                         // bid market orders go to execution right away.
                      };
-        Order( bool isMyOrder = false ){ m_isMyOrder = isMyOrder; }
+        Order( bool isMyOrder = false ) : m_isMyOrder( isMyOrder), m_commitment( 0 )
+        {}
 
-        std::string m_order_id; // hashed from order attributes, a secret and randomness
+        ID m_order_id; // hashed from order attributes, a secret and randomness
         bool m_isMyOrder;
         OrderType m_orderType;
         ZR::ZR_Number m_amount;
         ZR::ZR_Number m_price;     // the amount as number for sorting
         Currency::CurrencySymbols m_currency;
         qint64 m_timeStamp;   // no more than 1 order / millisecond
-        bool sent;
         OrderBook::Order::Purpose m_purpose;
+        ZR::ZR_Number m_commitment;    // the amount which is currently processed by active TX
+                                       // m_commitment <= m_amount
 
         bool operator == (const Order & other);
         bool operator < ( const Order & other) const;

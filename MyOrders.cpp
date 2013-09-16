@@ -109,10 +109,10 @@ void MyOrders::filterBids( OrderList & filteredOrders, const Currency::CurrencyS
 
 ZR::RetVal MyOrders::matchOther( Order * other )
 {
-    if( other->m_orderType == Order::BID ){
-        return ZR::ZR_FAILURE;
-    }
     if( other->m_isMyOrder ) return ZR::ZR_FAILURE; // don't fill own orders
+    if( other->m_orderType == Order::BID ){
+        return ZR::ZR_SUCCESS;
+    }
 
     Order * order = NULL;
     OrderList bids;
@@ -126,11 +126,11 @@ ZR::RetVal MyOrders::matchOther( Order * other )
         m_CurrentTxOrders[ *other ] = *order; // remember the matched order pair for later
 
         if( order->m_amount > amount ){
-            buy( other, amount * other->m_price );
+            buy( other, amount * other->m_price, order->m_order_id );
             return ZR::ZR_FINISH;
         }
         else {
-            buy( other, order->m_amount * other->m_price );
+            buy( other, order->m_amount * other->m_price, order->m_order_id );
         }
         amount -= order->m_amount;
     }
@@ -176,10 +176,10 @@ ZR::RetVal MyOrders::match( Order * order )
         m_CurrentTxOrders[ *other ] = *order; // remember the matched order pair for later
 
         if( amount > other->m_amount ){
-            buy( other, other->m_amount * other->m_price );
+            buy( other, other->m_amount * other->m_price, order->m_order_id );
         }
         else {
-            buy( other, amount * other->m_price );
+            buy( other, amount * other->m_price, order->m_order_id );
             return ZR::ZR_FINISH;
         }
         amount -= other->m_amount;
@@ -188,11 +188,11 @@ ZR::RetVal MyOrders::match( Order * order )
 }
 
 
-void MyOrders::buy( Order * order, ZR::ZR_Number amount )
+void MyOrders::buy( Order * order, ZR::ZR_Number amount, const Order::ID & myId )
 {
     Payment * payment = new PaymentSpender( Router::Instance()->nextHop( order->m_order_id), amount, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
     payment->referrerId( order->m_order_id );
-    TmRemoteCoordinator * tm = new TmRemoteCoordinator( order->m_order_id, payment );
+    TmRemoteCoordinator * tm = new TmRemoteCoordinator( order->m_order_id, payment, myId );
     if( ZR::ZR_FAILURE == tm->init() ) delete tm;
 }
 

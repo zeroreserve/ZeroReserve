@@ -119,7 +119,9 @@ class RSZRRemoteTxItem : public RSZRRemoteItem
 public:
 
     RSZRRemoteTxItem( void *data, uint32_t size, uint8_t itemType = ZR_REMOTE_TX_ITEM );
-    RSZRRemoteTxItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase, Router::TunnelDirection direction, uint8_t itemType = ZR_REMOTE_TX_ITEM );
+    RSZRRemoteTxItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase,
+                     Router::TunnelDirection direction,
+                     const OrderBook::Order::ID & payerId, uint8_t itemType = ZR_REMOTE_TX_ITEM );
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;
@@ -127,10 +129,12 @@ public:
 
     TransactionManager::TxPhase getTxPhase() { return m_TxPhase; }
     Router::TunnelDirection getDirection() { return m_Direction; }
+    const OrderBook::Order::ID & getPayerId(){ return m_PayerId; }
 
 protected:
     TransactionManager::TxPhase m_TxPhase;
     Router::TunnelDirection m_Direction;
+    OrderBook::Order::ID m_PayerId;
 };
 
 /**
@@ -146,7 +150,7 @@ class RSZRRemoteTxInitItem : public RSZRRemoteTxItem
 public:
 
     RSZRRemoteTxInitItem( void *data, uint32_t size );
-    RSZRRemoteTxInitItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase, Router::TunnelDirection direction, Payment * payment );
+    RSZRRemoteTxInitItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase, Router::TunnelDirection direction, Payment * payment, const OrderBook::Order::ID & payerId );
 
     virtual bool serialise(void *data,uint32_t& size) ;
     virtual uint32_t serial_size() const ;

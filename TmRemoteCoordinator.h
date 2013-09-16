@@ -28,7 +28,7 @@ class TmRemoteCoordinator : public TransactionManager
 {
     TmRemoteCoordinator();
 public:
-    TmRemoteCoordinator(const ZR::VirtualAddress &addr, Payment * payment);
+    TmRemoteCoordinator(const ZR::VirtualAddress &addr, Payment * payment, const std::string &myId);
     virtual ~TmRemoteCoordinator();
 
     virtual ZR::RetVal init();
@@ -38,6 +38,7 @@ public:
 private:
     ZR::VirtualAddress m_Destination;
     Payment * m_Payment;
+    std::string m_myId;
 };
 
 #endif // TMREMOTECOORDINATOR_H

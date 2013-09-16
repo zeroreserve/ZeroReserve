@@ -5,8 +5,8 @@ Friend 2 Friend Payment and Bitcoin exchange
 
 Prerequisite for building is a successful RetroShare build and sqlite3.
 RetroShare is available from http://retroshare.sourceforge.net/
-sqlite3 is probably part of your Linux distribution. If you are on Windows
-or MacOS, get it from http://www.sqlite.org/
+sqlite3 is probably part of your Linux distribution. If you are on Windows,
+get it from http://www.sqlite.org/
 
 To build, checkout the sources to the plugins directory of Retroshare and build with
 
@@ -21,3 +21,5 @@ To install on Linux or MacOS, drop the resulting shared object into
 
 This is experimental software. Use at your own risk. At this stage, leave TestNet
 on. Don't enable real currencies.
+
+Building and running on MacOS may or may not work at this point. 

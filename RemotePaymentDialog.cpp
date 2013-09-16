@@ -48,7 +48,7 @@ void RemotePaymentDialog::payTo()
         return;
     }
     Payment * payment = new PaymentSpender( nextHop, ZR::ZR_Number::fromDecimalString( ui->amount->text() ), Currency::currencySymbols[ sym ], Payment::PAYMENT );
-    TmRemoteCoordinator * tm = new TmRemoteCoordinator( ui->destination->text().toStdString(), payment );
+    TmRemoteCoordinator * tm = new TmRemoteCoordinator( ui->destination->text().toStdString(), payment, "" );
     if( ! tm->init() ) delete tm;
 }
 
