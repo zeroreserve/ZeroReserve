@@ -57,17 +57,30 @@ ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
     switch( item->getTxPhase() )
     {
     case VOTE_YES:
+    {
         std::cerr << "Zero Reserve: TX Coordinator: Received Vote: YES" << std::endl;
+        RSZRRemoteTxInitItem * initItem = dynamic_cast< RSZRRemoteTxInitItem * >( item );
+        if( !initItem )return abortTx( item );
+
         reply = new RSZRRemoteTxItem( m_Destination, COMMIT, Router::SERVER, item->getPayerId() );
         reply->PeerId( m_Payment->getCounterparty() );
+        ZR::ZR_Number receivedAmount = initItem->getPayment()->getAmount();
+        if( m_Payment->getAmount() != receivedAmount ){
+            if( m_Payment->getAmount() < receivedAmount){
+                std::cerr << "Zero Reserve: ERROR: reveived payment request higher than original" << std::endl;
+                return abortTx( item ); // someone attempting fraud?
+            }
+            m_Payment->setAmount( receivedAmount );
+        }
         p3zr->sendItem( reply );
         return ZR::ZR_SUCCESS;
+    }
     case VOTE_NO:
         std::cerr << "Zero Reserve: TX Coordinator: Received Vote: NO" << std::endl;
         return abortTx( item );
     case ACK_COMMIT:
         std::cerr << "Zero Reserve: TX Coordinator: Received Acknowledgement, Committing" << std::endl;
-        m_Payment->commit();
+        m_Payment->commit( m_TxId );
         return ZR::ZR_FINISH;
     case ABORT:
         return abortTx( item );

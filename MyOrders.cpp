@@ -123,7 +123,7 @@ ZR::RetVal MyOrders::matchOther( Order * other )
         if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << order->m_price.toStdString() << std::endl;
 
-        m_CurrentTxOrders[ *other ] = *order; // remember the matched order pair for later
+        m_CurrentTxOrders[ other->m_order_id + ':' + order->m_order_id ] = std::pair< Order, Order > ( *order, *other ); // remember the matched order pair for later
 
         if( order->m_amount > amount ){
             buy( other, amount * other->m_price, order->m_order_id );
@@ -173,7 +173,7 @@ ZR::RetVal MyOrders::match( Order * order )
         if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
 
-        m_CurrentTxOrders[ *other ] = *order; // remember the matched order pair for later
+        m_CurrentTxOrders[ other->m_order_id + ':' + order->m_order_id ] = std::pair< Order, Order > ( *order, *other ); // remember the matched order pair for later
 
         if( amount > other->m_amount ){
             buy( other, other->m_amount * other->m_price, order->m_order_id );
@@ -202,18 +202,24 @@ int MyOrders::startExecute( Payment * payment )
 {
     // TODO: start 2/3 Bitcoin TX here
     std::cerr << "Zero Reserve: Starting Order execution for " << payment->referrerId() << std::endl;
-    ZR::RetVal result = ZR::ZR_FAILURE;
 
-    // find out if the payment really refers to an order of ours...
-    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
-        if( (*it)->m_order_id == payment->referrerId() ){
-            // ... and if the amount to buy does not exceed the order.
-            result = ( (*it)->m_price * (*it)->m_amount < payment->getAmount() )? ZR::ZR_FAILURE : ZR::ZR_SUCCESS;
-            break;
-        }
+    OrderIterator it = find( payment->referrerId() );
+    if( it == end() ) return ZR::ZR_FAILURE;   // no such order
+
+    Order * order = *it;
+    ZR::ZR_Number leftover = order->m_amount - order->m_commitment;
+    if( leftover == 0 )return ZR::ZR_FAILURE; // nothing left in this order
+
+    ZR::ZR_Number btcAmount = payment->getAmount() / order->m_price;
+    if( btcAmount > leftover ){
+        order->m_commitment = order->m_amount;
+        payment->setAmount( leftover * order->m_price );
+    }
+    else {
+        order->m_commitment += btcAmount;
     }
 
-    return result;
+    return ZR::ZR_SUCCESS;
 }
 
 
@@ -230,7 +236,9 @@ int MyOrders::finishExecute( Payment * payment )
             beginResetModel();
             m_asks->beginReset();
             oldOrder->m_purpose = Order::PARTLY_FILLED;
-            oldOrder->m_amount -= payment->getAmount() / oldOrder->m_price;
+            ZR::ZR_Number btcAmount = payment->getAmount() / oldOrder->m_price;
+            oldOrder->m_amount -= btcAmount;
+            oldOrder->m_commitment -= btcAmount;
             m_asks->endReset();
             endResetModel();
         }
@@ -249,20 +257,20 @@ int MyOrders::finishExecute( Payment * payment )
 }
 
 
-ZR::RetVal MyOrders::updateOrders( Payment * payment )
+ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress & txId )
 {
     std::cerr << "Zero Reserve: Updating order" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     Order templateOrder;
     templateOrder.m_order_id =  payment->referrerId();
-    std::map< Order, Order >::iterator refIt = m_CurrentTxOrders.find( templateOrder );
+    std::map< ZR::TransactionId, std::pair< Order, Order > >::iterator refIt = m_CurrentTxOrders.find( txId );
     if( refIt == m_CurrentTxOrders.end() ){
         std::cerr << "Zero Reserve: Could not find Reference" << std::endl;
         return ZR::ZR_FAILURE;
     }
-    OrderIterator orderIt = find( (*refIt).second.m_order_id );
+    OrderIterator orderIt = find( (*refIt).second.first.m_order_id );
     Order * order = *orderIt;
-    const Order & other = (*refIt).first;
+    const Order & other = (*refIt).second.second;
 
 
     ZR::ZR_Number fiatAmount = order->m_amount * other.m_price;

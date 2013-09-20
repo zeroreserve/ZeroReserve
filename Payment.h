@@ -61,7 +61,7 @@ public:
 
     virtual ZR::ZR_Number newBalance() const = 0;
     virtual int init() = 0;
-    virtual int commit() = 0;
+    virtual int commit( const ZR::TransactionId &txId ) = 0;
 
     const std::string & getCounterparty(){ return m_credit.m_id; }
     void setCounterparty( const std::string & counterparty );
@@ -69,7 +69,9 @@ public:
     ZR::ZR_Number getAmount(){ return m_amount; }
     Category getCategory(){ return m_category; }
     void referrerId( const std::string & referrer ){ m_referrer = referrer; }
-    const std::string & referrerId(){ return m_referrer; }
+    const ZR::VirtualAddress & referrerId(){ return m_referrer; }
+
+    void setAmount( const ZR::ZR_Number & amount ){ m_amount = amount; }
 
     static void addRequest( const ZR::VirtualAddress & addr, const Request & req )
     {
@@ -105,7 +107,7 @@ public:
 
     virtual ZR::ZR_Number newBalance() const;
     virtual int init();
-    virtual int commit();
+    virtual int commit( const ZR::TransactionId &txId );
 };
 
 
@@ -117,7 +119,7 @@ public:
 
     virtual ZR::ZR_Number newBalance() const;
     virtual int init();
-    virtual int commit();
+    virtual int commit( const ZR::TransactionId &txId );
 };
 
 

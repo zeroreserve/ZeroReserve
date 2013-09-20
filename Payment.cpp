@@ -80,22 +80,24 @@ ZR::ZR_Number PaymentReceiver::newBalance() const
 
 int PaymentReceiver::init()
 {
-    if( ( m_credit.m_credit - newBalance( ) ) < 0 ){
-        return ZR::ZR_FAILURE;
-    }
-
     switch( m_category )
     {
     case BITCOIN:
+        if( m_credit.getAvailable() <= 0 )
+            return ZR::ZR_FAILURE;
+        if( m_amount > m_credit.getAvailable() ){
+            m_amount = m_credit.getAvailable();
+        }
         return MyOrders::Instance()->startExecute( this );
     case PAYMENT:
+        if( ( m_credit.m_credit - newBalance( ) ) < 0 ) return ZR::ZR_FAILURE;
         return ZR::ZR_SUCCESS;
     default:
         return ZR::ZR_FAILURE;
     }
 }
 
-int PaymentReceiver::commit()
+int PaymentReceiver::commit( const ZR::TransactionId &txId )
 {
     m_credit.loadPeer();
     m_credit.m_balance = newBalance();
@@ -139,7 +141,7 @@ int PaymentSpender::init()
     return ZR::ZR_SUCCESS;
 }
 
-int PaymentSpender::commit()
+int PaymentSpender::commit( const ZR::TransactionId & txId )
 {
     m_credit.loadPeer();
     m_credit.m_balance = newBalance();
@@ -155,7 +157,7 @@ int PaymentSpender::commit()
     switch( m_category )
     {
     case BITCOIN:
-        return MyOrders::Instance()->updateOrders( this );
+        return MyOrders::Instance()->updateOrders( this, txId );
     case PAYMENT:
         return ZR::ZR_SUCCESS;
     default:

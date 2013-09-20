@@ -93,7 +93,7 @@ ZR::RetVal TmLocalCohorte::processItem( RsZeroReserveTxItem * item )
         reply->setTxId( m_TxId );
         p3zs = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
         p3zs->sendItem( reply );
-        m_payment->commit();
+        m_payment->commit( m_TxId );
         return ZR::ZR_FINISH;
     case ABORT:
         return ZR::ZR_FINISH;

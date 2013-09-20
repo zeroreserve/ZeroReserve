@@ -48,7 +48,7 @@ public:
      * a new order, finish Bitcoin payment
      */
     int finishExecute( Payment *payment );
-    ZR::RetVal updateOrders( Payment * payment );
+    ZR::RetVal updateOrders( Payment * payment , const ZR::VirtualAddress &txId );
 
     void cancelOrder( int index );
 
@@ -71,7 +71,7 @@ private:
     OrderBook * m_bids;
     OrderBook * m_asks;
 
-    std::map< Order, Order > m_CurrentTxOrders;
+    std::map< ZR::TransactionId, std::pair< Order, Order > > m_CurrentTxOrders;
 
 private:
     // FIXME: ugly hack - this class is not supposed to be a singleton.
