@@ -31,6 +31,10 @@ SOURCES = ZeroReserveDialog.cpp \
 
 LIBS += -lsqlite3
 
+win32 {
+    INCLUDEPATH += ../../../libsqlite ../../../boost
+}
+
 DEFINES += ZR_TESTNET
 
 HEADERS = ZeroReserveDialog.h \
