@@ -39,7 +39,7 @@ public:
         AOA,
         ARS,
         AUD,
-        AUR,
+        XAU,
         AWG,
         AZN,
         BAM,
