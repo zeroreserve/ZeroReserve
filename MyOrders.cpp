@@ -269,6 +269,8 @@ ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress &
         return ZR::ZR_FAILURE;
     }
     OrderIterator orderIt = find( (*refIt).second.first.m_order_id );
+    if( orderIt == end() ) return ZR::ZR_FAILURE;
+
     Order * order = *orderIt;
     const Order & other = (*refIt).second.second;
 
