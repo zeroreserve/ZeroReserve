@@ -92,5 +92,9 @@ ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
 
 ZR::RetVal TmRemoteCoordinator::abortTx( RSZRRemoteTxItem *item )
 {
-    return ZR::ZR_FAILURE;
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    RSZRRemoteTxItem * abortItem = new RSZRRemoteTxItem( m_Destination, ABORT, Router::SERVER, item->getPayerId() );
+    abortItem->PeerId( m_Payment->getCounterparty() );
+    p3zr->sendItem( abortItem );
+    return ZR::ZR_FINISH;
 }

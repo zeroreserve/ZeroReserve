@@ -48,12 +48,10 @@ ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
 
     Payment::Request req = Payment::getMyRequest( item->getAddress() );
     if( isPayee( item->getAddress() ) == ZR::ZR_SUCCESS ){   // we are the payee
-        if( m_PaymentReceiver->init() == ZR::ZR_FAILURE ){
-            return abortTx( item );
-        }
         std::cerr << "Zero Reserve: TX Cohorte: Initializing payee role :: Amount: "
                   << m_PaymentReceiver->getAmount() << " " << m_PaymentReceiver->getCurrency() << std::endl;
-        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( item->getAddress(), VOTE_YES, Router::CLIENT, m_PaymentReceiver, item->getPayerId() );
+        TxPhase vote = ( m_PaymentReceiver->init() == ZR::ZR_FAILURE ) ? VOTE_NO : VOTE_YES;
+        RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( item->getAddress(), vote, Router::CLIENT, m_PaymentReceiver, item->getPayerId() );
         m_IsHop = false;
         resendItem->PeerId( item->PeerId() );
         p3zr->sendItem( resendItem );
@@ -112,9 +110,10 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
 
         return ZR::ZR_FAILURE;
     }
+    case VOTE_NO:
     case VOTE_YES:
     {
-        std::cerr << "Zero Reserve: TX Cohorte: Received VOTE YES" << std::endl;
+        std::cerr << "Zero Reserve: TX Cohorte: Received VOTE" << std::endl;
         RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( item->getAddress(), item->getTxPhase(), item->getDirection(), m_PaymentReceiver, item->getPayerId() );
         std::pair< ZR::PeerAddress, ZR::PeerAddress > route;
         if( Router::Instance()->getTunnel( item->getAddress(), route ) == ZR::ZR_FAILURE )
@@ -156,7 +155,16 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
         return ZR::ZR_FINISH;
     }
     case ABORT:
-        return ZR::ZR_FINISH;
+    {
+        std::cerr << "Zero Reserve: TX Cohorte: Received ABORT" << std::endl;
+        if( item->getDirection() == Router::SERVER ){
+            forwardItem( item );
+            return ZR::ZR_FINISH;  // can die after passing on the message
+        }
+        else {
+            return abortTx( item );
+        }
+    }
     default:
         throw std::runtime_error( "Unknown Transaction Phase");
     }
@@ -164,5 +172,12 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
 
 ZR::RetVal TmRemoteCohorte::abortTx(RSZRRemoteTxItem *item )
 {
-    return ZR::ZR_FAILURE;
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    RSZRRemoteTxItem * abortItem = new RSZRRemoteTxItem( item->getAddress(), ABORT, Router::CLIENT, item->getPayerId() );
+    std::pair< ZR::PeerAddress, ZR::PeerAddress > route;
+    if( Router::Instance()->getTunnel( item->getAddress(), route ) == ZR::ZR_FAILURE )
+        return ZR::ZR_FAILURE;
+    abortItem->PeerId( route.first );
+    p3zr->sendItem( abortItem );
+    return ZR::ZR_SUCCESS;  // only requesting ABORT from coordinator here. Need to stay alive
 }
