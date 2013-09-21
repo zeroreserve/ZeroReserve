@@ -20,6 +20,8 @@
 #include "Payment.h"
 #include "zrtypes.h"
 #include "Router.h"
+#include "ZeroReservePlugin.h"
+#include "ZeroReserveDialog.h"
 
 #include "pqi/p3linkmgr.h"
 
@@ -63,6 +65,8 @@ void p3ZeroReserveRS::statusChange(const std::list< pqipeer > &plist)
             }
         }
     }
+    ZeroReserveDialog * mainWin = static_cast< ZeroReserveDialog * >( g_ZeroReservePlugin->qt_page() );
+    mainWin->updateFriendList();
 }
 
 

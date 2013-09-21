@@ -227,3 +227,9 @@ void ZeroReserveDialog::remotePayment()
     RemotePaymentDialog d;
     d.exec();
 }
+
+
+void ZeroReserveDialog::updateFriendList()
+{
+    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
+}

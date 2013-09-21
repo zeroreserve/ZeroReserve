@@ -34,6 +34,7 @@ class ZeroReserveDialog : public MainPage
 
 public:
     ZeroReserveDialog( OrderBook * bids, OrderBook * asks, QWidget *parent = 0 );
+    void updateFriendList();
 
 
 public slots:
