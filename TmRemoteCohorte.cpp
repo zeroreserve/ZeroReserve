@@ -172,6 +172,7 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
 
 ZR::RetVal TmRemoteCohorte::abortTx(RSZRRemoteTxItem *item )
 {
+    std::cerr << "Zero Reserve: TX Cohorte: Sending ABORT" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * abortItem = new RSZRRemoteTxItem( item->getAddress(), ABORT, Router::CLIENT, item->getPayerId() );
     std::pair< ZR::PeerAddress, ZR::PeerAddress > route;

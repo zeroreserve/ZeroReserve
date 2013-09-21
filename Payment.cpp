@@ -83,14 +83,14 @@ int PaymentReceiver::init()
     switch( m_category )
     {
     case BITCOIN:
-        if( m_credit.getAvailable() <= 0 )
+        if( m_credit.getPeerAvailable() <= 0 )
             return ZR::ZR_FAILURE;
-        if( m_amount > m_credit.getAvailable() ){
-            m_amount = m_credit.getAvailable();
+        if( m_amount > m_credit.getPeerAvailable() ){
+            m_amount = m_credit.getPeerAvailable();
         }
         return MyOrders::Instance()->startExecute( this );
     case PAYMENT:
-        if( ( m_credit.m_credit - newBalance( ) ) < 0 ) return ZR::ZR_FAILURE;
+        if( m_credit.getPeerAvailable() < m_amount ) return ZR::ZR_FAILURE;
         return ZR::ZR_SUCCESS;
     default:
         return ZR::ZR_FAILURE;
@@ -135,7 +135,7 @@ ZR::ZR_Number PaymentSpender::newBalance() const
 
 int PaymentSpender::init()
 {
-    if( m_credit.m_our_credit + newBalance() < 0 ){
+    if( m_credit.getMyAvailable() < m_amount ){
         return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;

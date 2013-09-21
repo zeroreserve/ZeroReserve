@@ -248,7 +248,7 @@ void p3ZeroReserveRS::handlePaymentRequest( RSZRPayRequestItem * item )
     }
     Credit credit( item->PeerId(), item->getCurrency() );
     credit.loadPeer();
-    if( credit.m_credit + credit.m_balance == 0 ) return;
+    if( credit.getMyAvailable() == 0 ) return;
 
     std::cerr << "Zero Reserve: Adding address " << item->getAddress() << " to the routing table" << std::endl;
     Currency::CurrencySymbols currency = Currency::getCurrencyBySymbol( item->getCurrency() );

@@ -40,7 +40,8 @@ public:
 
     static void getCreditList( CreditList & outList, const std::string & id );
 
-    ZR::ZR_Number getAvailable(){ return m_credit + m_balance; }
+    ZR::ZR_Number getPeerAvailable(){ return m_credit - m_balance; }
+    ZR::ZR_Number getMyAvailable(){ return m_our_credit + m_balance; }
 
 public:
     std::string m_id;

@@ -75,8 +75,6 @@ ZR::ZR_Number PaymentDialog::availableFunds()
     catch( std::exception e ) {
         QMessageBox::critical(0, "Error reading credit", e.what() );
     }
-    ZR::ZR_Number a;
-    ZR::ZR_Number b;
 
-    return  peerCredit.m_our_credit + peerCredit.m_balance;
+    return  peerCredit.getMyAvailable();
 }
