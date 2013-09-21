@@ -171,6 +171,7 @@ void ZrDB::init()
         tables.push_back( "create table if not exists peers ( id varchar(32), currency varchar(3), our_credit decimal(12,8), credit decimal(12,8), balance decimal(12,8) )");
         tables.push_back( "create table if not exists config ( key varchar(32), value varchar(160) )");
         tables.push_back( "create table if not exists payments ( payee varchar(32), currency varchar(3), amount decimal(12,8) )");
+        tables.push_back( "create table if not exists myorders ( orderid varchar(32), ordertype int, amount decimal(12,8), price decimal(12,8), currency varchar(3), creationtime datetime, purpose int )");
         tables.push_back( "create unique index if not exists id_curr on peers ( id, currency)");
         for(std::vector < std::string >::const_iterator it = tables.begin(); it != tables.end(); it++ ){
             rc = sqlite3_exec(m_db, (*it).c_str(), noop_callback, 0, &zErrMsg);
