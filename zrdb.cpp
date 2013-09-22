@@ -47,12 +47,12 @@ static int orders_callback(void *, int argc, char ** argv, char ** )
     if( argc == 7 ){
         OrderBook::Order * order = new OrderBook::Order( true );
         order->m_order_id = argv[0];
-        order->m_orderType = (OrderBook::Order::OrderType) atoi( argv[1] );
+        order->m_orderType = OrderBook::Order::OrderType( atoi( argv[1] ) );
         order->m_amount = ZR::ZR_Number::fromDecimalString( std::string( argv[2]) );
         order->m_price = ZR::ZR_Number::fromDecimalString( std::string( argv[3]) );
         order->m_currency = Currency::getCurrencyBySymbol( argv[4] );
         order->m_timeStamp = atoll( argv[5] );
-        order->m_purpose = (OrderBook::Order::Purpose) atoi( argv[6] );
+        order->m_purpose = OrderBook::Order::Purpose( atoi( argv[6] ) );
 
         ZrDB::Instance()->addToOrderList( order );
     }
@@ -431,6 +431,7 @@ void ZrDB::addToTxList( const TxLogItem & item )
     m_txList->push_back( item );
 }
 
+////////////////////////////////////////////////////////////////
 
 void ZrDB::addOrder( OrderBook::Order * order )
 {
@@ -447,10 +448,10 @@ void ZrDB::addOrder( OrderBook::Order * order )
     runQuery( insert.str() );
 }
 
-void ZrDB::loadOrders( OrderBook::OrderList & orders_out )
+void ZrDB::loadOrders( OrderBook::OrderList * orders_out )
 {
     char *zErrMsg = 0;
-    m_orderList = &orders_out;
+    m_orderList = orders_out;
     int rc = sqlite3_exec(m_db, "select orderid, ordertype, amount, price, currency, creationtime, purpose from myorders", orders_callback, 0, &zErrMsg);
     if( rc != SQLITE_OK ){
         std::cerr << "SQL error: " << zErrMsg << std::endl;
@@ -459,11 +460,31 @@ void ZrDB::loadOrders( OrderBook::OrderList & orders_out )
     }
 }
 
+void ZrDB::updateOrder( OrderBook::Order * order )
+{
+    std::cerr << "Zero Reserve: Updating my orders " << order->m_order_id << std::endl;
+    std::ostringstream update;
+    update << "update myorders set amount = " << order->m_amount
+           << " where orderid = '" << order->m_order_id << "'";
+
+    runQuery( update.str() );
+}
+
+void ZrDB::deleteOrder( OrderBook::Order * order )
+{
+    std::cerr << "Zero Reserve: Updating my orders " << order->m_order_id << std::endl;
+    std::ostringstream rmo;
+    rmo << "delete from  myorders where orderid = '" << order->m_order_id << "'";
+    runQuery( rmo.str() );
+}
+
+
 void ZrDB::addToOrderList( OrderBook::Order * order )
 {
     m_orderList->push_back( order );
 }
 
+////////////////////////////////////////////////////////////////
 
 void ZrDB::closeTxLog()
 {

@@ -204,6 +204,7 @@ OrderBook::Order * OrderBook::remove( Order * order )
     OrderIterator it = find( order->m_order_id );
     if( it != m_orders.end() ){
         m_orders.erase( it );
+        ZrDB::Instance()->deleteOrder( order);
         beginResetModel();
         filterOrders( m_filteredOrders, m_currency );
         endResetModel();
@@ -214,6 +215,7 @@ OrderBook::Order * OrderBook::remove( Order * order )
 
 OrderBook::Order * OrderBook::remove( const std::string & order_id )
 {
+    // FIXME: Boilerplate
     OrderIterator it = find( order_id );
     if( it != m_orders.end() ){
         m_orders.erase( it );

@@ -71,7 +71,9 @@ public:
     void updateConfig( const std::string & key, const std::string & value );
 
     void addOrder( OrderBook::Order * order );
-    void loadOrders( OrderBook::OrderList & orders_out );
+    void loadOrders(OrderBook::OrderList *orders_out );
+    void updateOrder( OrderBook::Order * order );
+    void deleteOrder( OrderBook::Order * order );
     void addToOrderList( OrderBook::Order * order );
 
     void close();

@@ -45,7 +45,7 @@ MyOrders::MyOrders( OrderBook * bids, OrderBook * asks ) :
 
     try{
         OrderList myorders;
-        ZrDB::Instance()->loadOrders( myorders );
+        ZrDB::Instance()->loadOrders( &myorders );
         for( OrderIterator it = myorders.begin(); it != myorders.end(); it++){
             Order * order = *it;
             addOrder( order );
@@ -258,6 +258,7 @@ int MyOrders::finishExecute( Payment * payment )
             ZR::ZR_Number btcAmount = payment->getAmount() / oldOrder->m_price;
             oldOrder->m_amount -= btcAmount;
             oldOrder->m_commitment -= btcAmount;
+            ZrDB::Instance()->updateOrder( oldOrder );
             m_asks->endReset();
             endResetModel();
         }
@@ -300,6 +301,7 @@ ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress &
         m_bids->beginReset();
         order->m_amount -= payment->getAmount() / other.m_price;
         order->m_purpose = Order::PARTLY_FILLED;
+        ZrDB::Instance()->updateOrder( order );
         m_bids->endReset();
         endResetModel();
     }
