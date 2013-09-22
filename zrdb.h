@@ -20,6 +20,7 @@
 
 #include "zrtypes.h"
 #include "Credit.h"
+#include "OrderBook.h"
 
 #include "util/rsthreads.h"
 
@@ -69,9 +70,12 @@ public:
     std::string getConfig( const std::string & key );
     void updateConfig( const std::string & key, const std::string & value );
 
+    void addOrder( OrderBook::Order * order );
+    void loadOrders( OrderBook::OrderList & orders_out );
+    void addToOrderList( OrderBook::Order * order );
+
     void close();
 
-// TODO: make these functios private by making callbacks private static members
     void peerRecordExists(){ m_peer_record_exists = true; }
     void setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance );
     void addPeerCredit( Credit * credit );
@@ -109,6 +113,7 @@ private:
     Credit * m_credit;
     Credit::CreditList * m_creditList;
     std::list< TxLogItem > * m_txList;
+    OrderBook::OrderList * m_orderList;
 
     static ZrDB * instance;
     static RsMutex creation_mutex;

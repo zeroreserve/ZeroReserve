@@ -41,6 +41,27 @@ ZrDB * ZrDB::instance = 0;
 RsMutex ZrDB::creation_mutex("creation_mutex");
 
 
+
+static int orders_callback(void *, int argc, char ** argv, char ** )
+{
+    if( argc == 7 ){
+        OrderBook::Order * order = new OrderBook::Order( true );
+        order->m_order_id = argv[0];
+        order->m_orderType = (OrderBook::Order::OrderType) atoi( argv[1] );
+        order->m_amount = ZR::ZR_Number::fromDecimalString( std::string( argv[2]) );
+        order->m_price = ZR::ZR_Number::fromDecimalString( std::string( argv[3]) );
+        order->m_currency = Currency::getCurrencyBySymbol( argv[4] );
+        order->m_timeStamp = atoll( argv[5] );
+        order->m_purpose = (OrderBook::Order::Purpose) atoi( argv[6] );
+
+        ZrDB::Instance()->addToOrderList( order );
+    }
+    else {
+        return SQLITE_ERROR;
+    }
+    return SQLITE_OK;
+}
+
 static int txlog_callback(void *, int argc, char ** argv, char ** )
 {
     if(argc == 4){
@@ -171,7 +192,7 @@ void ZrDB::init()
         tables.push_back( "create table if not exists peers ( id varchar(32), currency varchar(3), our_credit decimal(12,8), credit decimal(12,8), balance decimal(12,8) )");
         tables.push_back( "create table if not exists config ( key varchar(32), value varchar(160) )");
         tables.push_back( "create table if not exists payments ( payee varchar(32), currency varchar(3), amount decimal(12,8) )");
-        tables.push_back( "create table if not exists myorders ( orderid varchar(32), ordertype int, amount decimal(12,8), price decimal(12,8), currency varchar(3), creationtime datetime, purpose int )");
+        tables.push_back( "create table if not exists myorders ( orderid varchar(32), ordertype int, amount decimal(12,8), price decimal(12,8), currency varchar(3), creationtime int, purpose int )");
         tables.push_back( "create unique index if not exists id_curr on peers ( id, currency)");
         for(std::vector < std::string >::const_iterator it = tables.begin(); it != tables.end(); it++ ){
             rc = sqlite3_exec(m_db, (*it).c_str(), noop_callback, 0, &zErrMsg);
@@ -408,6 +429,39 @@ void ZrDB::loadTxLog( std::list< TxLogItem > & txList )
 void ZrDB::addToTxList( const TxLogItem & item )
 {
     m_txList->push_back( item );
+}
+
+
+void ZrDB::addOrder( OrderBook::Order * order )
+{
+    std::ostringstream insert;
+    insert << "insert into myorders ( orderid, ordertype, amount, price, currency, creationtime, purpose ) values( '"
+           << order->m_order_id << "', "
+           << order->m_orderType << ", "
+           << order->m_amount.toDouble() << ", "
+           << order->m_price.toDouble() << ", '"
+           << Currency::currencySymbols[ order->m_currency ] << "', "
+           << order->m_timeStamp << ", "
+           << order->m_purpose << " )";
+
+    runQuery( insert.str() );
+}
+
+void ZrDB::loadOrders( OrderBook::OrderList & orders_out )
+{
+    char *zErrMsg = 0;
+    m_orderList = &orders_out;
+    int rc = sqlite3_exec(m_db, "select orderid, ordertype, amount, price, currency, creationtime, purpose from myorders", orders_callback, 0, &zErrMsg);
+    if( rc != SQLITE_OK ){
+        std::cerr << "SQL error: " << zErrMsg << std::endl;
+        sqlite3_free(zErrMsg);
+        throw std::runtime_error( "SQL Error: Cannot read Orders" );
+    }
+}
+
+void ZrDB::addToOrderList( OrderBook::Order * order )
+{
+    m_orderList->push_back( order );
 }
 
 

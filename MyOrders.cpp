@@ -21,6 +21,7 @@
 #include "Payment.h"
 #include "TmRemoteCoordinator.h"
 #include "Router.h"
+#include "zrdb.h"
 
 #include <iostream>
 #include <sstream>
@@ -41,6 +42,24 @@ MyOrders::MyOrders( OrderBook * bids, OrderBook * asks ) :
 {
     m_bids->setMyOrders( this );
     m_asks->setMyOrders( this );
+
+    try{
+        OrderList myorders;
+        ZrDB::Instance()->loadOrders( myorders );
+        for( OrderIterator it = myorders.begin(); it != myorders.end(); it++){
+            Order * order = *it;
+            addOrder( order );
+            if( order->m_orderType == Order::ASK ){
+                m_asks->addOrder( order );
+            }
+            else{
+                m_bids->addOrder( order );
+            }
+        }
+    }
+    catch( std::runtime_error & e ){
+        std::cerr << "Zero Reserve: ERROR: " << e.what() << std::endl;
+    }
 
     me = this;
 }

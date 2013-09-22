@@ -18,6 +18,7 @@
 #include "OrderBook.h"
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
+#include "zrdb.h"
 
 #include "util/radix64.h"
 
@@ -113,6 +114,15 @@ ZR::RetVal OrderBook::processMyOrder( Order* order )
 {
     ZR::RetVal retval;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+
+    try {
+        ZrDB::Instance()->addOrder( order );
+    }
+    catch( std::runtime_error & e ){
+        std::cerr << "Zero Reserve: ERROR:" << e.what() << std::endl;
+        return ZR::ZR_FAILURE;
+    }
+
     m_myOrders->addOrder( order );
     addOrder( order );
 

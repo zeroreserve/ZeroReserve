@@ -105,6 +105,8 @@ public:
     void beginReset(){ beginResetModel(); }
     void endReset(){ endResetModel(); }
 
+    virtual int addOrder( Order* order );
+
 
 protected:
     OrderList m_orders;
@@ -113,7 +115,6 @@ protected:
     OrderBook * m_myOrders;
 
 protected:
-    virtual int addOrder( Order* order );
     /** Matches our new order with all others  */
     virtual ZR::RetVal match( Order * ){ return ZR::ZR_FAILURE; }
     virtual ZR::RetVal matchAsk( Order * ){ return ZR::ZR_FAILURE; }
