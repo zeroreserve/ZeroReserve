@@ -30,6 +30,16 @@ TmRemoteCohorte::TmRemoteCohorte( const ZR::TransactionId & txId ) :
 {
 }
 
+void TmRemoteCohorte::rollback()
+{
+
+}
+
+bool TmRemoteCohorte::isTimedOut()
+{
+   return false;
+}
+
 ZR::RetVal TmRemoteCohorte::init()
 {
     std::cerr << "Zero Reserve: TX Cohorte: Initializing... checking available funds" << std::endl;

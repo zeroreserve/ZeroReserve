@@ -46,6 +46,18 @@ TmLocalCoordinator::~TmLocalCoordinator()
 
 
 
+void TmLocalCoordinator::rollback()
+{
+
+}
+
+bool TmLocalCoordinator::isTimedOut()
+{
+   return false;
+}
+
+
+
 ZR::RetVal TmLocalCoordinator::init()
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator. ID: " << m_TxId << std::endl;

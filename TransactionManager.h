@@ -63,12 +63,18 @@ public:
     static int handleTxItem( RsZeroReserveTxItem * item );
     static int handleTxItem( RSZRRemoteTxItem *item );
 
+    static void timeout();
+
 protected:
 
     virtual ZR::RetVal processItem( RsZeroReserveTxItem * item ){ return ZR::ZR_FAILURE; }
     virtual ZR::RetVal processItem( RSZRRemoteTxItem * item ){ return ZR::ZR_FAILURE; }
     virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item ){ return ZR::ZR_FAILURE; }
     virtual ZR::RetVal abortTx( RSZRRemoteTxItem * item ){ return ZR::ZR_FAILURE; }
+
+    virtual void rollback() = 0;
+    virtual bool isTimedOut() = 0;
+
 
     const ZR::TransactionId m_TxId;
     TxPhase m_Phase;

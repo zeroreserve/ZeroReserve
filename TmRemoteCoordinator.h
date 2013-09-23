@@ -35,6 +35,9 @@ public:
     virtual ZR::RetVal processItem( RSZRRemoteTxItem * item );
     virtual ZR::RetVal abortTx( RSZRRemoteTxItem * item );
 
+    virtual void rollback();
+    virtual bool isTimedOut();
+
 private:
     ZR::VirtualAddress m_Destination;
     Payment * m_Payment;

@@ -96,13 +96,23 @@ int TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
 }
 
 
+void TransactionManager::timeout()
+{
+    for( TxManagers::iterator it = currentTX.begin(); it != currentTX.end(); it++ ){
+        TransactionManager * tm = (*it).second;
+        if( tm->isTimedOut() ){
+            tm->rollback();
+            delete tm;
+        }
+    }
+}
+
 
 TransactionManager::TransactionManager( const ZR::TransactionId & txId ) :
     m_TxId( txId ),
     m_Phase( INIT )
 {
     currentTX[ txId ] = this;
-    // TODO: QTimer
 }
 
 TransactionManager::~TransactionManager()

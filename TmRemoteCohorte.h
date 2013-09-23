@@ -35,6 +35,9 @@ protected:
     virtual ZR::RetVal processItem( RSZRRemoteTxItem *item );
     virtual ZR::RetVal abortTx( RSZRRemoteTxItem * item );
 
+    virtual void rollback();
+    virtual bool isTimedOut();
+
     ZR::RetVal forwardItem( RSZRRemoteTxItem *item );
 
 private:

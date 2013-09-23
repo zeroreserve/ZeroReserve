@@ -35,6 +35,18 @@ TmRemoteCoordinator::~TmRemoteCoordinator()
     delete m_Payment;
 }
 
+
+void TmRemoteCoordinator::rollback()
+{
+
+}
+
+bool TmRemoteCoordinator::isTimedOut()
+{
+   return false;
+}
+
+
 ZR::RetVal TmRemoteCoordinator::init()
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;

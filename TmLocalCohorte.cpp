@@ -34,6 +34,16 @@ TmLocalCohorte::~TmLocalCohorte()
 }
 
 
+void TmLocalCohorte::rollback()
+{
+
+}
+
+bool TmLocalCohorte::isTimedOut()
+{
+   return false;
+}
+
 
 ZR::RetVal TmLocalCohorte::init()
 {

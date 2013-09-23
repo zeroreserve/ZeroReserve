@@ -26,8 +26,7 @@
 #include <iostream>
 
 #ifdef ZR_TESTNET
-const qint64 OrderBook::Order::timeout = 1800;
-//const qint64 OrderBook::Order::timeout = 1800000;   // 30 minutes
+const qint64 OrderBook::Order::timeout = 1800000;   // 30 minutes
 #else
 const qint64 OrderBook::Order::timeout = 86400000;  // one day
 #endif
