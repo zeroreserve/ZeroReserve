@@ -28,8 +28,11 @@
 
 MyOrders * MyOrders::me = NULL;
 
-MyOrders * MyOrders::Instance(){ return me; }
-
+MyOrders * MyOrders::Instance()
+{
+    while(!me);
+    return me;
+}
 
 MyOrders::MyOrders()
 {
