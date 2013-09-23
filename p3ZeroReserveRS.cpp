@@ -22,6 +22,7 @@
 #include "Router.h"
 #include "ZeroReservePlugin.h"
 #include "ZeroReserveDialog.h"
+#include "MyOrders.h"
 
 #include "pqi/p3linkmgr.h"
 
@@ -74,7 +75,20 @@ void p3ZeroReserveRS::statusChange(const std::list< pqipeer > &plist)
 int p3ZeroReserveRS::tick()
 {
     processIncoming();
+    janitor();
     return 0;
+}
+
+void p3ZeroReserveRS::janitor()
+{
+    static time_t lastCleanup = 0;
+    time_t t = time( 0 );
+    if( t - lastCleanup < 10 ) return;  // cleanup once in 10 sec
+    lastCleanup = t;
+
+    m_asks->timeoutOrders();
+    m_bids->timeoutOrders();
+    MyOrders::Instance()->timeoutOrders();
 }
 
 void p3ZeroReserveRS::processIncoming()

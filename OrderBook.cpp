@@ -25,7 +25,12 @@
 #include <openssl/sha.h>
 #include <iostream>
 
-
+#ifdef ZR_TESTNET
+const qint64 OrderBook::Order::timeout = 1800;
+//const qint64 OrderBook::Order::timeout = 1800000;   // 30 minutes
+#else
+const qint64 OrderBook::Order::timeout = 86400000;  // one day
+#endif
 
 OrderBook::OrderBook()
 {
@@ -148,7 +153,7 @@ ZR::RetVal OrderBook::processOrder( Order* order )
         return ZR::ZR_FAILURE; // this is my own order
 
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
-    if( currentTime - order->m_timeStamp >  172800000        // older than two days
+    if( currentTime - order->m_timeStamp >  Order::timeout
             || order->m_timeStamp - currentTime > 3600000){  // or more than an hour in the future
         return ZR::ZR_FAILURE;
     }
@@ -274,4 +279,18 @@ bool OrderBook::Order::operator == ( const OrderBook::Order & other )
 bool OrderBook::Order::operator < ( const Order & other ) const
 {
     return ( m_order_id.compare( other.m_order_id ) < 0 );
+}
+
+
+void OrderBook::timeoutOrders()
+{
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
+        Order * order = *it;
+        if( currentTime - order->m_timeStamp > Order::timeout ){
+            if( order->m_commitment == 0 ){
+                remove( order );
+            }
+        }
+    }
 }

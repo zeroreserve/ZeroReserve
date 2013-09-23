@@ -54,6 +54,7 @@ public:
 private:
 
     void processIncoming();
+    void janitor();
     void sendPackets();
     void handleOrder( RsZeroReserveOrderBookItem *item );
     void handleCredit( RsZeroReserveCreditItem *item );

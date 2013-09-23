@@ -52,6 +52,8 @@ public:
 
     void cancelOrder( int index );
 
+    static MyOrders * Instance();
+
 protected:
     /** Matches our new order with all others  */
     virtual ZR::RetVal match(Order *order);
@@ -74,13 +76,7 @@ private:
     std::map< ZR::TransactionId, std::pair< Order, Order > > m_CurrentTxOrders;
 
 private:
-    // FIXME: ugly hack - this class is not supposed to be a singleton.
-    // but I have no idea how PaymentReceiver can have a reference to this.
-    // since there is only ever one object we get away with it for now.
-    friend class PaymentSpender;
-    friend class PaymentReceiver;
-    friend class TmRemoteCohorte;
-    static MyOrders * Instance();
+
     static MyOrders * me;
 };
 

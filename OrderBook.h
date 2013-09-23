@@ -69,6 +69,8 @@ public:
         bool operator == (const Order & other);
         bool operator < ( const Order & other) const;
         void setOrderId();
+
+        static const qint64 timeout;
     };
 
 public:
@@ -93,6 +95,8 @@ public:
     /** @return ZR::ZR_FINISH if this order has been completed */
     virtual ZR::RetVal processOrder( Order* order );
     virtual ZR::RetVal processMyOrder( Order* order );
+    void timeoutOrders();
+
     void filterOrders(OrderList & filteredOrders , const Currency::CurrencySymbols currencySym);
 
     /** remove an order from the book
