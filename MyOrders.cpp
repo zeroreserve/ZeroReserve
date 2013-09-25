@@ -284,11 +284,10 @@ ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress &
 {
     std::cerr << "Zero Reserve: Updating order" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    Order templateOrder;
-    templateOrder.m_order_id =  payment->referrerId();
+
     std::map< ZR::TransactionId, std::pair< Order, Order > >::iterator refIt = m_CurrentTxOrders.find( txId );
     if( refIt == m_CurrentTxOrders.end() ){
-        std::cerr << "Zero Reserve: Could not find Reference" << std::endl;
+        std::cerr << "Zero Reserve: Could not find Reference" << txId << std::endl;
         return ZR::ZR_FAILURE;
     }
     OrderIterator orderIt = find( (*refIt).second.first.m_order_id );
@@ -341,4 +340,18 @@ void MyOrders::cancelOrder( int index )
 }
 
 
+void MyOrders::rollback( PaymentReceiver *payment )
+{
+    OrderIterator it = find( payment->referrerId() );
+    if( it != end() ){
+        Order * oldOrder = *it;
+        ZR::ZR_Number btcAmount = payment->getAmount() / oldOrder->m_price;
+        oldOrder->m_commitment -= btcAmount;
+    }
+}
 
+void MyOrders::rollback( PaymentSpender *payment, const ZR::VirtualAddress & txId )
+{
+    std::cerr << "Zero Reserve: Rolling back " << txId << std::endl;
+    m_CurrentTxOrders.erase( txId );
+}

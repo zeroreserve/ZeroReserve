@@ -51,11 +51,6 @@ void TmLocalCoordinator::rollback()
 
 }
 
-bool TmLocalCoordinator::isTimedOut()
-{
-   return false;
-}
-
 
 
 ZR::RetVal TmLocalCoordinator::init()

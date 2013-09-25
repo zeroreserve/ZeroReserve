@@ -36,7 +36,6 @@ public:
     virtual ZR::RetVal abortTx( RSZRRemoteTxItem * item );
 
     virtual void rollback();
-    virtual bool isTimedOut();
 
 private:
     ZR::VirtualAddress m_Destination;

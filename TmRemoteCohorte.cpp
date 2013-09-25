@@ -32,13 +32,10 @@ TmRemoteCohorte::TmRemoteCohorte( const ZR::TransactionId & txId ) :
 
 void TmRemoteCohorte::rollback()
 {
-
+    if( !m_IsHop )
+        MyOrders::Instance()->rollback( dynamic_cast < PaymentReceiver *> ( m_PaymentReceiver ) );
 }
 
-bool TmRemoteCohorte::isTimedOut()
-{
-   return false;
-}
 
 ZR::RetVal TmRemoteCohorte::init()
 {
@@ -169,6 +166,7 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
         std::cerr << "Zero Reserve: TX Cohorte: Received ABORT" << std::endl;
         if( item->getDirection() == Router::SERVER ){
             forwardItem( item );
+            rollback();
             return ZR::ZR_FINISH;  // can die after passing on the message
         }
         else {

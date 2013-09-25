@@ -39,10 +39,7 @@ void TmLocalCohorte::rollback()
 
 }
 
-bool TmLocalCohorte::isTimedOut()
-{
-   return false;
-}
+
 
 
 ZR::RetVal TmLocalCohorte::init()
@@ -72,6 +69,7 @@ ZR::RetVal TmLocalCohorte::init()
     p3zs->sendItem( reply ); // TODO: error  handling
     return retval;
 }
+
 
 
 

@@ -41,11 +41,6 @@ void TmRemoteCoordinator::rollback()
 
 }
 
-bool TmRemoteCoordinator::isTimedOut()
-{
-   return false;
-}
-
 
 ZR::RetVal TmRemoteCoordinator::init()
 {

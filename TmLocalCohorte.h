@@ -38,7 +38,6 @@ protected:
     virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item );
 
     virtual void rollback();
-    virtual bool isTimedOut();
 
 private:
     Payment * m_payment;

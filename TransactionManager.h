@@ -23,6 +23,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 class RsZeroReserveTxItem;
 class RsZeroReserveInitTxItem;
@@ -41,13 +42,14 @@ class TransactionManager
 public:
     typedef std::map< std::string, TransactionManager *> TxManagers;
     enum TxPhase {
-        INIT,
+        INIT = 0,
         QUERY,
         VOTE_YES,
         VOTE_NO,
         COMMIT,
         ACK_COMMIT,
-        ABORT
+        ABORT,
+        PHASE_NUMBER
     };
     enum Role {
          Coordinator = 0,
@@ -73,11 +75,14 @@ protected:
     virtual ZR::RetVal abortTx( RSZRRemoteTxItem * item ){ return ZR::ZR_FAILURE; }
 
     virtual void rollback() = 0;
-    virtual bool isTimedOut() = 0;
+    virtual bool isTimedOut();
 
 
     const ZR::TransactionId m_TxId;
     TxPhase m_Phase;
+    qint64 m_startOfPhase;
+    /** maximum time of each phase */
+    qint64 m_maxTime[ PHASE_NUMBER ];
 
     static TxManagers currentTX;
 };

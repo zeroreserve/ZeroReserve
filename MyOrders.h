@@ -49,6 +49,8 @@ public:
      */
     int finishExecute( Payment *payment );
     ZR::RetVal updateOrders( Payment * payment , const ZR::VirtualAddress &txId );
+    void rollback( PaymentReceiver *payment );
+    void rollback( PaymentSpender *payment, const ZR::VirtualAddress & txId );
 
     void cancelOrder( int index );
 

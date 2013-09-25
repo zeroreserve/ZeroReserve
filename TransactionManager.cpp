@@ -110,8 +110,17 @@ void TransactionManager::timeout()
 
 TransactionManager::TransactionManager( const ZR::TransactionId & txId ) :
     m_TxId( txId ),
-    m_Phase( INIT )
+    m_Phase( INIT ),
+    m_startOfPhase( QDateTime::currentMSecsSinceEpoch() )
 {
+    m_maxTime[ INIT ]       = 5000;
+    m_maxTime[ QUERY ]      = 5000;
+    m_maxTime[ VOTE_YES ]   = 5000;
+    m_maxTime[ VOTE_NO ]    = 5000;
+    m_maxTime[ COMMIT ]     = 5000;
+    m_maxTime[ ACK_COMMIT ] = 5000;
+    m_maxTime[ ABORT ]      = 5000;
+
     currentTX[ txId ] = this;
 }
 
@@ -121,3 +130,7 @@ TransactionManager::~TransactionManager()
     currentTX.erase( m_TxId );
 }
 
+bool TransactionManager::isTimedOut()
+{
+    return ( QDateTime::currentMSecsSinceEpoch() - m_startOfPhase > m_maxTime[ m_Phase ] );
+}
