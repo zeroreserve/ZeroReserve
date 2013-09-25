@@ -60,7 +60,8 @@ HEADERS = ZeroReserveDialog.h \
     TmRemoteCoordinator.h \
     TmLocalCoordinator.h \
     TmLocalCohorte.h \
-    TmRemoteCohorte.h
+    TmRemoteCohorte.h \
+    ZRBitcoin.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
