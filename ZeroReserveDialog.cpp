@@ -233,5 +233,5 @@ void ZeroReserveDialog::remotePayment()
 
 void ZeroReserveDialog::updateFriendList()
 {
-    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
+// FIXME:    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
 }
