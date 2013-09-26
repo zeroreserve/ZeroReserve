@@ -284,11 +284,16 @@ bool OrderBook::Order::operator < ( const Order & other ) const
 void OrderBook::timeoutOrders()
 {
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
-    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
+    OrderList ordersCopy( m_orders );
+    for( OrderIterator it = ordersCopy.begin(); it != ordersCopy.end(); it++ ){
         Order * order = *it;
         if( currentTime - order->m_timeStamp > Order::timeout ){
             if( order->m_commitment == 0 ){
                 remove( order );
+                if( order->m_isMyOrder ){
+                    m_myOrders->remove( order );
+                }
+                delete order;
             }
         }
     }

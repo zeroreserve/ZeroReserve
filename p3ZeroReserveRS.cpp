@@ -88,7 +88,6 @@ void p3ZeroReserveRS::janitor()
 
     m_asks->timeoutOrders();
     m_bids->timeoutOrders();
-    MyOrders::Instance()->timeoutOrders();
 
     TransactionManager::timeout();
 }
