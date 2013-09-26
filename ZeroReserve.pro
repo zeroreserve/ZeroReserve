@@ -1,5 +1,13 @@
 !include("../Common/retroshare_plugin.pri"):error("Could not include file ../Common/retroshare_plugin.pri")
 
+# Use bogus currency. If Testnet is a compile time option of the Bitcoin code, set it there, too
+DEFINES += ZR_TESTNET
+
+# One of those must be defined
+ZR_BITCOIN = ZR_LIBBITCOIN
+# ZR_BITCOIN = ZR_DUMMYBITCOIN
+
+
 CONFIG += qt \
     uic \
     qrc \
@@ -35,7 +43,6 @@ win32 {
     INCLUDEPATH += ../../../libsqlite ../../../boost
 }
 
-DEFINES += ZR_TESTNET
 
 HEADERS = ZeroReserveDialog.h \
     ZeroReservePlugin.h \
@@ -61,7 +68,8 @@ HEADERS = ZeroReserveDialog.h \
     TmLocalCoordinator.h \
     TmLocalCohorte.h \
     TmRemoteCohorte.h \
-    ZRBitcoin.h
+    ZRBitcoin.h \
+    ZrLibBitcoin.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
@@ -73,3 +81,17 @@ FORMS = ZeroReserveDialog.ui \
 TARGET = ZeroReserve
 
 RESOURCES = ZeroReserve_images.qrc
+
+
+contains(ZR_BITCOIN, ZR_LIBBITCOIN) {
+    HEADERS += ZrLibBitcoin.h
+    SOURCES += ZrLibBitcoin.cpp
+    QMAKE_CXXFLAGS += -std=c++11
+    LIBS += -lbitcoin
+}
+
+contains(ZR_BITCOIN, ZR_DUMMYBITCOIN) {
+    HEADERS += ZrDummyBitcoin.h
+    SOURCES += ZrDummyBitcoin.cpp
+}
+

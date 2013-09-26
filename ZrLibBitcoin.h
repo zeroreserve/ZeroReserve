@@ -15,21 +15,19 @@
     along with Zero Reserve.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ZRBITCOIN_H
-#define ZRBITCOIN_H
+#ifndef ZRLIBBITCOIN_H
+#define ZRLIBBITCOIN_H
 
+#include "ZRBitcoin.h"
 #include "zrtypes.h"
 
-namespace ZR
+class ZrLibBitcoin : public ZR::Bitcoin
 {
-
-class Bitcoin {
 public:
-    virtual ZR::RetVal commit() = 0;
-    virtual ZR::ZR_Number getBalance() = 0;
+    ZrLibBitcoin();
 
+    virtual ZR::RetVal commit();
+    virtual ZR::ZR_Number getBalance();
 };
 
-}
-
-#endif // ZRBITCOIN_H
+#endif // ZRLIBBITCOIN_H
