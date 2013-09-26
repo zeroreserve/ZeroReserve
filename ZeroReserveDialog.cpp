@@ -188,6 +188,8 @@ void ZeroReserveDialog::addAsk()
 void ZeroReserveDialog::cancelOrder()
 {
     QModelIndexList indexes = ui.myOrders->selectionModel()->selection().indexes();
+    if( indexes.empty() )
+        return;
     MyOrders * myOrders = static_cast< MyOrders* >( ui.myOrders->model() );
     myOrders->cancelOrder( indexes.at( 0 ).row() );
 }
