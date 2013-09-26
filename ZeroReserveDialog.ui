@@ -394,7 +394,32 @@ p, li { white-space: pre-wrap; }
        <item>
         <layout class="QVBoxLayout" name="BitcoinDisplayLayout">
          <item>
-          <widget class="QLCDNumber" name="lcdNumber"/>
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>Balance</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLCDNumber" name="lcdNumber">
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(59, 59, 59);</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_20">
+           <property name="text">
+            <string>Unconfirmed</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLCDNumber" name="lcdNumber_2">
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(59, 59, 59);</string>
+           </property>
+          </widget>
          </item>
          <item>
           <spacer name="verticalSpacer_2">
@@ -408,13 +433,6 @@ p, li { white-space: pre-wrap; }
             </size>
            </property>
           </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="BitcoinPaymentButton">
-           <property name="text">
-            <string>Send</string>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>
