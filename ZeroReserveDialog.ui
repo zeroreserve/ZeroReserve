@@ -80,7 +80,7 @@ p, li { white-space: pre-wrap; }
      </property>
      <widget class="QWidget" name="BitcoinTab">
       <attribute name="title">
-       <string>Bitcoin</string>
+       <string>Bitcoin Market</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
@@ -341,6 +341,78 @@ p, li { white-space: pre-wrap; }
            </property>
            <property name="text">
             <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="BitcoinWalletTab">
+      <attribute name="title">
+       <string>Bitcoin Wallet</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="BitcoinTabLayout">
+       <item>
+        <layout class="QVBoxLayout" name="BitcoinAddrLayout">
+         <item>
+          <widget class="QLabel" name="label_16">
+           <property name="text">
+            <string>My Addresses</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTableView" name="MyAddresses"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_17">
+           <property name="text">
+            <string>Peer Addresses</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTableView" name="PeerAddresses"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="BitcoinTxLogLayout">
+         <item>
+          <widget class="QLabel" name="label_18">
+           <property name="text">
+            <string>Transactions</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QListView" name="btcTxList"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="BitcoinDisplayLayout">
+         <item>
+          <widget class="QLCDNumber" name="lcdNumber"/>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="BitcoinPaymentButton">
+           <property name="text">
+            <string>Send</string>
            </property>
           </widget>
          </item>
