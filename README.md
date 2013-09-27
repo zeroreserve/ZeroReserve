@@ -3,10 +3,16 @@ ZeroReserve
 
 Friend 2 Friend Payment and Bitcoin exchange
 
-Prerequisite for building is a successful RetroShare build and sqlite3.
+Prerequisite for building is a successful RetroShare build and sqlite3 and libbitcoin.
 RetroShare is available from http://retroshare.sourceforge.net/
 sqlite3 is probably part of your Linux distribution. If you are on Windows,
 get it from http://www.sqlite.org/
+
+Get libbitcoin directly from git because the release doesn't have support for TestNet.
+$ git clone git@github.com:spesmilo/libbitcoin.git
+
+Then configure with
+§
 
 To build, checkout the sources to the plugins directory of Retroshare and build with
 
