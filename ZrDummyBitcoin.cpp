@@ -20,6 +20,19 @@
 
 #include "ZrDummyBitcoin.h"
 
+
+ZR::Bitcoin * ZR::Bitcoin::instance = NULL;
+
+
+ZR::Bitcoin * ZR::Bitcoin::Instance()
+{
+    if( instance == NULL ){
+        instance = new ZrDummyBitcoin();
+    }
+    return instance;
+}
+
+
 ZrDummyBitcoin::ZrDummyBitcoin()
 {
 }

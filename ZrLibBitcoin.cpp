@@ -35,7 +35,6 @@ ZR::Bitcoin * ZR::Bitcoin::Instance()
 {
     if( instance == NULL ){
         instance = new ZrLibBitcoin();
-        instance->start();
     }
     return instance;
 }

@@ -21,6 +21,7 @@
 #define ZRDUMMYBITCOIN_H
 
 #include "zrtypes.h"
+#include "ZRBitcoin.h"
 
 
 class ZrDummyBitcoin : public ZR::Bitcoin

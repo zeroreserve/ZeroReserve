@@ -22,6 +22,7 @@
 #include "p3ZeroReserverRS.h"
 #include "zrdb.h"
 #include "dbconfig.h"
+#include "ZRBitcoin.h"
 
 #include <retroshare/rsplugin.h>
 #include <util/rsversion.h>
@@ -173,4 +174,6 @@ void ZeroReservePlugin::stop()
     // TODO: TX controllers who aren't done within 30 seconds.
     // TODO: Display a progress bar.
     ZrDB::Instance()->close();
+
+    ZR::Bitcoin::Instance()->stop();
 }

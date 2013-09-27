@@ -26,6 +26,7 @@
 #include "Payment.h"
 #include "RemotePaymentDialog.h"
 #include "RemotePaymentRequestDialog.h"
+#include "ZRBitcoin.h"
 
 #include <QMenu>
 #include <QStandardItem>
@@ -101,6 +102,8 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     loadGrandTotal();
     loadTxLog();
+
+    ZR::Bitcoin::Instance()->start();
 }
 
 
