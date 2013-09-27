@@ -12,7 +12,7 @@ Get libbitcoin directly from git because the release doesn't have support for Te
 $ git clone git@github.com:spesmilo/libbitcoin.git
 
 Then configure with
-§
+$ ./configure --enable-leveldb --enable-testnet
 
 To build, checkout the sources to the plugins directory of Retroshare and build with
 
