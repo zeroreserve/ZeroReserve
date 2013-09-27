@@ -26,8 +26,14 @@ namespace ZR
 class Bitcoin {
 public:
     virtual ZR::RetVal commit() = 0;
+    virtual ZR::RetVal start() = 0;
+    virtual ZR::RetVal stop() = 0;
     virtual ZR::ZR_Number getBalance() = 0;
 
+    static Bitcoin * Instance();
+
+private:
+    static Bitcoin * instance;
 };
 
 }

@@ -88,6 +88,7 @@ contains(ZR_BITCOIN, ZR_LIBBITCOIN) {
     SOURCES += ZrLibBitcoin.cpp
     QMAKE_CXXFLAGS += -std=c++11
     LIBS += -lbitcoin
+    DEFINES += LEVELDB_ENABLED
 }
 
 contains(ZR_BITCOIN, ZR_DUMMYBITCOIN) {

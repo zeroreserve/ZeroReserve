@@ -21,13 +21,28 @@
 #include "ZRBitcoin.h"
 #include "zrtypes.h"
 
+#include <bitcoin/bitcoin.hpp>
+
+#include <string>
+
 class ZrLibBitcoin : public ZR::Bitcoin
 {
 public:
     ZrLibBitcoin();
-
+    virtual ZR::RetVal start();
+    virtual ZR::RetVal stop();
     virtual ZR::RetVal commit();
     virtual ZR::ZR_Number getBalance();
+
+private:
+    ZR::RetVal initChain( const std::string & pathname );
+
+    bc::threadpool m_netPool;
+    bc::threadpool m_diskPool;
+    bc::threadpool m_memPool;
+
+    bc::leveldb_blockchain m_blockChain;
+
 };
 
 #endif // ZRLIBBITCOIN_H
