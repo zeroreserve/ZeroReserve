@@ -48,22 +48,26 @@ ZrLibBitcoin::ZrLibBitcoin() :
 
 ZR::RetVal ZrLibBitcoin::initChain( const std::string & pathname )
 {
-    std::promise<std::error_code> ec_chain;
+    std::promise<std::error_code> pr_chain;
     auto blockchain_startup = [&]( const std::error_code& ec ){
-            ec_chain.set_value(ec);
+            pr_chain.set_value(ec);
     };
     m_blockChain.start( pathname, blockchain_startup );
-    std::error_code ec = ec_chain.get_future().get();
-    if( ec ) {
-        std::cerr << "Problem starting blockchain: " << ec.message() << std::endl;
+    std::error_code ec_start = pr_chain.get_future().get();
+    if( ec_start ) {
+        std::cerr << "Problem starting blockchain: " << ec_start.message() << std::endl;
         return ZR::ZR_FAILURE;
     }
 
+    std::promise<std::error_code> pr_genesis;
+    auto blockchain_genesis = [&]( const std::error_code& ec ){
+            pr_genesis.set_value(ec);
+    };
     bc::block_type first_block = bc::genesis_block();
-    m_blockChain.import(first_block, 0, blockchain_startup);
-    ec = ec_chain.get_future().get();
-    if( ec ){
-        std::cerr << "Importing genesis block failed: " << ec.message() << std::cerr;
+    m_blockChain.import( first_block, 0, blockchain_genesis );
+    std::error_code ec_genesis = pr_genesis.get_future().get();
+    if( ec_genesis ){
+        std::cerr << "Importing genesis block failed: " << ec_genesis.message() << std::cerr;
         return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;
@@ -71,6 +75,7 @@ ZR::RetVal ZrLibBitcoin::initChain( const std::string & pathname )
 
 ZR::RetVal ZrLibBitcoin::start()
 {
+    std::cerr << "Zero Reserve: Starting Blockchain" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     std::string pathname = RsInit::RsConfigDirectory() + "/" +
             p3zr->getOwnId() + "/zeroreserve/blockchain";

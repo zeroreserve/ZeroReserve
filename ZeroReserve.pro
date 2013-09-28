@@ -4,8 +4,8 @@
 DEFINES += ZR_TESTNET
 
 # One of those must be defined
-# ZR_BITCOIN = ZR_LIBBITCOIN
-ZR_BITCOIN = ZR_DUMMYBITCOIN
+ZR_BITCOIN = ZR_LIBBITCOIN
+# ZR_BITCOIN = ZR_DUMMYBITCOIN
 
 
 CONFIG += qt \
@@ -87,7 +87,7 @@ contains(ZR_BITCOIN, ZR_LIBBITCOIN) {
     HEADERS += ZrLibBitcoin.h
     SOURCES += ZrLibBitcoin.cpp
     QMAKE_CXXFLAGS += -std=c++11
-    LIBS += -lbitcoin
+    LIBS += -lbitcoin -lleveldb -lcurl -lboost_thread -lboost_system -lboost_regex -lboost_filesystem
     DEFINES += LEVELDB_ENABLED
 }
 
