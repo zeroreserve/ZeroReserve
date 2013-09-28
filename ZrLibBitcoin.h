@@ -36,10 +36,23 @@ public:
 
 private:
     ZR::RetVal initChain( const std::string & pathname );
+    void connection_started(const std::error_code& ec, bc::channel_ptr node);
+    void recv_tx( const std::error_code& ec, const bc::transaction_type & tx, bc::channel_ptr node );
+    void new_unconfirm_valid_tx( const std::error_code & ec, const bc::index_list & unconfirmed, const bc::transaction_type & tx );
 
     bc::threadpool m_netPool;
     bc::threadpool m_diskPool;
     bc::threadpool m_memPool;
+
+    bc::hosts m_hosts;
+    bc::handshake m_handshake;
+    bc::network m_network;
+    bc::protocol m_protocol;
+
+    bc::poller m_poller;
+    bc::transaction_pool m_txpool;
+    bc::transaction_indexer m_txidx;
+
 
     bc::leveldb_blockchain m_blockChain;
 

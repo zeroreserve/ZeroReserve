@@ -42,9 +42,11 @@ ZR::Bitcoin * ZR::Bitcoin::Instance()
 
 ZrLibBitcoin::ZrLibBitcoin() :
     m_netPool( 1 ), m_diskPool( 4 ), m_memPool( 1 ),
-    m_blockChain( m_diskPool )
-{
-}
+    m_hosts(m_netPool), m_handshake(m_netPool), m_network(m_netPool),
+    m_protocol(m_netPool, m_hosts, m_handshake, m_network),
+    m_blockChain( m_diskPool ),
+    m_poller( m_memPool, m_blockChain), m_txpool( m_memPool, m_blockChain ), m_txidx(m_memPool)
+{}
 
 ZR::RetVal ZrLibBitcoin::initChain( const std::string & pathname )
 {
@@ -73,6 +75,71 @@ ZR::RetVal ZrLibBitcoin::initChain( const std::string & pathname )
     return ZR::ZR_SUCCESS;
 }
 
+
+void ZrLibBitcoin::connection_started(const std::error_code& ec, bc::channel_ptr node )
+{
+    if ( ec ){
+        std::cerr << "Couldn't start connection: " << ec.message() << std::endl;
+        return;
+    }
+    node->subscribe_transaction( std::bind( &ZrLibBitcoin::recv_tx, this, std::placeholders::_1, std::placeholders::_2, node ) );
+    m_protocol.subscribe_channel( std::bind(&ZrLibBitcoin::connection_started, this, std::placeholders::_1, std::placeholders::_2 ) );
+}
+
+
+
+void ZrLibBitcoin::recv_tx( const std::error_code& ec, const bc::transaction_type& tx, bc::channel_ptr node )
+{
+    if ( ec ){
+        std::cerr << "Receive transaction: " << ec.message();
+        return;
+    }
+    auto handle_deindex = [](const std::error_code& ec){
+            if (ec)
+                std::cerr << "Deindex error: " << ec.message();
+        };
+
+    auto handle_confirm = [this, tx, handle_deindex]( const std::error_code& ec ){
+        if (ec)
+            std::cerr << "Confirm error (" << /* bc::hash_transaction(tx) << */ "): " << ec.message();
+        m_txidx.deindex(tx, handle_deindex);
+    };
+
+    m_txpool.store(tx, handle_confirm,
+        std::bind(&ZrLibBitcoin::new_unconfirm_valid_tx, this, std::placeholders::_1, std::placeholders::_2, tx));
+
+    node->subscribe_transaction( std::bind(&ZrLibBitcoin::recv_tx, this, std::placeholders::_1, std::placeholders::_2, node ) );
+}
+
+
+
+void ZrLibBitcoin::new_unconfirm_valid_tx( const std::error_code & ec, const bc::index_list & unconfirmed, const bc::transaction_type & tx )
+{
+    auto handle_index = [](const std::error_code& ec){
+        if (ec)
+            std::cerr << "Index error: " << ec.message() << std::endl;
+    };
+
+    const bc::hash_digest & tx_hash = hash_transaction(tx);
+    if (ec){
+        std::cerr  << "Error storing memory pool transaction " << /* tx_hash << */ ": " << ec.message() << std::endl;
+        return;
+    }
+
+    std::cerr << "Accepted transaction ";
+    if (!unconfirmed.empty())
+    {
+        std::cerr << "(Unconfirmed inputs";
+        for (auto idx: unconfirmed)
+            std::cerr << " " << idx;
+        std::cerr << ") ";
+    }
+//    std::cerr << tx_hash;
+    m_txidx.index(tx, handle_index);
+}
+
+
+
 ZR::RetVal ZrLibBitcoin::start()
 {
     std::cerr << "Zero Reserve: Starting Blockchain" << std::endl;
@@ -82,18 +149,36 @@ ZR::RetVal ZrLibBitcoin::start()
     QDir zrdata ( QString::fromStdString(pathname) );
     if( !zrdata.exists() ){
         if( !zrdata.mkpath( QString::fromStdString( pathname ) ) ){
-            std::cerr << "Problem creating blockchain dir: " << pathname << std::endl;
+            std::cerr << "Zero Reserve: Problem creating blockchain dir: " << pathname << std::endl;
             return ZR::ZR_FAILURE;
         }
         if( ZR::ZR_SUCCESS != initChain( pathname ) ){
             return ZR::ZR_FAILURE;
         }
     }
+    else{
+        std::promise<std::error_code> pr_chain;
+        auto blockchain_startup = [&]( const std::error_code& ec ){
+                pr_chain.set_value(ec);
+        };
+        m_blockChain.start( pathname, blockchain_startup );
+        std::error_code ec_start = pr_chain.get_future().get();
+        if( ec_start ) {
+            std::cerr << "Zero Reserve: Problem starting blockchain: " << ec_start.message() << std::endl;
+            return ZR::ZR_FAILURE;
+        }
+    }
+
+    m_protocol.subscribe_channel( std::bind( &ZrLibBitcoin::connection_started, this, std::placeholders::_1, std::placeholders::_2 ) );
+
+
     return ZR::ZR_SUCCESS;
 }
 
 ZR::RetVal ZrLibBitcoin::stop()
 {
+    std::cerr << "Zero Reserve: Stoping Blockchain" << std::endl;
+
     m_netPool.stop();
     m_diskPool.stop();
     m_memPool.stop();
@@ -105,9 +190,9 @@ ZR::RetVal ZrLibBitcoin::stop()
     m_blockChain.stop();
 }
 
+
 ZR::RetVal ZrLibBitcoin::commit()
 {
-
 }
 
 
