@@ -46,6 +46,7 @@ ZrLibBitcoin::ZrLibBitcoin() :
     m_protocol(m_netPool, m_hosts, m_handshake, m_network),
     m_blockChain( m_diskPool ),
     m_poller( m_memPool, m_blockChain), m_txpool( m_memPool, m_blockChain ), m_txidx(m_memPool),
+    m_session( m_netPool, { m_handshake, m_protocol, m_blockChain, m_poller, m_txpool} ),
     started( false )
 {}
 
@@ -140,6 +141,13 @@ void ZrLibBitcoin::new_unconfirm_valid_tx( const std::error_code & ec, const bc:
 }
 
 
+void ZrLibBitcoin::handle_start(const std::error_code& ec)
+{
+    if (ec)
+        std::cerr << "fullnode: " << ec.message() << std::endl;
+}
+
+
 
 ZR::RetVal ZrLibBitcoin::start()
 {
@@ -175,6 +183,9 @@ ZR::RetVal ZrLibBitcoin::start()
 
     m_protocol.subscribe_channel( std::bind( &ZrLibBitcoin::connection_started, this, std::placeholders::_1, std::placeholders::_2 ) );
 
+    m_txpool.start();
+    auto handle_start = std::bind( &ZrLibBitcoin::handle_start, this, std::placeholders::_1 );
+    m_session.start(handle_start);
 
     return ZR::ZR_SUCCESS;
 }

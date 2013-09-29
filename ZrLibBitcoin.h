@@ -39,6 +39,7 @@ private:
     void connection_started(const std::error_code& ec, bc::channel_ptr node);
     void recv_tx( const std::error_code& ec, const bc::transaction_type & tx, bc::channel_ptr node );
     void new_unconfirm_valid_tx( const std::error_code & ec, const bc::index_list & unconfirmed, const bc::transaction_type & tx );
+    void handle_start(const std::error_code& ec);
 
     bc::threadpool m_netPool;
     bc::threadpool m_diskPool;
@@ -53,6 +54,7 @@ private:
     bc::transaction_pool m_txpool;
     bc::transaction_indexer m_txidx;
 
+    bc::session m_session;
 
     bc::leveldb_blockchain m_blockChain;
 
