@@ -110,7 +110,8 @@ QIcon *ZeroReservePlugin::qt_icon() const
 RsPQIService * ZeroReservePlugin::rs_pqi_service() const
 {
     if(m_ZeroReserve == NULL){
-        m_ZeroReserve = new p3ZeroReserveRS(mPlugInHandler, m_bids, m_asks, m_peers ) ;
+        m_ZeroReserve = new p3ZeroReserveRS(mPlugInHandler, m_bids, m_asks, m_peers );
+        ZR::Bitcoin::Instance()->start();
     }
 
     return m_ZeroReserve ;

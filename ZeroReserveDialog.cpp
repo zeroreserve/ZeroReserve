@@ -102,8 +102,6 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     loadGrandTotal();
     loadTxLog();
-
-    ZR::Bitcoin::Instance()->start();
 }
 
 
