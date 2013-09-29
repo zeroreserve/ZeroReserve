@@ -45,7 +45,8 @@ ZrLibBitcoin::ZrLibBitcoin() :
     m_hosts(m_netPool), m_handshake(m_netPool), m_network(m_netPool),
     m_protocol(m_netPool, m_hosts, m_handshake, m_network),
     m_blockChain( m_diskPool ),
-    m_poller( m_memPool, m_blockChain), m_txpool( m_memPool, m_blockChain ), m_txidx(m_memPool)
+    m_poller( m_memPool, m_blockChain), m_txpool( m_memPool, m_blockChain ), m_txidx(m_memPool),
+    started( false )
 {}
 
 ZR::RetVal ZrLibBitcoin::initChain( const std::string & pathname )
@@ -142,6 +143,9 @@ void ZrLibBitcoin::new_unconfirm_valid_tx( const std::error_code & ec, const bc:
 
 ZR::RetVal ZrLibBitcoin::start()
 {
+    if( started) return ZR::ZR_FINISH;
+    started = true;
+
     std::cerr << "Zero Reserve: Starting Blockchain" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     std::string pathname = RsInit::RsConfigDirectory() + "/" +

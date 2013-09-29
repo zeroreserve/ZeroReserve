@@ -31,6 +31,8 @@
 
 
 ZeroReservePlugin * g_ZeroReservePlugin;
+RsMutex ZeroReservePlugin::widget_creation_mutex("widget_creation_mutex");
+
 
 extern "C" {
 	void *RETROSHARE_PLUGIN_provide()
@@ -79,6 +81,7 @@ void ZeroReservePlugin::setInterfaces(RsPlugInInterfaces &interfaces)
 
 MainPage *ZeroReservePlugin::qt_page() const
 {
+    RsStackMutex widgetCreationMutex( widget_creation_mutex );
     if(mainpage == NULL){
         mainpage = new ZeroReserveDialog( m_bids, m_asks );
     }

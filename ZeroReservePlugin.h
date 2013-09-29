@@ -20,6 +20,8 @@
 
 #include <retroshare/rsplugin.h>
 #include <retroshare-gui/mainpage.h>
+#include "util/rsthreads.h"
+
 
 class OrderBook;
 class p3ZeroReserveRS;
@@ -55,6 +57,8 @@ private:
     OrderBook * m_asks;
     OrderBook * m_bids;
     mutable p3ZeroReserveRS * m_ZeroReserve;
+
+    static RsMutex widget_creation_mutex;
 };
 
 extern ZeroReservePlugin * g_ZeroReservePlugin;

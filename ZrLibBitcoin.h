@@ -56,6 +56,7 @@ private:
 
     bc::leveldb_blockchain m_blockChain;
 
+    bool started;
 };
 
 #endif // ZRLIBBITCOIN_H
