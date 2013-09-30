@@ -92,6 +92,7 @@ void ZrLibBitcoin::connection_started(const std::error_code& ec, bc::channel_ptr
 
 void ZrLibBitcoin::recv_tx( const std::error_code& ec, const bc::transaction_type& tx, bc::channel_ptr node )
 {
+    std::cerr << "Zero Reserve: Receiving Transaction" << std::endl;
     if ( ec ){
         std::cerr << "Receive transaction: " << ec.message();
         return;
@@ -110,7 +111,7 @@ void ZrLibBitcoin::recv_tx( const std::error_code& ec, const bc::transaction_typ
     m_txpool.store(tx, handle_confirm,
         std::bind(&ZrLibBitcoin::new_unconfirm_valid_tx, this, std::placeholders::_1, std::placeholders::_2, tx));
 
-    node->subscribe_transaction( std::bind(&ZrLibBitcoin::recv_tx, this, std::placeholders::_1, std::placeholders::_2, node ) );
+    node->subscribe_transaction( std::bind( &ZrLibBitcoin::recv_tx, this, std::placeholders::_1, std::placeholders::_2, node ) );
 }
 
 
@@ -128,7 +129,7 @@ void ZrLibBitcoin::new_unconfirm_valid_tx( const std::error_code & ec, const bc:
         return;
     }
 
-    std::cerr << "Accepted transaction ";
+    std::cerr << "Zero Reserve: Accepted transaction ";
     if (!unconfirmed.empty())
     {
         std::cerr << "(Unconfirmed inputs";
@@ -216,3 +217,10 @@ ZR::ZR_Number ZrLibBitcoin::getBalance()
 
 }
 
+
+ZR::WalletSeed ZrLibBitcoin::getSeed()
+{
+    bc::deterministic_wallet wallet;
+    wallet.new_seed();
+    return wallet.seed();
+}

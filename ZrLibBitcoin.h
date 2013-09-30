@@ -33,6 +33,8 @@ public:
     virtual ZR::RetVal stop();
     virtual ZR::RetVal commit();
     virtual ZR::ZR_Number getBalance();
+    virtual ZR::WalletSeed getSeed();
+
 
 private:
     ZR::RetVal initChain( const std::string & pathname );

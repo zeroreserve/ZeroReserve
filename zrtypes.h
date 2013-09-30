@@ -116,6 +116,8 @@ typedef std::string TransactionId;
 
 typedef std::string PeerAddress;
 
+typedef std::string WalletSeed;
+
 }
 
 #endif // ZRTYPES_H

@@ -51,6 +51,11 @@ private slots:
     void remoteRequest();
     void remotePayment();
 
+// Bitcoin Wallet
+    void contextMenuMyAddresses( const QPoint & );
+    void newWallet();
+
+
 private:
     void doOrder(OrderBook * book, OrderBook::Order::OrderType type, ZR::ZR_Number price, ZR::ZR_Number amount );
     void loadTxLog();

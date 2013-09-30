@@ -27,6 +27,7 @@
 #include "RemotePaymentDialog.h"
 #include "RemotePaymentRequestDialog.h"
 #include "ZRBitcoin.h"
+#include "NewWallet.h"
 
 #include <QMenu>
 #include <QStandardItem>
@@ -99,6 +100,12 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
     ui.friendSelectionWidget->setShowType(FriendSelectionWidget::SHOW_GROUP | FriendSelectionWidget::SHOW_SSL);
     ui.friendSelectionWidget->start();
+
+    ui.MyAddresses->setContextMenuPolicy( Qt::CustomContextMenu );
+    ui.MyAddresses->setSelectionBehavior( QAbstractItemView::SelectRows );
+    ui.MyAddresses->setSelectionMode( QAbstractItemView::SingleSelection );
+    connect(ui.MyAddresses, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT( contextMenuMyAddresses( const QPoint &) ) );
+
 
     loadGrandTotal();
     loadTxLog();
@@ -235,4 +242,20 @@ void ZeroReserveDialog::remotePayment()
 void ZeroReserveDialog::updateFriendList()
 {
 // FIXME:    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
+}
+
+
+void ZeroReserveDialog::contextMenuMyAddresses( const QPoint & )
+{
+    QMenu contextMnu(this);
+    QAction *action = contextMnu.addAction(QIcon(), tr("New Wallet"), this, SLOT( newWallet() ) );
+    action->setEnabled(true);
+    contextMnu.exec(QCursor::pos());
+}
+
+
+void ZeroReserveDialog::newWallet()
+{
+    NewWallet d( this );
+    d.exec();
 }

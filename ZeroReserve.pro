@@ -35,7 +35,8 @@ SOURCES = ZeroReserveDialog.cpp \
     TmRemoteCoordinator.cpp \
     TmLocalCoordinator.cpp \
     TmLocalCohorte.cpp \
-    TmRemoteCohorte.cpp
+    TmRemoteCohorte.cpp \
+    NewWallet.cpp
 
 LIBS += -lsqlite3
 
@@ -69,14 +70,16 @@ HEADERS = ZeroReserveDialog.h \
     TmLocalCohorte.h \
     TmRemoteCohorte.h \
     ZRBitcoin.h \
-    ZrLibBitcoin.h
+    ZrLibBitcoin.h \
+    NewWallet.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
     paymentdialog.ui \
     ZeroReserveConfig.ui \
     RemotePaymentDialog.ui \
-    RemotePaymentRequestDialog.ui
+    RemotePaymentRequestDialog.ui \
+    NewWallet.ui
 
 TARGET = ZeroReserve
 

@@ -30,6 +30,8 @@ public:
     virtual ZR::RetVal stop() = 0;
     virtual ZR::ZR_Number getBalance() = 0;
 
+    virtual ZR::WalletSeed getSeed() = 0;
+
     static Bitcoin * Instance();
 
 private:
