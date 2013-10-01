@@ -1,6 +1,8 @@
 #ifndef NEWWALLET_H
 #define NEWWALLET_H
 
+#include "ZRBitcoin.h"
+
 #include <QDialog>
 
 namespace Ui {
@@ -12,17 +14,12 @@ class NewWallet : public QDialog
     Q_OBJECT
     
 public:
-    enum SeedType {
-        BRAINWALLET,
-        ELECTRUMSEED,
-        INVALID
-    };
 
     explicit NewWallet(QWidget *parent = 0);
     ~NewWallet();
 
     QString seed;
-    SeedType walletType;
+    ZR::Wallet::WalletType walletType;
 
 private slots:
     void wallet();

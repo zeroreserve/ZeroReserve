@@ -218,9 +218,49 @@ ZR::ZR_Number ZrLibBitcoin::getBalance()
 }
 
 
-ZR::WalletSeed ZrLibBitcoin::getSeed()
+ZR::Wallet * ZrLibBitcoin::mkWallet(  ZR::Wallet::WalletType wType )
 {
-    bc::deterministic_wallet wallet;
-    wallet.new_seed();
+    return new LibBitcoinWallet( wType );
+}
+
+
+
+// Wallet
+
+
+LibBitcoinWallet::LibBitcoinWallet(  Wallet::WalletType wType ) :
+    ZR::Wallet( wType )
+{}
+
+
+ZR::WalletSeed LibBitcoinWallet::seed()
+{
+    if( wallet.seed() == "" )
+        wallet.new_seed();
     return wallet.seed();
+}
+
+void LibBitcoinWallet::setSeed( const ZR::WalletSeed & seed )
+{
+
+}
+
+
+ZR::RetVal LibBitcoinWallet::getSecret( ZR::WalletSecret & secret_out )
+{
+    switch( m_walletType ){
+    case ELECTRUMSEED:
+    {
+        if( wallet.seed() == "" )
+            return ZR::ZR_FAILURE;
+        bc::secret_parameter secret = wallet.generate_secret( 2 );
+        secret_out = bc::encode_hex(secret);
+        return ZR::ZR_SUCCESS;
+    }
+    default:
+        return ZR::ZR_FAILURE;
+    }
+
+
+    return ZR::ZR_FAILURE;
 }

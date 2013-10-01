@@ -117,6 +117,7 @@ typedef std::string TransactionId;
 typedef std::string PeerAddress;
 
 typedef std::string WalletSeed;
+typedef std::string WalletSecret;
 
 }
 

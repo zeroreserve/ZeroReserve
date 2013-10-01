@@ -23,20 +23,48 @@
 namespace ZR
 {
 
-class Bitcoin {
+
+class Wallet
+{
+public:
+    enum WalletType {
+        BRAINWALLET,
+        ELECTRUMSEED,
+        WIFIMPORT,
+        CASASCIUS,
+        INVALID
+    };
+
+    Wallet( WalletType wType ) : m_walletType( wType )
+    {}
+
+    virtual ZR::WalletSeed seed() = 0;
+    virtual void setSeed( const ZR::WalletSeed & seed ) = 0;
+
+    virtual ZR::RetVal getSecret( ZR::WalletSecret & secret_out ) = 0;
+
+protected:
+    WalletType m_walletType;
+};
+
+
+
+class Bitcoin
+{
 public:
     virtual ZR::RetVal commit() = 0;
     virtual ZR::RetVal start() = 0;
     virtual ZR::RetVal stop() = 0;
     virtual ZR::ZR_Number getBalance() = 0;
 
-    virtual ZR::WalletSeed getSeed() = 0;
+    virtual Wallet * mkWallet( Wallet::WalletType wType ) = 0;
 
     static Bitcoin * Instance();
 
 private:
     static Bitcoin * instance;
 };
+
 
 }
 

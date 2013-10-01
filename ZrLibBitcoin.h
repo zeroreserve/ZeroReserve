@@ -33,8 +33,8 @@ public:
     virtual ZR::RetVal stop();
     virtual ZR::RetVal commit();
     virtual ZR::ZR_Number getBalance();
-    virtual ZR::WalletSeed getSeed();
 
+    virtual ZR::Wallet * mkWallet( ZR::Wallet::WalletType wType );
 
 private:
     ZR::RetVal initChain( const std::string & pathname );
@@ -61,6 +61,22 @@ private:
     bc::leveldb_blockchain m_blockChain;
 
     bool started;
+};
+
+class LibBitcoinWallet : public ZR::Wallet
+{
+    friend ZrLibBitcoin;
+    LibBitcoinWallet(  Wallet::WalletType wType );
+public:
+
+    virtual ZR::WalletSeed seed();
+    virtual void setSeed( const ZR::WalletSeed & seed );
+
+    virtual ZR::RetVal getSecret( ZR::WalletSecret &secret_out  );
+
+private:
+    bc::deterministic_wallet wallet;
+    bc::elliptic_curve_key privkey;
 };
 
 #endif // ZRLIBBITCOIN_H
