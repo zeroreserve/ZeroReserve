@@ -242,7 +242,17 @@ ZR::WalletSeed LibBitcoinWallet::seed()
 
 void LibBitcoinWallet::setSeed( const ZR::WalletSeed & seed )
 {
+    m_walletType = ELECTRUMSEED;
+    wallet.set_seed( seed );
+}
 
+
+ZR::BitcoinAddress LibBitcoinWallet::getAddress()
+{
+    bc::data_chunk pubkey = wallet.generate_public_key(2);
+    bc::payment_address addr;
+    bc::set_public_key(addr, pubkey);
+    return addr.encoded();
 }
 
 

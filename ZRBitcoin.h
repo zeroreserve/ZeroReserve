@@ -42,9 +42,13 @@ public:
     virtual void setSeed( const ZR::WalletSeed & seed ) = 0;
 
     virtual ZR::RetVal getSecret( ZR::WalletSecret & secret_out ) = 0;
+    virtual ZR::BitcoinAddress getAddress() = 0;
+    const std::string & getNick(){ return m_nick; }
+    void setNick( const std::string & nick ){ m_nick = nick; }
 
 protected:
     WalletType m_walletType;
+    std::string m_nick;
 };
 
 
