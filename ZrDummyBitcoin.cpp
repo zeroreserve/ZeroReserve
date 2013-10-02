@@ -59,3 +59,7 @@ ZR::ZR_Number ZrDummyBitcoin::getBalance()
     return 0;
 }
 
+ZR::Wallet * ZrDummyBitcoin::mkWallet( ZR::Wallet::WalletType wType )
+{
+    return NULL;
+}
