@@ -55,6 +55,9 @@ private slots:
     void contextMenuMyAddresses( const QPoint & );
     void newWallet();
 
+    void contextMenuPeerAddresses( const QPoint & );
+    void newPeerAddress();
+
 
 private:
     void doOrder(OrderBook * book, OrderBook::Order::OrderType type, ZR::ZR_Number price, ZR::ZR_Number amount );

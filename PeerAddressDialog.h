@@ -16,36 +16,34 @@
 */
 
 
-#ifndef NEWWALLET_H
-#define NEWWALLET_H
+#ifndef PEERADDRESSDIALOG_H
+#define PEERADDRESSDIALOG_H
 
-#include "ZRBitcoin.h"
+#include "zrtypes.h"
 
 #include <QDialog>
 
 namespace Ui {
-class NewWallet;
+class PeerAddressDialog;
 }
 
-class NewWallet : public QDialog
+class PeerAddressDialog : public QDialog
 {
     Q_OBJECT
     
 public:
+    explicit PeerAddressDialog(QWidget *parent = 0);
+    ~PeerAddressDialog();
 
-    explicit NewWallet(QWidget *parent = 0);
-    ~NewWallet();
-
-    QString m_seed;
-    ZR::MyWallet::WalletType m_walletType;
 
 private slots:
-    void wallet();
-    void makeSeed( bool enabled );
-
+    void setPeerAddress();
     
-private:
-    Ui::NewWallet *ui;
+public:
+    Ui::PeerAddressDialog *ui;
+
+    ZR::BitcoinAddress m_address;
+    std::string m_nick;
 };
 
-#endif // NEWWALLET_H
+#endif // PEERADDRESSDIALOG_H

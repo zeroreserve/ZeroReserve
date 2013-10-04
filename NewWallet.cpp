@@ -1,3 +1,20 @@
+/*
+    This file is part of the Zero Reserve Plugin for Retroshare.
+
+    Zero Reserve is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Zero Reserve is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with Zero Reserve.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "NewWallet.h"
 #include "ui_NewWallet.h"
 
@@ -10,7 +27,7 @@ NewWallet::NewWallet(QWidget *parent) :
     ui->setupUi(this);
     connect( ui->buttonBox, SIGNAL(accepted()), this, SLOT( wallet() ) );
     connect( ui->newElectrum, SIGNAL( toggled( bool ) ), this, SLOT(makeSeed( bool ) ) );
-    walletType = ZR::Wallet::INVALID;
+    m_walletType = ZR::MyWallet::INVALID;
 }
 
 NewWallet::~NewWallet()
@@ -25,21 +42,21 @@ void NewWallet::makeSeed( bool enabled )
         ui->seed->setText( "" );
         return;
     }
-    ZR::Wallet * wallet = ZR::Bitcoin::Instance()->mkWallet( ZR::Wallet::ELECTRUMSEED );
+    ZR::MyWallet * wallet = ZR::Bitcoin::Instance()->mkWallet( ZR::MyWallet::ELECTRUMSEED );
     ZR::WalletSeed seed = wallet->seed();
     ui->seed->setText( QString::fromStdString( seed ) );
 }
 
 void NewWallet::wallet()
 {
-    seed = ui->seed->text();
+    m_seed = ui->seed->text();
     if( ui->brainWallet->isEnabled() ){
-        walletType = ZR::Wallet::BRAINWALLET;
+        m_walletType = ZR::MyWallet::BRAINWALLET;
     }
     else if( ui->importElectrum->isEnabled() || ui->newElectrum->isEnabled() ) {
-        walletType = ZR::Wallet::ELECTRUMSEED;
+        m_walletType = ZR::MyWallet::ELECTRUMSEED;
     }
     else {
-        walletType = ZR::Wallet::INVALID;
+        m_walletType = ZR::MyWallet::INVALID;
     }
 }

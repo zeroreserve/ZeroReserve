@@ -34,7 +34,7 @@ public:
     virtual ZR::RetVal commit();
     virtual ZR::ZR_Number getBalance();
 
-    virtual ZR::Wallet * mkWallet( ZR::Wallet::WalletType wType );
+    virtual ZR::MyWallet *mkWallet( ZR::MyWallet::WalletType wType );
 
 private:
     ZR::RetVal initChain( const std::string & pathname );
@@ -63,10 +63,10 @@ private:
     bool started;
 };
 
-class LibBitcoinWallet : public ZR::Wallet
+class LibBitcoinWallet : public ZR::MyWallet
 {
     friend ZrLibBitcoin;
-    LibBitcoinWallet(  Wallet::WalletType wType );
+    LibBitcoinWallet(  MyWallet::WalletType wType );
 public:
 
     virtual ZR::WalletSeed seed();

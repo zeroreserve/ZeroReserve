@@ -28,6 +28,8 @@
 #include "RemotePaymentRequestDialog.h"
 #include "ZRBitcoin.h"
 #include "NewWallet.h"
+#include "BitcoinAddressList.h"
+#include "PeerAddressDialog.h"
 
 #include <QMenu>
 #include <QStandardItem>
@@ -106,6 +108,16 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.MyAddresses->setSelectionMode( QAbstractItemView::SingleSelection );
     connect(ui.MyAddresses, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT( contextMenuMyAddresses( const QPoint &) ) );
 
+    ui.PeerAddresses->setContextMenuPolicy( Qt::CustomContextMenu );
+    ui.PeerAddresses->setSelectionBehavior( QAbstractItemView::SelectRows );
+    ui.PeerAddresses->setSelectionMode( QAbstractItemView::SingleSelection );
+    connect(ui.PeerAddresses, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT( contextMenuPeerAddresses( const QPoint &) ) );
+
+    BitcoinAddressList * myWallets = new BitcoinAddressList();
+    BitcoinAddressList * peerAddrs = new BitcoinAddressList();
+
+    ui.MyAddresses->setModel( myWallets );
+    ui.PeerAddresses->setModel( peerAddrs );
 
     loadGrandTotal();
     loadTxLog();
@@ -244,6 +256,8 @@ void ZeroReserveDialog::updateFriendList()
 // FIXME:    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
 }
 
+///////////////////////// My Addresses //////////////////////////
+
 
 void ZeroReserveDialog::contextMenuMyAddresses( const QPoint & )
 {
@@ -257,5 +271,31 @@ void ZeroReserveDialog::contextMenuMyAddresses( const QPoint & )
 void ZeroReserveDialog::newWallet()
 {
     NewWallet d( this );
-    d.exec();
+    if( d.exec() == 0 )
+        return;
+    ZR::MyWallet * wallet = ZR::Bitcoin::Instance()->mkWallet( d.m_walletType );
+    wallet->setSeed( d.m_seed.toStdString() );
+    BitcoinAddressList * addrs = static_cast< BitcoinAddressList* >( ui.MyAddresses->model() );
+    addrs->addWallet( wallet );
+}
+
+///////////////////////// Peer Addresses //////////////////////////
+
+void ZeroReserveDialog::contextMenuPeerAddresses( const QPoint & )
+{
+    QMenu contextMnu(this);
+    QAction *action = contextMnu.addAction(QIcon(), tr("New Peer Address"), this, SLOT( newPeerAddress() ) );
+    action->setEnabled(true);
+    contextMnu.exec(QCursor::pos());
+}
+
+void ZeroReserveDialog::newPeerAddress()
+{
+    PeerAddressDialog d( this );
+    if( d.exec() == 0 )
+        return;
+    ZR::BitcoinAddressEntry * wallet = new ZR::BitcoinAddressEntry( d.m_address );
+    wallet->setNick( d.m_nick );
+    BitcoinAddressList * addrs = static_cast< BitcoinAddressList* >( ui.PeerAddresses->model() );
+    addrs->addWallet( wallet );
 }

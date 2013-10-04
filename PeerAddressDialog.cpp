@@ -15,37 +15,25 @@
     along with Zero Reserve.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "PeerAddressDialog.h"
+#include "ui_PeerAddressDialog.h"
 
-#ifndef NEWWALLET_H
-#define NEWWALLET_H
-
-#include "ZRBitcoin.h"
-
-#include <QDialog>
-
-namespace Ui {
-class NewWallet;
+PeerAddressDialog::PeerAddressDialog(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::PeerAddressDialog)
+{
+    ui->setupUi(this);
+    connect( ui->buttonBox, SIGNAL(accepted()), this, SLOT( setPeerAddress() ) );
 }
 
-class NewWallet : public QDialog
+PeerAddressDialog::~PeerAddressDialog()
 {
-    Q_OBJECT
-    
-public:
+    delete ui;
+}
 
-    explicit NewWallet(QWidget *parent = 0);
-    ~NewWallet();
 
-    QString m_seed;
-    ZR::MyWallet::WalletType m_walletType;
-
-private slots:
-    void wallet();
-    void makeSeed( bool enabled );
-
-    
-private:
-    Ui::NewWallet *ui;
-};
-
-#endif // NEWWALLET_H
+void PeerAddressDialog::setPeerAddress()
+{
+    m_nick = ui->NickName->text().toStdString();
+    m_address = ui->peerAddress->text().toStdString();
+}

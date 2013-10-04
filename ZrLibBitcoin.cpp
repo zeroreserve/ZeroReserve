@@ -218,7 +218,7 @@ ZR::ZR_Number ZrLibBitcoin::getBalance()
 }
 
 
-ZR::Wallet * ZrLibBitcoin::mkWallet(  ZR::Wallet::WalletType wType )
+ZR::MyWallet * ZrLibBitcoin::mkWallet(  ZR::MyWallet::WalletType wType )
 {
     return new LibBitcoinWallet( wType );
 }
@@ -228,8 +228,8 @@ ZR::Wallet * ZrLibBitcoin::mkWallet(  ZR::Wallet::WalletType wType )
 // Wallet
 
 
-LibBitcoinWallet::LibBitcoinWallet(  Wallet::WalletType wType ) :
-    ZR::Wallet( wType )
+LibBitcoinWallet::LibBitcoinWallet(  MyWallet::WalletType wType ) :
+    ZR::MyWallet( wType )
 {}
 
 

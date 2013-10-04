@@ -27,6 +27,20 @@ namespace ZR
 class Wallet
 {
 public:
+    Wallet() {}
+
+    virtual ZR::BitcoinAddress getAddress() = 0;
+    const std::string & getNick(){ return m_nick; }
+    void setNick( const std::string & nick ){ m_nick = nick; }
+
+protected:
+    std::string m_nick;
+};
+
+
+class MyWallet : public Wallet
+{
+public:
     enum WalletType {
         BRAINWALLET,
         ELECTRUMSEED,
@@ -35,22 +49,30 @@ public:
         INVALID
     };
 
-    Wallet( WalletType wType ) : m_walletType( wType )
+    MyWallet( WalletType wType ) : m_walletType( wType )
     {}
 
     virtual ZR::WalletSeed seed() = 0;
     virtual void setSeed( const ZR::WalletSeed & seed ) = 0;
 
     virtual ZR::RetVal getSecret( ZR::WalletSecret & secret_out ) = 0;
-    virtual ZR::BitcoinAddress getAddress() = 0;
-    const std::string & getNick(){ return m_nick; }
-    void setNick( const std::string & nick ){ m_nick = nick; }
 
 protected:
     WalletType m_walletType;
-    std::string m_nick;
 };
 
+class BitcoinAddressEntry : public Wallet
+{
+    BitcoinAddressEntry();
+public:
+    BitcoinAddressEntry( const ZR::BitcoinAddress & address ) :
+        m_Address( address )
+    {}
+    virtual ZR::BitcoinAddress getAddress(){ return m_Address; }
+
+private:
+    ZR::BitcoinAddress m_Address;
+};
 
 
 class Bitcoin
@@ -61,11 +83,12 @@ public:
     virtual ZR::RetVal stop() = 0;
     virtual ZR::ZR_Number getBalance() = 0;
 
-    virtual Wallet * mkWallet( Wallet::WalletType wType ) = 0;
+    virtual MyWallet * mkWallet( MyWallet::WalletType wType ) = 0;
 
     static Bitcoin * Instance();
 
-private:
+protected:
+
     static Bitcoin * instance;
 };
 
