@@ -200,6 +200,8 @@ void ZrDB::init()
         tables.push_back( "create table if not exists config ( key varchar(32), value varchar(160) )");
         tables.push_back( "create table if not exists payments ( payee varchar(32), currency varchar(3), amount decimal(12,8) )");
         tables.push_back( "create table if not exists myorders ( orderid varchar(32), ordertype int, amount decimal(12,8), price decimal(12,8), currency varchar(3), creationtime int, purpose int )");
+        tables.push_back( "create table if not exists mywallet ( secret varchar(64), type int, nick varchar(64) )");
+        tables.push_back( "create table if not exists peerwallet ( address varchar(34), nick varchar(64) )");
         tables.push_back( "create unique index if not exists id_curr on peers ( id, currency)");
         for(std::vector < std::string >::const_iterator it = tables.begin(); it != tables.end(); it++ ){
             rc = sqlite3_exec(m_db, (*it).c_str(), noop_callback, this, &zErrMsg);
@@ -489,6 +491,44 @@ void ZrDB::deleteOrder( OrderBook::Order * order )
 void ZrDB::addToOrderList( OrderBook::Order * order )
 {
     m_orderList->push_back( order );
+}
+
+
+/////////////////////////// Wallet /////////////////////////////////////
+
+
+void ZrDB::addMyWallet( const ZR::WalletSecret & secret, unsigned int type, const std::string & nick )
+{
+    std::cerr << "Zero Reserve: Inserting my wallet " << std::endl;
+    char *zErrMsg = 0;
+    std::ostringstream insert;
+    insert << "insert into mywallet ( secret, type, nick ) values( '"
+           << secret << "', '"
+           << type << "', '"
+           << nick << "' )";
+    int rc = sqlite3_exec( m_db, insert.str().c_str(), noop_callback, this, &zErrMsg );
+    if( rc != SQLITE_OK ){
+        std::cerr << "SQL error: " << zErrMsg << std::endl;
+        sqlite3_free(zErrMsg);
+        throw std::runtime_error( "SQL Error: Cannot insert my wallet" );
+    }
+}
+
+
+void ZrDB::addPeerWallet( const ZR::BitcoinAddress & address, const std::string & nick )
+{
+    std::cerr << "Zero Reserve: Inserting peer wallet " << std::endl;
+    char *zErrMsg = 0;
+    std::ostringstream insert;
+    insert << "insert into peerwallet ( address, nick ) values( '"
+           << address << "', '"
+           << nick << "' )";
+    int rc = sqlite3_exec( m_db, insert.str().c_str(), noop_callback, this, &zErrMsg );
+    if( rc != SQLITE_OK ){
+        std::cerr << "SQL error: " << zErrMsg << std::endl;
+        sqlite3_free(zErrMsg);
+        throw std::runtime_error( "SQL Error: Cannot insert peer wallet" );
+    }
 }
 
 ////////////////////////////////////////////////////////////////

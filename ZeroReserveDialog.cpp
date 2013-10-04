@@ -276,6 +276,7 @@ void ZeroReserveDialog::newWallet()
     ZR::MyWallet * wallet = ZR::Bitcoin::Instance()->mkWallet( d.m_walletType );
     wallet->setSeed( d.m_seed.toStdString() );
     BitcoinAddressList * addrs = static_cast< BitcoinAddressList* >( ui.MyAddresses->model() );
+    wallet->persist();
     addrs->addWallet( wallet );
 }
 
@@ -297,5 +298,6 @@ void ZeroReserveDialog::newPeerAddress()
     ZR::BitcoinAddressEntry * wallet = new ZR::BitcoinAddressEntry( d.m_address );
     wallet->setNick( d.m_nick );
     BitcoinAddressList * addrs = static_cast< BitcoinAddressList* >( ui.PeerAddresses->model() );
+    wallet->persist();
     addrs->addWallet( wallet );
 }

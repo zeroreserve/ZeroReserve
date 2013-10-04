@@ -95,6 +95,11 @@ public:
     // TODO: void replayPaymentLog();
     // TODO: void backup() const;
     // TODO: void restore() const;
+
+////////// Bitcoin Wallet //////////////
+    void addMyWallet( const ZR::WalletSecret &secret, unsigned int type, const std::string &nick );
+    void addPeerWallet( const ZR::BitcoinAddress & address, const std::string & nick );
+
 private:
     void setConfig( const std::string & key, const std::string & value );
     void runQuery( const std::string & sql );

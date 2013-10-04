@@ -20,6 +20,7 @@
 #include "retroshare/rsinit.h"
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
+#include "zrdb.h"
 
 #include <QString>
 #include <QDir>
@@ -273,4 +274,12 @@ ZR::RetVal LibBitcoinWallet::getSecret( ZR::WalletSecret & secret_out )
 
 
     return ZR::ZR_FAILURE;
+}
+
+
+void LibBitcoinWallet::persist()
+{
+    ZR::WalletSecret secret;
+    getSecret( secret );
+    ZrDB::Instance()->addMyWallet( secret, m_walletType, m_nick );
 }

@@ -19,6 +19,7 @@
 #define ZRBITCOIN_H
 
 #include "zrtypes.h"
+#include "zrdb.h"
 
 namespace ZR
 {
@@ -30,6 +31,8 @@ public:
     Wallet() {}
 
     virtual ZR::BitcoinAddress getAddress() = 0;
+    virtual void persist() = 0;
+
     const std::string & getNick(){ return m_nick; }
     void setNick( const std::string & nick ){ m_nick = nick; }
 
@@ -69,6 +72,9 @@ public:
         m_Address( address )
     {}
     virtual ZR::BitcoinAddress getAddress(){ return m_Address; }
+    virtual void persist(){
+        ZrDB::Instance()->addPeerWallet( m_Address, m_nick );
+    }
 
 private:
     ZR::BitcoinAddress m_Address;
