@@ -31,7 +31,8 @@ const qint64 OrderBook::Order::timeout = 1800000;   // 30 minutes
 const qint64 OrderBook::Order::timeout = 86400000;  // one day
 #endif
 
-OrderBook::OrderBook()
+OrderBook::OrderBook() :
+    m_order_mutex("order_mutex")
 {
     m_myOrders = NULL;
 }
@@ -53,6 +54,7 @@ QModelIndex OrderBook::parent(const QModelIndex&) const
 
 int OrderBook::rowCount(const QModelIndex&) const
 {
+    RsStackMutex orderMutex( m_order_mutex );
     return m_filteredOrders.size();
 }
 
@@ -64,6 +66,8 @@ int OrderBook::columnCount(const QModelIndex&) const
 
 QVariant OrderBook::data( const QModelIndex& index, int role ) const
 {
+    RsStackMutex orderMutex( m_order_mutex );
+
     if (role == Qt::DisplayRole && index.row() < m_filteredOrders.size()){
         Order * order = m_filteredOrders[index.row()];
         switch(index.column()){
@@ -106,6 +110,7 @@ void OrderBook::setCurrency( const QString & currency )
 
 void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym )
 {
+    RsStackMutex orderMutex( m_order_mutex );
     filteredOrders.clear();
     for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
         if( (*it)->m_currency == currencySym )
@@ -188,11 +193,13 @@ ZR::RetVal OrderBook::processOrder( Order* order )
 
 
 int OrderBook::addOrder( Order * order )
-{
+{    
     std::cerr << "Zero Reserve: Inserting Type: " << (int)order->m_orderType <<
                  " Currency: " << order->m_currency << std::endl;
-
-    m_orders.append(order);
+    {
+        RsStackMutex orderMutex( m_order_mutex );
+        m_orders.append(order);
+    }
     if( order->m_currency != m_currency ) return ZR::ZR_SUCCESS;
 
     beginInsertRows( QModelIndex(), m_filteredOrders.size(), m_filteredOrders.size());
@@ -205,9 +212,13 @@ int OrderBook::addOrder( Order * order )
 
 OrderBook::Order * OrderBook::remove( Order * order )
 {
+
     OrderIterator it = find( order->m_order_id );
     if( it != m_orders.end() ){
-        m_orders.erase( it );
+        {
+            RsStackMutex orderMutex( m_order_mutex );
+            m_orders.erase( it );
+        }
         ZrDB::Instance()->deleteOrder( order);
         beginResetModel();
         filterOrders( m_filteredOrders, m_currency );
@@ -222,7 +233,10 @@ OrderBook::Order * OrderBook::remove( const std::string & order_id )
     // FIXME: Boilerplate
     OrderIterator it = find( order_id );
     if( it != m_orders.end() ){
-        m_orders.erase( it );
+        {
+            RsStackMutex orderMutex( m_order_mutex );
+            m_orders.erase( it );
+        }
         beginResetModel();
         filterOrders( m_filteredOrders, m_currency );
         endResetModel();
@@ -233,6 +247,7 @@ OrderBook::Order * OrderBook::remove( const std::string & order_id )
 
 OrderBook::OrderIterator OrderBook::find( const std::string & order_id )
 {
+    RsStackMutex orderMutex( m_order_mutex );
     for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
         if( order_id == (*it)->m_order_id ){
             return it;

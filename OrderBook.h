@@ -21,6 +21,8 @@
 #include "zrtypes.h"
 #include "Currency.h"
 
+#include "util/rsthreads.h"
+
 #include <QAbstractItemModel>
 #include <QDateTime>
 #include <QList>
@@ -113,6 +115,8 @@ public:
 
 
 protected:
+    mutable RsMutex m_order_mutex;
+
     OrderList m_orders;
     OrderList m_filteredOrders;
     Currency::CurrencySymbols m_currency;
