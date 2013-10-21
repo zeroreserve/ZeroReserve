@@ -24,6 +24,11 @@
 #include <QString>
 #include <QMessageBox>
 
+/// @brief Constructor
+///
+/// @param uid
+/// @param parent
+/// @param name
 FriendDetailsDialog::FriendDetailsDialog( const std::string & uid, QWidget *parent, const std::string & name ) :
     QDialog(parent),
     ui(new Ui::FriendDetailsDialog),
@@ -32,7 +37,8 @@ FriendDetailsDialog::FriendDetailsDialog( const std::string & uid, QWidget *pare
     ui->setupUi(this);
 
     int index = 0;
-    while(Currency::currencyNames[ index ]){
+    while(Currency::currencyNames[ index ])
+    {
         ui->currencySelector->addItem( Currency::currencyNames[ index ] );
         index++;
     }
@@ -45,6 +51,9 @@ FriendDetailsDialog::FriendDetailsDialog( const std::string & uid, QWidget *pare
     loadPeer();
 }
 
+/// @brief Load peer
+///
+/// @param QString
 void FriendDetailsDialog::loadPeer( QString )
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
@@ -60,12 +69,15 @@ void FriendDetailsDialog::loadPeer( QString )
     ui->balance->display( peerCredit.m_balance.toDouble() );
 }
 
+/// @brief Destructor
 FriendDetailsDialog::~FriendDetailsDialog()
 {
     delete ui;
 }
 
 
+/// @brief Edit friend details
+//
 void FriendDetailsDialog::editFriend()
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
@@ -80,3 +92,5 @@ void FriendDetailsDialog::editFriend()
         QMessageBox::critical( 0, "Error inserting credit", e.what() );
     }
 }
+
+// EOF   

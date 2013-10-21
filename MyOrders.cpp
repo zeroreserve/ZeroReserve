@@ -28,17 +28,29 @@
 
 MyOrders * MyOrders::me = NULL;
 
+/// @brief Create an instance of an order
+///
+/// @todo Need expert to explain what this does
+//
+/// @return 
 MyOrders * MyOrders::Instance()
 {
     while(!me);
     return me;
 }
 
+/// @brief
+//
+/// @todo Need expert to document what this does
 MyOrders::MyOrders()
 {
     me = this;
 }
 
+/// @brief Myorders
+///
+/// @param bids
+/// @param asks
 MyOrders::MyOrders( OrderBook * bids, OrderBook * asks ) :
     m_bids( bids ),
     m_asks( asks )
@@ -67,11 +79,23 @@ MyOrders::MyOrders( OrderBook * bids, OrderBook * asks ) :
     me = this;
 }
 
+/// @brief Column count
+///
+/// @param QModelIndex
+///
+/// @return 3
 int MyOrders::columnCount(const QModelIndex&) const
 {
     return 3;
 }
 
+/// @brief Header data
+///
+/// @param section
+/// @param orientation
+/// @param role
+///
+/// @return 
 QVariant MyOrders::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role == Qt::DisplayRole)
@@ -92,6 +116,12 @@ QVariant MyOrders::headerData(int section, Qt::Orientation orientation, int role
 }
 
 
+/// @brief Data display
+///
+/// @param index
+/// @param role
+///
+/// @return 
 QVariant MyOrders::data( const QModelIndex& index, int role ) const
 {
     if (role == Qt::DisplayRole && index.row() < m_filteredOrders.size()){
@@ -114,14 +144,27 @@ QVariant MyOrders::data( const QModelIndex& index, int role ) const
     return QVariant();
 }
 
-bool MyOrders::reverseCompareOrder( const Order * left, const Order * right ){
+/// @brief Reverse compare order
+///
+/// @param left
+/// @param right
+///
+/// @return 
+bool MyOrders::reverseCompareOrder( const Order * left, const Order * right )
+{
     return ( left->m_orderType == Order::BID ) ? left->m_price > right->m_price : left->m_price < right->m_price;
 }
 
+/// @brief Filter bids
+///
+/// @param filteredOrders
+/// @param currencySym
 void MyOrders::filterBids( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym )
 {
     filteredOrders.clear();
-    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+
+    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++)
+    {
         Order * order = *it;
         if( order->m_currency == currencySym && order->m_orderType == Order::BID )
             filteredOrders.append( *it );
@@ -129,10 +172,17 @@ void MyOrders::filterBids( OrderList & filteredOrders, const Currency::CurrencyS
     qSort( filteredOrders.begin(), filteredOrders.end(), reverseCompareOrder );
 }
 
+/// @brief Match other
+///
+/// @param other
+///
+/// @return 
 ZR::RetVal MyOrders::matchOther( Order * other )
 {
     if( other->m_isMyOrder ) return ZR::ZR_FAILURE; // don't fill own orders
-    if( other->m_orderType == Order::BID ){
+
+    if( other->m_orderType == Order::BID )
+    {
         return ZR::ZR_SUCCESS;
     }
 
@@ -140,18 +190,21 @@ ZR::RetVal MyOrders::matchOther( Order * other )
     OrderList bids;
     filterBids( bids, other->m_currency );
     ZR::ZR_Number amount = other->m_amount;
-    for( OrderIterator it = bids.begin(); it != bids.end(); it++ ){
+    for( OrderIterator it = bids.begin(); it != bids.end(); it++ )
+    {
         order = *it;
         if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << order->m_price.toStdString() << std::endl;
 
         m_CurrentTxOrders[ other->m_order_id + ':' + order->m_order_id ] = std::pair< Order, Order > ( *order, *other ); // remember the matched order pair for later
 
-        if( order->m_amount > amount ){
+        if( order->m_amount > amount )
+        {
             buy( other, amount * other->m_price, order->m_order_id );
             return ZR::ZR_FINISH;
         }
-        else {
+        else 
+        {
             buy( other, order->m_amount * other->m_price, order->m_order_id );
         }
         amount -= order->m_amount;
@@ -161,6 +214,11 @@ ZR::RetVal MyOrders::matchOther( Order * other )
 
 
 
+/// @brief Match asking
+///
+/// @param order
+///
+/// @return 
 ZR::RetVal MyOrders::matchAsk( Order * order )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
@@ -168,15 +226,18 @@ ZR::RetVal MyOrders::matchAsk( Order * order )
     ZR::ZR_Number amountBtc = order->m_amount;
     OrderList bids;
     m_bids->filterOrders( bids, order->m_currency );
-    for( OrderIterator bidIt = bids.begin(); bidIt != bids.end(); bidIt++ ){
+    for( OrderIterator bidIt = bids.begin(); bidIt != bids.end(); bidIt++ )
+    {
         Order * other = *bidIt;
         if( other->m_isMyOrder ) continue; // don't fill own orders
         if( order->m_price > other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at bid price " << other->m_price.toStdString() << std::endl;
-        if( amountBtc > other->m_amount ){
+        if( amountBtc > other->m_amount )
+        {
             p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, other->m_amount );
         }
-        else {
+        else 
+        {
             p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, amountBtc );
             return ZR::ZR_SUCCESS;
         }
@@ -184,12 +245,18 @@ ZR::RetVal MyOrders::matchAsk( Order * order )
     return ZR::ZR_SUCCESS;
 }
 
+/// @brief Myorders match
+///
+/// @param order
+///
+/// @return 
 ZR::RetVal MyOrders::match( Order * order )
 {
     OrderList asks;
     m_asks->filterOrders( asks, order->m_currency );
     ZR::ZR_Number amount = order->m_amount;
-    for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){
+    for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ )
+    {
         Order * other = *askIt;
         if( other->m_isMyOrder ) continue; // don't fill own orders
         if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
@@ -197,10 +264,12 @@ ZR::RetVal MyOrders::match( Order * order )
 
         m_CurrentTxOrders[ other->m_order_id + ':' + order->m_order_id ] = std::pair< Order, Order > ( *order, *other ); // remember the matched order pair for later
 
-        if( amount > other->m_amount ){
+        if( amount > other->m_amount )
+        {
             buy( other, other->m_amount * other->m_price, order->m_order_id );
         }
-        else {
+        else 
+        {
             buy( other, amount * other->m_price, order->m_order_id );
             return ZR::ZR_FINISH;
         }
@@ -209,7 +278,11 @@ ZR::RetVal MyOrders::match( Order * order )
     return ZR::ZR_SUCCESS;
 }
 
-
+/// @brief Buy
+///
+/// @param order
+/// @param amount
+/// @param myId
 void MyOrders::buy( Order * order, ZR::ZR_Number amount, const Order::ID & myId )
 {
     Payment * payment = new PaymentSpender( Router::Instance()->nextHop( order->m_order_id), amount, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
@@ -218,8 +291,12 @@ void MyOrders::buy( Order * order, ZR::ZR_Number amount, const Order::ID & myId 
     if( ZR::ZR_FAILURE == tm->init() ) delete tm;
 }
 
-
-
+/// @brief Start execution
+///
+/// @todo Start 2/3 bitcoin transaction in this function.
+/// @param payment
+///
+/// @return 
 int MyOrders::startExecute( Payment * payment )
 {
     // TODO: start 2/3 Bitcoin TX here
@@ -233,11 +310,13 @@ int MyOrders::startExecute( Payment * payment )
     if( leftover == 0 )return ZR::ZR_FAILURE; // nothing left in this order
 
     ZR::ZR_Number btcAmount = payment->getAmount() / order->m_price;
-    if( btcAmount > leftover ){
+    if( btcAmount > leftover )
+    {
         order->m_commitment = order->m_amount;
         payment->setAmount( leftover * order->m_price );
     }
-    else {
+    else 
+    {
         order->m_commitment += btcAmount;
     }
 
@@ -245,6 +324,13 @@ int MyOrders::startExecute( Payment * payment )
 }
 
 
+/// @brief Finish off the execution
+///
+/// @todo Sign 2/3 bitcoin transaction here
+///
+/// @param payment
+///
+/// @return 
 int MyOrders::finishExecute( Payment * payment )
 {
     // TODO: sign 2/3 Bitcoin TX here
@@ -252,9 +338,12 @@ int MyOrders::finishExecute( Payment * payment )
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
     OrderIterator it = find( payment->referrerId() );
-    if( it != end() ){
+    if( it != end() )
+    {
         Order * oldOrder = *it;
-        if( oldOrder->m_amount * oldOrder->m_price >  payment->getAmount() ){ // order only partly filled
+        if( oldOrder->m_amount * oldOrder->m_price >  payment->getAmount() )
+        { 
+	        // order only partly filled
             beginResetModel();
             m_asks->beginReset();
             oldOrder->m_purpose = Order::PARTLY_FILLED;
@@ -265,14 +354,17 @@ int MyOrders::finishExecute( Payment * payment )
             m_asks->endReset();
             endResetModel();
         }
-        else {  // completely filled
+        else 
+        {  
+	        // completely filled
             oldOrder->m_purpose = Order::FILLED;
             remove( payment->referrerId() );
             m_asks->remove( payment->referrerId() );
         }
         p3zr->publishOrder( oldOrder );
     }
-    else {
+    else 
+    {
         std::cerr << "Zero Reserve: Could not find order" << std::endl;
         return ZR::ZR_FAILURE;
     }
@@ -280,13 +372,20 @@ int MyOrders::finishExecute( Payment * payment )
 }
 
 
+/// @brief Update orders
+///
+/// @param payment
+/// @param txId
+///
+/// @return 
 ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress & txId )
 {
     std::cerr << "Zero Reserve: Updating order" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
     std::map< ZR::TransactionId, std::pair< Order, Order > >::iterator refIt = m_CurrentTxOrders.find( txId );
-    if( refIt == m_CurrentTxOrders.end() ){
+    if( refIt == m_CurrentTxOrders.end() )
+    {
         std::cerr << "Zero Reserve: Could not find Reference" << txId << std::endl;
         return ZR::ZR_FAILURE;
     }
@@ -296,9 +395,9 @@ ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress &
     Order * order = *orderIt;
     const Order & other = (*refIt).second.second;
 
-
     ZR::ZR_Number fiatAmount = order->m_amount * other.m_price;
-    if( fiatAmount > payment->getAmount() ){
+    if( fiatAmount > payment->getAmount() )
+    {
         beginResetModel();
         m_bids->beginReset();
         order->m_amount -= payment->getAmount() / other.m_price;
@@ -307,7 +406,8 @@ ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress &
         m_bids->endReset();
         endResetModel();
     }
-    else{
+    else
+    {
         m_bids->remove( order );
         remove( order );
         order->m_purpose = Order::FILLED;
@@ -319,8 +419,9 @@ ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress &
     return ZR::ZR_SUCCESS;
 }
 
-
-
+/// @brief Cancel order
+///
+/// @param index
 void MyOrders::cancelOrder( int index )
 {
     std::cerr << "Zero Reserve: Cancelling order: " << index << std::endl;
@@ -328,10 +429,12 @@ void MyOrders::cancelOrder( int index )
     Order * order = m_filteredOrders[ index ];
 
     remove( order );
-    if( order->m_orderType == Order::ASK ){
+    if( order->m_orderType == Order::ASK )
+    {
         m_asks->remove( order );
     }
-    else{
+    else
+    {
         m_bids->remove( order );
     }
 
@@ -339,19 +442,28 @@ void MyOrders::cancelOrder( int index )
     p3zr->publishOrder( order );
 }
 
-
+/// @brief Roll back the transaction for the payment receiver.
+///
+/// @param payment
 void MyOrders::rollback( PaymentReceiver *payment )
 {
     OrderIterator it = find( payment->referrerId() );
-    if( it != end() ){
+    if( it != end() )
+    {
         Order * oldOrder = *it;
         ZR::ZR_Number btcAmount = payment->getAmount() / oldOrder->m_price;
         oldOrder->m_commitment -= btcAmount;
     }
 }
 
+/// @brief Rollback for spender
+///
+/// @param payment
+/// @param txId
 void MyOrders::rollback( PaymentSpender *payment, const ZR::VirtualAddress & txId )
 {
     std::cerr << "Zero Reserve: Rolling back " << txId << std::endl;
     m_CurrentTxOrders.erase( txId );
 }
+
+// EOF   

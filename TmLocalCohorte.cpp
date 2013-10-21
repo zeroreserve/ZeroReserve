@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file TmLocalCohorte.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -23,25 +25,45 @@
 #include "ZeroReservePlugin.h"
 
 
+/**
+ * @brief Constructor
+ *
+ * @param txId
+ */
 TmLocalCohorte::TmLocalCohorte( const ZR::TransactionId & txId ) :
     TransactionManager( txId )
 {
 }
 
+/**
+ * @brief Destructor
+ * Deletes payment
+ * 
+ */
 TmLocalCohorte::~TmLocalCohorte()
 {
     delete m_payment;
 }
 
 
+/**
+ * @brief Rollback
+ * No code (yet)
+ * 
+ */
 void TmLocalCohorte::rollback()
 {
 
 }
 
 
-
-
+/**
+ * @brief Initialise
+ *
+ * @todo Error handling - refer to the code
+ * 
+ * @return 
+ */
 ZR::RetVal TmLocalCohorte::init()
 {
 
@@ -70,10 +92,15 @@ ZR::RetVal TmLocalCohorte::init()
     return retval;
 }
 
-
-
-
-
+/**
+ * @brief Process item
+ * 
+ * @todo Timeout needs to be added - refer to the code
+ *
+ * @param item
+ *
+ * @return 
+ */
 ZR::RetVal TmLocalCohorte::processItem( RsZeroReserveTxItem * item )
 {
     RsZeroReserveTxItem * reply;
@@ -111,6 +138,13 @@ ZR::RetVal TmLocalCohorte::processItem( RsZeroReserveTxItem * item )
     return ZR::ZR_SUCCESS;
 }
 
+/**
+ * @brief Abort transaction
+ *
+ * @param item
+ *
+ * @return 
+ */
 ZR::RetVal TmLocalCohorte::abortTx( RsZeroReserveTxItem * item )
 {
      std::cerr << "Zero Reserve: TX Manger:Error happened. Aborting." << std::endl;
@@ -122,5 +156,5 @@ ZR::RetVal TmLocalCohorte::abortTx( RsZeroReserveTxItem * item )
      return ZR::ZR_FAILURE;
 }
 
-
+// EOF   
 

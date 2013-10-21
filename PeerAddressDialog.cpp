@@ -18,6 +18,9 @@
 #include "PeerAddressDialog.h"
 #include "ui_PeerAddressDialog.h"
 
+/// @brief Constructor
+///
+/// @param parent
 PeerAddressDialog::PeerAddressDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PeerAddressDialog)
@@ -26,14 +29,21 @@ PeerAddressDialog::PeerAddressDialog(QWidget *parent) :
     connect( ui->buttonBox, SIGNAL(accepted()), this, SLOT( setPeerAddress() ) );
 }
 
+/// @brief Destructor
+/// @details Deletes the user interface
+//
 PeerAddressDialog::~PeerAddressDialog()
 {
     delete ui;
 }
 
-
+/// @brief Set peer address
+/// @details
+//
 void PeerAddressDialog::setPeerAddress()
 {
     m_nick = ui->NickName->text().toStdString();
     m_address = ui->peerAddress->text().toStdString();
 }
+
+// EOF   

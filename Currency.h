@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file Currency.h
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -20,6 +22,11 @@
 
 #include <string>
 
+/**
+ * @class Currency
+ * Defines enum currency symbols
+ * 
+ */
 class Currency
 {
 public:
@@ -214,3 +221,5 @@ public:
 };
 
 #endif // CURRENCY_H
+
+// EOF   

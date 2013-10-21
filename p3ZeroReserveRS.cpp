@@ -32,6 +32,12 @@
 // after getting data from 3 peers, we believe we're complete
 static const int INIT_THRESHOLD = 3;
 
+/// @brief Plugin service handler constructor
+///
+/// @param pgHandler
+/// @param bids
+/// @param asks
+/// @param peers
 p3ZeroReserveRS::p3ZeroReserveRS( RsPluginHandler *pgHandler, OrderBook * bids, OrderBook * asks, RsPeers* peers ) :
         RsPQIService( RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, CONFIG_TYPE_ZERORESERVE_PLUGIN, 0, pgHandler ),
         m_bids(bids),
@@ -44,12 +50,19 @@ p3ZeroReserveRS::p3ZeroReserveRS( RsPluginHandler *pgHandler, OrderBook * bids, 
 }
 
 
+/// @brief Status has changed
+///
+/// @param plist
 void p3ZeroReserveRS::statusChange(const std::list< pqipeer > &plist)
 {
     std::cerr << "Zero Reserve: Status changed:" << std::endl;
-    if( m_initialized < INIT_THRESHOLD ){
-        for (std::list< pqipeer >::const_iterator it = plist.begin(); it != plist.end(); it++ ){
-            if( RS_PEER_CONNECTED & (*it).actions ){
+
+    if( m_initialized < INIT_THRESHOLD )
+    {
+        for (std::list< pqipeer >::const_iterator it = plist.begin(); it != plist.end(); it++ )
+        {
+            if( RS_PEER_CONNECTED & (*it).actions )
+            {
                 RsZeroReserveMsgItem * item = new RsZeroReserveMsgItem( RsZeroReserveMsgItem::REQUEST_ORDERBOOK, "" );
                 item->PeerId( (*it).id );
                 sendItem( item );
@@ -57,11 +70,14 @@ void p3ZeroReserveRS::statusChange(const std::list< pqipeer > &plist)
         }
     }
     // give any newly connected peer updated credit info - we might have changed it.
-    for (std::list< pqipeer >::const_iterator peerIt = plist.begin(); peerIt != plist.end(); peerIt++ ){
-        if( RS_PEER_CONNECTED & (*peerIt).actions ){
+    for (std::list< pqipeer >::const_iterator peerIt = plist.begin(); peerIt != plist.end(); peerIt++ )
+    {
+        if( RS_PEER_CONNECTED & (*peerIt).actions )
+        {
             Credit::CreditList cl;
             Credit::getCreditList( cl, (*peerIt).id );
-            for( Credit::CreditList::const_iterator creditIt = cl.begin(); creditIt != cl.end(); creditIt++){
+            for( Credit::CreditList::const_iterator creditIt = cl.begin(); creditIt != cl.end(); creditIt++)
+            {
                 sendCredit( *creditIt );
             }
         }
@@ -70,8 +86,9 @@ void p3ZeroReserveRS::statusChange(const std::list< pqipeer > &plist)
     mainWin->updateFriendList();
 }
 
-
-
+/// @brief Tick - wait a while
+///
+/// @return 
 int p3ZeroReserveRS::tick()
 {
     processIncoming();
@@ -79,6 +96,10 @@ int p3ZeroReserveRS::tick()
     return 0;
 }
 
+/// @brief Janitor
+//
+/// @detail Cleanup up every 10 seconds
+//
 void p3ZeroReserveRS::janitor()
 {
     static time_t lastCleanup = 0;
@@ -92,10 +113,13 @@ void p3ZeroReserveRS::janitor()
     TransactionManager::timeout();
 }
 
+/// @brief Process incoming packets
+//
 void p3ZeroReserveRS::processIncoming()
 {
     RsItem *item = NULL;
-    while(NULL != (item = recvItem())){
+    while(NULL != (item = recvItem()))
+    {
         switch( item->PacketSubType() )
         {
         case RsZeroReserveItem::ZERORESERVE_ORDERBOOK_ITEM:
@@ -128,32 +152,48 @@ void p3ZeroReserveRS::processIncoming()
     }
 }
 
-
+/// @brief Handle buy request
+//
+/// @todo has #warning "IMPLEMENT" - does this mean still needs to be written?
+///
+/// @param item
 void p3ZeroReserveRS::handleBuyRequest( RSZRBuyRequestItem * item )
 {
 #warning "IMPLEMENT"
 }
 
-
-
+/// @brief Send buy message
+///
+/// @todo has #warning "IMPLEMENT" - does this mean still needs to be written?
+/// @param ourAddress
+/// @param theirAddress
+/// @param amount
+///
+/// @return 
 ZR::RetVal p3ZeroReserveRS::sendBuyMsg( const ZR::VirtualAddress & ourAddress, const ZR::VirtualAddress & theirAddress, const ZR::ZR_Number & amount )
 {
 #warning "IMPLEMENT"
 }
 
-
+/// @brief Send order book
+///
+/// @param uid
 void p3ZeroReserveRS::sendOrderBook( const std::string & uid )
 {
-    for( OrderBook::OrderIterator it = m_asks->begin(); it != m_asks->end(); it++ ){
+    for( OrderBook::OrderIterator it = m_asks->begin(); it != m_asks->end(); it++ )
+    {
         sendOrder( uid, *it );
     }
-    for( OrderBook::OrderIterator it = m_bids->begin(); it != m_bids->end(); it++ ){
+    for( OrderBook::OrderIterator it = m_bids->begin(); it != m_bids->end(); it++ )
+    {
         sendOrder( uid, *it );
     }
     sendItem( new RsZeroReserveMsgItem( RsZeroReserveMsgItem::SENT_ORDERBOOK, "" ) );
 }
 
-
+/// @brief Handle message item
+///
+/// @param item
 void p3ZeroReserveRS::handleMessage( RsZeroReserveMsgItem *item )
 {
     std::cerr << "Zero Reserve: Received Message Item" << std::endl;
@@ -171,6 +211,9 @@ void p3ZeroReserveRS::handleMessage( RsZeroReserveMsgItem *item )
 }
 
 
+/// @brief Handle order
+///
+/// @param item
 void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
 {
     std::cerr << "Zero Reserve: Received Orderbook Item" << std::endl;
@@ -178,42 +221,59 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
     item->print( std::cerr );
     OrderBook::Order * order = item->getOrder();
 
-    if( !Router::Instance()->hasRoute( order->m_order_id ) ){
+    if( !Router::Instance()->hasRoute( order->m_order_id ) )
+    {
         Router::Instance()->addRoute( order->m_order_id, item->PeerId() );
     }
 
-    if( order->m_orderType == OrderBook::Order::ASK ){
+    if( order->m_orderType == OrderBook::Order::ASK )
+    {
         result = m_asks->processOrder( order );
     }
-    else{
+    else
+    {
         result = m_bids->processOrder( order );
     }
 
-    if( ZR::ZR_SUCCESS == result ){
+    if( ZR::ZR_SUCCESS == result )
+    {
         publishOrder( order );
     }
 }
 
+/// @brief Handle credit incoming
+///
+/// @param item
 void p3ZeroReserveRS::handleCredit(RsZeroReserveCreditItem *item)
 {
     std::cerr << "Zero Reserve: Received Credit Item" << std::endl;
     Credit * otherCredit = item->getCredit();
     otherCredit->m_id = item->PeerId();
     Credit ourCredit( otherCredit->m_id, otherCredit->m_currency );
-    if( ourCredit.m_our_credit != otherCredit->m_our_credit ){
+
+    if( ourCredit.m_our_credit != otherCredit->m_our_credit )
+    {
         otherCredit->updateOurCredit();
     }
-    if( ourCredit.m_balance != otherCredit->m_balance ){
+
+    if( ourCredit.m_balance != otherCredit->m_balance )
+    {
         std::cerr << "Zero Reserve: " << "Different balance: " << otherCredit->m_id << " has " << otherCredit->m_balance
                      << " we have " << ourCredit.m_balance << std::endl;
     }
 }
 
+/// @brief Send credit 
+///
+/// @param credit
+///
+/// @return 
 bool p3ZeroReserveRS::sendCredit( Credit * credit )
 {
     std::cerr << "Zero Reserve: Sending Credit item to " << credit->m_id << std::endl;
     RsZeroReserveCreditItem * item = new RsZeroReserveCreditItem( credit );
-    if(!item){
+    if(!item)
+    {
             std::cerr << "Cannot allocate RsZeroReserveCreditItem !" << std::endl;
             return false ;
     }
@@ -222,36 +282,55 @@ bool p3ZeroReserveRS::sendCredit( Credit * credit )
     return true;
 }
 
+/// @brief Send order
+///
+/// @param peer_id
+/// @param order
+///
+/// @return 
 bool p3ZeroReserveRS::sendOrder( const std::string& peer_id, OrderBook::Order * order )
 {
     std::cerr << "Zero Reserve: Sending order to " << peer_id << std::endl;
+
     RsZeroReserveOrderBookItem * item = new RsZeroReserveOrderBookItem( order );
-    if(!item){
+
+    if(!item)
+    {
             std::cerr << "Cannot allocate RsZeroReserveOrderBookItem !" << std::endl;
             return false ;
     }
     item->PeerId( peer_id );
     sendItem( item );
+
     return true;
 }
 
-
+/// @brief Publish order
+///
+/// @param order
 void p3ZeroReserveRS::publishOrder( OrderBook::Order * order )
 {
     std::list< std::string > sendList;
     m_peers->getOnlineList(sendList);
-    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
+    
+    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ )
+    {
         if( (*it) == getOwnId() ) continue;
         sendOrder( *it, order );
     }
 }
 
-
+/// @brief Send remote
+///
+/// @param address
+/// @param amount
+/// @param currency
 void p3ZeroReserveRS::sendRemote( const ZR::VirtualAddress & address, ZR::ZR_Number amount, const std::string & currency )
 {
     std::list< std::string > sendList;
     m_peers->getOnlineList(sendList);
-    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
+    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ )
+    {
         if( (*it) == getOwnId() ) continue;
         RSZRPayRequestItem * item = new RSZRPayRequestItem( address, amount, currency );
         item->PeerId( *it );
@@ -260,9 +339,13 @@ void p3ZeroReserveRS::sendRemote( const ZR::VirtualAddress & address, ZR::ZR_Num
 }
 
 
+/// @brief Handle a payment request
+///
+/// @param item
 void p3ZeroReserveRS::handlePaymentRequest( RSZRPayRequestItem * item )
 {
-    if( Router::Instance()->hasRoute( item->getAddress() ) ){
+    if( Router::Instance()->hasRoute( item->getAddress() ) )
+    {
         return;
     }
     Credit credit( item->PeerId(), item->getCurrency() );
@@ -275,10 +358,14 @@ void p3ZeroReserveRS::handlePaymentRequest( RSZRPayRequestItem * item )
     Payment::addRequest( item->getAddress(), Payment::Request( item->getAmount(), currency ) );
     std::list< std::string > sendList;
     m_peers->getOnlineList(sendList);
-    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
+
+    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ )
+    {
         if( (*it) == getOwnId() || (*it) == item->PeerId() ) continue;
         RSZRPayRequestItem * republishItem = new RSZRPayRequestItem( *item );
         republishItem->PeerId( *it );
         sendItem( republishItem );
     }
 }
+
+// EOF   

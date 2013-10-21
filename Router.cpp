@@ -22,10 +22,16 @@ Router * Router::instance = 0;
 
 
 
+/// @brief Create a router instance
+///
+/// @return 
 Router * Router::Instance()
 {
-    if( !Router::instance ) {
+    if( !Router::instance ) 
+    {
         Router::instance = new TraceRouter();
     }
     return instance;
 }
+
+//  EOF   
