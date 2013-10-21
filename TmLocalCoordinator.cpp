@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file TmLocalCoordinator.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -24,6 +26,11 @@
 
 unsigned int TmLocalCoordinator::sequence = 1;
 
+/**
+ * @brief Make id
+ *
+ * @return 
+ */
 const ZR::TransactionId TmLocalCoordinator::mkId()
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
@@ -33,12 +40,20 @@ const ZR::TransactionId TmLocalCoordinator::mkId()
     return txId.str();
 }
 
+/**
+ * @brief Constructor
+ *
+ * @param payment
+ */
 TmLocalCoordinator::TmLocalCoordinator( Payment *payment ) :
     TransactionManager( mkId() ),
     m_payment( payment )
 {
 }
 
+/**
+ * @brief Destructor
+ */
 TmLocalCoordinator::~TmLocalCoordinator()
 {
     delete m_payment;
@@ -46,13 +61,21 @@ TmLocalCoordinator::~TmLocalCoordinator()
 
 
 
+/**
+ * @brief Rollback a transaction
+ * 
+ * @note This has no code.
+ */
 void TmLocalCoordinator::rollback()
 {
 
 }
 
-
-
+/**
+ * @brief Initialise
+ *
+ * @return 
+ */
 ZR::RetVal TmLocalCoordinator::init()
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator. ID: " << m_TxId << std::endl;
@@ -67,7 +90,15 @@ ZR::RetVal TmLocalCoordinator::init()
     return ZR::ZR_SUCCESS;
 }
 
-
+/**
+ * @brief Process item
+ *
+ * @todo TODO Timeout - refer to code.
+ * 
+ * @param item
+ *
+ * @return 
+ */
 ZR::RetVal TmLocalCoordinator::processItem( RsZeroReserveTxItem * item )
 {
     RsZeroReserveTxItem * reply;
@@ -98,6 +129,13 @@ ZR::RetVal TmLocalCoordinator::processItem( RsZeroReserveTxItem * item )
     return ZR::ZR_SUCCESS;
 }
 
+/**
+ * @brief Abort transaction
+ *
+ * @param item
+ *
+ * @return 
+ */
 ZR::RetVal TmLocalCoordinator::abortTx( RsZeroReserveTxItem * item )
 {
     std::cerr << "Zero Reserve: TX Manger:Error happened. Aborting." << std::endl;
