@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file dbconfig.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify

@@ -24,6 +24,8 @@
 
 #include <QList>
 
+/// @classBitcoinAddressList
+//
 class BitcoinAddressList : public QAbstractItemModel
 {
     Q_OBJECT
