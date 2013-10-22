@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file TransactionManager.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -49,10 +51,12 @@ int TransactionManager::handleTxItem( RSZRRemoteTxItem * item )
     std::cerr << "\n\nXXXXXXXXXXXXXXXX     " << txId << std::endl;
     TransactionManager * tm;
     TxManagers::iterator it = currentTX.find( txId );
-    if( it == currentTX.end() ){
+    if( it == currentTX.end() )
+    {
         tm = new TmRemoteCohorte( txId );
     }
-    else {
+    else 
+    {
         tm = (*it).second;
     }
     try{
@@ -63,7 +67,8 @@ int TransactionManager::handleTxItem( RSZRRemoteTxItem * item )
         return ZR::ZR_FAILURE;
     }
 
-    if( retVal != ZR::ZR_SUCCESS ){
+    if( retVal != ZR::ZR_SUCCESS )
+    {
         delete tm;
     }
     return retVal;
@@ -82,25 +87,34 @@ int TransactionManager::handleTxItem( RsZeroReserveTxItem * item )
     ZR::TransactionId txId = item->getTxId();
     TransactionManager * tm;
     TxManagers::iterator it = currentTX.find( txId );
-    if( it == currentTX.end() ){
+    if( it == currentTX.end() )
+    {
         tm = new TmLocalCohorte( txId );
     }
-    else {
+    else 
+    {
         tm = (*it).second;
     }
     ZR::RetVal retVal = tm->processItem( item );
-    if( retVal != ZR::ZR_SUCCESS ){
+    if( retVal != ZR::ZR_SUCCESS )
+    {
         delete tm;
     }
     return retVal;
 }
 
 
+/**
+ * @brief Timeout
+ * 
+ */
 void TransactionManager::timeout()
 {
-    for( TxManagers::iterator it = currentTX.begin(); it != currentTX.end(); it++ ){
+    for( TxManagers::iterator it = currentTX.begin(); it != currentTX.end(); it++ )
+    {
         TransactionManager * tm = (*it).second;
-        if( tm->isTimedOut() ){
+        if( tm->isTimedOut() )
+        {
             tm->rollback();
             delete tm;
         }
@@ -108,6 +122,12 @@ void TransactionManager::timeout()
 }
 
 
+/**
+ * @brief Transaction manager for a transaction id
+ *
+ * @param txId - transaction id
+ * 
+ */
 TransactionManager::TransactionManager( const ZR::TransactionId & txId ) :
     m_TxId( txId ),
     m_Phase( INIT ),
@@ -124,13 +144,25 @@ TransactionManager::TransactionManager( const ZR::TransactionId & txId ) :
     currentTX[ txId ] = this;
 }
 
+/**
+ * @brief Destructor
+ */
 TransactionManager::~TransactionManager()
 {
     std::cerr << "Zero Reserve: TX Manager: Cleaning up." << std::endl;
     currentTX.erase( m_TxId );
 }
 
+/**
+ * @brief is timeout?
+ * 
+ *
+ * @return 
+ */
 bool TransactionManager::isTimedOut()
 {
     return ( QDateTime::currentMSecsSinceEpoch() - m_startOfPhase > m_maxTime[ m_Phase ] );
 }
+
+
+// EOF   

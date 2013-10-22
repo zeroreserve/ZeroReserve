@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file ZrLibBitcoin.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -32,15 +34,24 @@
 ZR::Bitcoin * ZR::Bitcoin::instance = NULL;
 
 
+/**
+ * @brief Create an instance of Bitcoin in ZeroReserve
+ *
+ * @return 
+ */
 ZR::Bitcoin * ZR::Bitcoin::Instance()
 {
-    if( instance == NULL ){
+    if( instance == NULL )
+    {
         instance = new ZrLibBitcoin();
     }
     return instance;
 }
 
 
+/**
+ * @brief Constructor
+ */
 ZrLibBitcoin::ZrLibBitcoin() :
     m_netPool( 1 ), m_diskPool( 4 ), m_memPool( 1 ),
     m_hosts(m_netPool), m_handshake(m_netPool), m_network(m_netPool),
@@ -51,27 +62,42 @@ ZrLibBitcoin::ZrLibBitcoin() :
     started( false )
 {}
 
+/**
+ * @brief Initialise chain
+ *
+ * @param pathname
+ *
+ * @return 
+ */
 ZR::RetVal ZrLibBitcoin::initChain( const std::string & pathname )
 {
     std::promise<std::error_code> pr_chain;
-    auto blockchain_startup = [&]( const std::error_code& ec ){
+
+    auto blockchain_startup = [&]( const std::error_code& ec )
+    {
             pr_chain.set_value(ec);
     };
+
     m_blockChain.start( pathname, blockchain_startup );
     std::error_code ec_start = pr_chain.get_future().get();
-    if( ec_start ) {
+
+    if( ec_start ) 
+    {
         std::cerr << "Problem starting blockchain: " << ec_start.message() << std::endl;
         return ZR::ZR_FAILURE;
     }
 
     std::promise<std::error_code> pr_genesis;
-    auto blockchain_genesis = [&]( const std::error_code& ec ){
+    auto blockchain_genesis = [&]( const std::error_code& ec )
+    {
             pr_genesis.set_value(ec);
     };
     bc::block_type first_block = bc::genesis_block();
     m_blockChain.import( first_block, 0, blockchain_genesis );
     std::error_code ec_genesis = pr_genesis.get_future().get();
-    if( ec_genesis ){
+
+    if( ec_genesis )
+    {
         std::cerr << "Importing genesis block failed: " << ec_genesis.message() << std::cerr;
         return ZR::ZR_FAILURE;
     }
@@ -79,33 +105,55 @@ ZR::RetVal ZrLibBitcoin::initChain( const std::string & pathname )
 }
 
 
+/**
+ * @brief Connection started
+ *
+ * @param ec
+ * @param node
+ */
 void ZrLibBitcoin::connection_started(const std::error_code& ec, bc::channel_ptr node )
 {
-    if ( ec ){
+    if ( ec )
+    {
         std::cerr << "Couldn't start connection: " << ec.message() << std::endl;
         return;
     }
+
     node->subscribe_transaction( std::bind( &ZrLibBitcoin::recv_tx, this, std::placeholders::_1, std::placeholders::_2, node ) );
     m_protocol.subscribe_channel( std::bind(&ZrLibBitcoin::connection_started, this, std::placeholders::_1, std::placeholders::_2 ) );
 }
 
 
 
+/**
+ * @brief Receiving a transaction
+ *
+ * @param ec
+ * @param tx
+ * @param node
+ */
 void ZrLibBitcoin::recv_tx( const std::error_code& ec, const bc::transaction_type& tx, bc::channel_ptr node )
 {
     std::cerr << "Zero Reserve: Receiving Transaction" << std::endl;
-    if ( ec ){
+    if ( ec )
+    {
         std::cerr << "Receive transaction: " << ec.message();
         return;
     }
-    auto handle_deindex = [](const std::error_code& ec){
-            if (ec)
+    auto handle_deindex = [](const std::error_code& ec)
+    {
+            if (ec) 
+	        {
                 std::cerr << "Deindex error: " << ec.message();
-        };
+            }
+    };
 
-    auto handle_confirm = [this, tx, handle_deindex]( const std::error_code& ec ){
-        if (ec)
+    auto handle_confirm = [this, tx, handle_deindex]( const std::error_code& ec )
+    {
+        if (ec) 
+	    {
             std::cerr << "Confirm error (" << /* bc::hash_transaction(tx) << */ "): " << ec.message();
+        }
         m_txidx.deindex(tx, handle_deindex);
     };
 
@@ -117,15 +165,24 @@ void ZrLibBitcoin::recv_tx( const std::error_code& ec, const bc::transaction_typ
 
 
 
+/**
+ * @brief New unconfirmed valid transaction
+ *
+ * @param ec
+ * @param unconfirmed
+ * @param tx
+ */
 void ZrLibBitcoin::new_unconfirm_valid_tx( const std::error_code & ec, const bc::index_list & unconfirmed, const bc::transaction_type & tx )
 {
-    auto handle_index = [](const std::error_code& ec){
+    auto handle_index = [](const std::error_code& ec)
+    {
         if (ec)
             std::cerr << "Index error: " << ec.message() << std::endl;
     };
 
     const bc::hash_digest & tx_hash = hash_transaction(tx);
-    if (ec){
+    if (ec)
+    {
         std::cerr  << "Error storing memory pool transaction " << /* tx_hash << */ ": " << ec.message() << std::endl;
         return;
     }
@@ -143,6 +200,12 @@ void ZrLibBitcoin::new_unconfirm_valid_tx( const std::error_code & ec, const bc:
 }
 
 
+/**
+ * @brief Handle start
+ * 
+ *
+ * @param ec
+ */
 void ZrLibBitcoin::handle_start(const std::error_code& ec)
 {
     if (ec)
@@ -151,6 +214,11 @@ void ZrLibBitcoin::handle_start(const std::error_code& ec)
 
 
 
+/**
+ * @brief Start block chain
+ *
+ * @return 
+ */
 ZR::RetVal ZrLibBitcoin::start()
 {
     if( started) return ZR::ZR_FINISH;
@@ -161,23 +229,29 @@ ZR::RetVal ZrLibBitcoin::start()
     std::string pathname = RsInit::RsConfigDirectory() + "/" +
             p3zr->getOwnId() + "/zeroreserve/blockchain";
     QDir zrdata ( QString::fromStdString(pathname) );
-    if( !zrdata.exists() ){
-        if( !zrdata.mkpath( QString::fromStdString( pathname ) ) ){
+    if( !zrdata.exists() )
+    {
+        if( !zrdata.mkpath( QString::fromStdString( pathname ) ) )
+        {
             std::cerr << "Zero Reserve: Problem creating blockchain dir: " << pathname << std::endl;
             return ZR::ZR_FAILURE;
         }
-        if( ZR::ZR_SUCCESS != initChain( pathname ) ){
+        if( ZR::ZR_SUCCESS != initChain( pathname ) )
+        {
             return ZR::ZR_FAILURE;
         }
     }
-    else{
+    else
+    {
         std::promise<std::error_code> pr_chain;
-        auto blockchain_startup = [&]( const std::error_code& ec ){
+        auto blockchain_startup = [&]( const std::error_code& ec )
+        {
                 pr_chain.set_value(ec);
         };
         m_blockChain.start( pathname, blockchain_startup );
         std::error_code ec_start = pr_chain.get_future().get();
-        if( ec_start ) {
+        if( ec_start ) 
+        {
             std::cerr << "Zero Reserve: Problem starting blockchain: " << ec_start.message() << std::endl;
             return ZR::ZR_FAILURE;
         }
@@ -192,9 +266,14 @@ ZR::RetVal ZrLibBitcoin::start()
     return ZR::ZR_SUCCESS;
 }
 
+/**
+ * @brief Stop blockchain
+ *
+ * @return 
+ */
 ZR::RetVal ZrLibBitcoin::stop()
 {
-    std::cerr << "Zero Reserve: Stoping Blockchain" << std::endl;
+    std::cerr << "Zero Reserve: Stopping Blockchain" << std::endl;
 
     m_netPool.stop();
     m_diskPool.stop();
@@ -208,17 +287,36 @@ ZR::RetVal ZrLibBitcoin::stop()
 }
 
 
+/**
+ * @brief Commit
+ * 
+ * 
+ *
+ * @return 
+ */
 ZR::RetVal ZrLibBitcoin::commit()
 {
 }
 
 
+/**
+ * @brief Get balance
+ *
+ * @return 
+ */
 ZR::ZR_Number ZrLibBitcoin::getBalance()
 {
 
 }
 
 
+/**
+ * @brief Make a wallet of given type
+ *
+ * @param wType
+ *
+ * @return 
+ */
 ZR::MyWallet * ZrLibBitcoin::mkWallet(  ZR::MyWallet::WalletType wType )
 {
     return new LibBitcoinWallet( wType );
@@ -229,11 +327,21 @@ ZR::MyWallet * ZrLibBitcoin::mkWallet(  ZR::MyWallet::WalletType wType )
 // Wallet
 
 
+/**
+ * @brief Constructor
+ *
+ * @param wType
+ */
 LibBitcoinWallet::LibBitcoinWallet(  MyWallet::WalletType wType ) :
     ZR::MyWallet( wType )
 {}
 
 
+/**
+ * @brief Bitcoin wallet seed
+ *
+ * @return 
+ */
 ZR::WalletSeed LibBitcoinWallet::seed()
 {
     if( wallet.seed() == "" )
@@ -241,6 +349,11 @@ ZR::WalletSeed LibBitcoinWallet::seed()
     return wallet.seed();
 }
 
+/**
+ * @brief Set bitcoin wallet seed
+ *
+ * @param seed
+ */
 void LibBitcoinWallet::setSeed( const ZR::WalletSeed & seed )
 {
     m_walletType = ELECTRUMSEED;
@@ -248,6 +361,11 @@ void LibBitcoinWallet::setSeed( const ZR::WalletSeed & seed )
 }
 
 
+/**
+ * @brief Get address for bitcoin wallet
+ *
+ * @return 
+ */
 ZR::BitcoinAddress LibBitcoinWallet::getAddress()
 {
     bc::data_chunk pubkey = wallet.generate_public_key(2);
@@ -257,6 +375,13 @@ ZR::BitcoinAddress LibBitcoinWallet::getAddress()
 }
 
 
+/**
+ * @brief Get secret for wallet type
+ *
+ * @param secret_out
+ *
+ * @return 
+ */
 ZR::RetVal LibBitcoinWallet::getSecret( ZR::WalletSecret & secret_out )
 {
     switch( m_walletType ){
@@ -277,9 +402,14 @@ ZR::RetVal LibBitcoinWallet::getSecret( ZR::WalletSecret & secret_out )
 }
 
 
+/**
+ * @brief Persist
+ */
 void LibBitcoinWallet::persist()
 {
     ZR::WalletSecret secret;
     getSecret( secret );
     ZrDB::Instance()->addMyWallet( secret, m_walletType, m_nick );
 }
+
+//   EOF   

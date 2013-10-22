@@ -1,4 +1,7 @@
-/*
+/*!
+ * \file ZeroReservePlugin.cpp
+ * 
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -30,7 +33,18 @@
 #include <QMessageBox>
 
 
+/**
+ * @brief 
+ */
 ZeroReservePlugin * g_ZeroReservePlugin;
+
+/**
+ * @brief Widge creation mutex
+ *
+ * @param "widget_creation_mutex"
+ *
+ * @return 
+ */
 RsMutex ZeroReservePlugin::widget_creation_mutex("widget_creation_mutex");
 
 
@@ -55,6 +69,13 @@ extern "C" {
 
 #define IMAGE_LINKS ":/images/bitcoin.png"
 
+/**
+ * @brief Get plugin version number
+ *
+ * @param major
+ * @param minor
+ * @param svn_rev
+ */
 void ZeroReservePlugin::getPluginVersion(int& major,int& minor,int& svn_rev) const
 {
         major = 5 ;
@@ -62,27 +83,42 @@ void ZeroReservePlugin::getPluginVersion(int& major,int& minor,int& svn_rev) con
 	svn_rev = SVN_REVISION_NUMBER ;
 }
 
+/**
+ * @brief Zero Reserve plugin
+ * 
+ */
 ZeroReservePlugin::ZeroReservePlugin()
 {
 	mainpage = NULL ;
-        mIcon = NULL ;
-        mPlugInHandler = NULL;
-        m_ZeroReserve = NULL;
-        m_peers = NULL;
+    mIcon = NULL ;
+    mPlugInHandler = NULL;
+    m_ZeroReserve = NULL;
+    m_peers = NULL;
 
-        m_asks = new OrderBook();
-        m_bids = new OrderBook();
+    m_asks = new OrderBook();
+    m_bids = new OrderBook();
 }
 
+/**
+ * @brief Set up the interfaces
+ *
+ * @param interfaces
+ */
 void ZeroReservePlugin::setInterfaces(RsPlugInInterfaces &interfaces)
 {
     m_peers = interfaces.mPeers;
 }
 
+/**
+ * @brief Creates the plugin dialog page within Rs
+ *
+ * @return 
+ */
 MainPage *ZeroReservePlugin::qt_page() const
 {
     RsStackMutex widgetCreationMutex( widget_creation_mutex );
-    if(mainpage == NULL){
+    if(mainpage == NULL)
+    {
         mainpage = new ZeroReserveDialog( m_bids, m_asks );
     }
 
@@ -90,11 +126,21 @@ MainPage *ZeroReservePlugin::qt_page() const
 }
 
 
+/**
+ * @brief Set plugin handler
+ *
+ * @param pgHandler
+ */
 void ZeroReservePlugin::setPlugInHandler(RsPluginHandler *pgHandler)
 {
     mPlugInHandler = pgHandler;
 }
 
+/**
+ * @brief Set the plugin icon
+ *
+ * @return 
+ */
 QIcon *ZeroReservePlugin::qt_icon() const
 {
     if(mIcon == NULL)
@@ -107,6 +153,13 @@ QIcon *ZeroReservePlugin::qt_icon() const
     return mIcon ;
 }
 
+/**
+ * @brief Connect ZR to RS and services
+ * 
+ * @todo 
+ *
+ * @return 
+ */
 RsPQIService * ZeroReservePlugin::rs_pqi_service() const
 {
     if(m_ZeroReserve == NULL){
@@ -117,16 +170,36 @@ RsPQIService * ZeroReservePlugin::rs_pqi_service() const
     return m_ZeroReserve ;
 }
 
+/**
+ * @brief Get short plugin description
+ * 
+ *
+ * @return  a std string with the short description
+ */
 std::string ZeroReservePlugin::getShortPluginDescription() const
 {
         return QApplication::translate("ZeroReservePlugin", "This plugin implements a distributed Bitcoin exchange.").toUtf8().constData();
 }
 
+/**
+ * @brief Get name of the plugin
+ *
+ * @return a translated string of the plugin name.
+ */
 std::string ZeroReservePlugin::getPluginName() const
 {
 	return QApplication::translate("ZeroReservePlugin", "Zero Reserve").toUtf8().constData();
 }
 
+/**
+ * @brief Initialise the qt translator code
+ *
+ * @param 
+ * @param languageCode
+ * @param externalDir
+ *
+ * @return 
+ */
 QTranslator* ZeroReservePlugin::qt_translator(QApplication */*app*/, const QString& languageCode, const QString& externalDir) const
 {
 	if (languageCode == "en") {
@@ -171,6 +244,14 @@ QDialog * ZeroReservePlugin::qt_about_page() const
         return about_dialog ;
 }
 
+/**
+ * @brief Stop Zero Reserve
+ * Close the instance of ZR
+ * 
+ * @todo Stop taking transactions, try to finish all the ongoing transactions, and send out errors to all
+ * transactions controllers who aren't done within 30 seconds. And display a progress bar.
+ * 
+ */
 void ZeroReservePlugin::stop()
 {
     std::cerr << "Zero Reserve: Closing Database" << std::endl;
@@ -181,3 +262,6 @@ void ZeroReservePlugin::stop()
 
     ZR::Bitcoin::Instance()->stop();
 }
+
+
+//   EOF   
