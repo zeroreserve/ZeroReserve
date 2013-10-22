@@ -17,9 +17,9 @@ Get libbitcoin directly from git because the release doesn't have support for Te
 $ git clone https://github.com/spesmilo/libbitcoin.git
 
 Then configure with
-$ ./configure.ac --enable-leveldb --enable-testnet
+$ ./configure --enable-leveldb --enable-testnet
 
-To build ZeroReserve, checkout the sources to the plugins directory of Retroshare and build with
+To build ZeroReserve, checkout the sources to the plugins directory of Retroshare and build with:
 
 $ qmake && make clean && make
 
@@ -36,4 +36,19 @@ At this stage, leave TestNet on.
 
 Don't enable real currencies.
 
-Building and running on MacOS may or may not work at this point. 
+Building and running on MacOS may or may not work at this point.
+
+Community Code, Bug Fixes, Other Contributions
+==============================================
+
+We love community code, bug fixes, and other forms of contribution. We use GitHub Issues and Pull Requests for contributions to this and all other code. To get started:
+
+   1. Fork this repository.
+   2. Clone your fork or add the remote if you already have a clone of the repository.
+   3. Create a topic branch for your change.
+   4. Make your change and commit. Use a clear and descriptive commit message, spanning multiple lines if detailed explanation is needed.
+
+   5. Push to your fork of the repository and then send a pull request.
+
+   6. A ZeroReserve committer will review your patch and merge it into the main repository or send you feedback.
+
