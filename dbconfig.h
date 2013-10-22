@@ -1,4 +1,4 @@
-/*
+/*!
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -23,6 +23,9 @@
 #include "retroshare-gui/configpage.h"
 
 
+/**
+ * @class DBConfig
+ */
 class DBConfig : public ConfigPage
 {
     Q_OBJECT
@@ -43,3 +46,4 @@ private:
 };
 
 #endif // DBCONFIG_H
+

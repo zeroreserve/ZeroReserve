@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file RemotePaymentDialog.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -24,6 +26,9 @@
 
 #include "QMessageBox"
 
+/// @brief Constructor
+///
+/// @param parent
 RemotePaymentDialog::RemotePaymentDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::RemotePaymentDialog)
@@ -33,17 +38,24 @@ RemotePaymentDialog::RemotePaymentDialog(QWidget *parent) :
     connect( ui->buttonBox, SIGNAL( accepted() ), this, SLOT( payTo() ) );
 }
 
+/// @brief Destructor
+/// @details Deletes the user interface.
+//
 RemotePaymentDialog::~RemotePaymentDialog()
 {
     delete ui;
 }
 
 
+/// @brief Pay to peer
+/// @details
+// 
 void RemotePaymentDialog::payTo()
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currency->text().toStdString() );
     const std::string & nextHop = Router::Instance()->nextHop( ui->destination->text().toStdString() );
-    if( nextHop.empty() ){
+    if( nextHop.empty() )
+    {
         QMessageBox::critical(0, "Router Error", "No route to destination" );
         return;
     }
@@ -52,9 +64,15 @@ void RemotePaymentDialog::payTo()
     if( ! tm->init() ) delete tm;
 }
 
+/// @brief Load payment
+///
+/// @param address
 void RemotePaymentDialog::loadPayment( QString address )
 {
     Payment::Request req = Payment::getRequest( address.toStdString() );
     ui->amount->setText( req.m_Amount.toDecimalQString() );
     ui->currency->setText( Currency::currencyNames[ req.m_Currency ] );
 }
+
+
+//   EOF   

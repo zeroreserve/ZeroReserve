@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file TmRemoteCohorte.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -23,6 +25,11 @@
 #include "MyOrders.h"
 
 
+/**
+ * @brief Constructor
+ *
+ * @param txId
+ */
 TmRemoteCohorte::TmRemoteCohorte( const ZR::TransactionId & txId ) :
     TransactionManager( txId ),
     m_PaymentReceiver( 0 ),
@@ -30,6 +37,9 @@ TmRemoteCohorte::TmRemoteCohorte( const ZR::TransactionId & txId ) :
 {
 }
 
+/**
+ * @brief Rollback
+ */
 void TmRemoteCohorte::rollback()
 {
     if( !m_IsHop )
@@ -37,6 +47,11 @@ void TmRemoteCohorte::rollback()
 }
 
 
+/**
+ * @brief Initialise
+ *
+ * @return 
+ */
 ZR::RetVal TmRemoteCohorte::init()
 {
     std::cerr << "Zero Reserve: TX Cohorte: Initializing... checking available funds" << std::endl;
@@ -44,17 +59,26 @@ ZR::RetVal TmRemoteCohorte::init()
 }
 
 
+/**
+ * @brief Setup
+ *
+ * @param item
+ *
+ * @return 
+ */
 ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     m_PaymentReceiver = item->getPayment();
     m_Phase = QUERY;
-    if( m_PaymentReceiver->getAmount() < ZR::ZR_Number(1, 1000000)){
+    if( m_PaymentReceiver->getAmount() < ZR::ZR_Number(1, 1000000))
+    {
         return abortTx( item );  // minimum is 1E-6 in any currency, in particular, this checks if amount < 0
     }
 
     Payment::Request req = Payment::getMyRequest( item->getAddress() );
-    if( isPayee( item->getAddress() ) == ZR::ZR_SUCCESS ){   // we are the payee
+    if( isPayee( item->getAddress() ) == ZR::ZR_SUCCESS )
+    {   // we are the payee
         std::cerr << "Zero Reserve: TX Cohorte: Initializing payee role :: Amount: "
                   << m_PaymentReceiver->getAmount() << " " << m_PaymentReceiver->getCurrency() << std::endl;
         TxPhase vote = ( m_PaymentReceiver->init() == ZR::ZR_FAILURE ) ? VOTE_NO : VOTE_YES;
@@ -63,7 +87,8 @@ ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
         resendItem->PeerId( item->PeerId() );
         p3zr->sendItem( resendItem );
     }
-    else{ // we are a hop
+    else
+    { // we are a hop
         m_IsHop = true;
         m_PaymentSpender = new PaymentSpender( Router::Instance()->nextHop( item->getAddress() ), m_PaymentReceiver->getAmount(), m_PaymentReceiver->getCurrency(), m_PaymentReceiver->getCategory() );
         forwardItem( item );
@@ -72,18 +97,33 @@ ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
     return ZR::ZR_SUCCESS;
 }
 
+/**
+ * @brief isPayee?
+ *
+ * @param addr
+ *
+ * @return 
+ */
 ZR::RetVal TmRemoteCohorte::isPayee( const ZR::VirtualAddress & addr )
 {
     Payment::Request req = Payment::getMyRequest( addr );
     if( req.isValid() )
         return ZR::ZR_SUCCESS;
 
-    if( MyOrders::Instance()->find( addr ) != MyOrders::Instance()->end() ){
+    if( MyOrders::Instance()->find( addr ) != MyOrders::Instance()->end() )
+    {
         return ZR::ZR_SUCCESS;
     }
     return ZR::ZR_FAILURE;
 }
 
+/**
+ * @brief Forward item
+ *
+ * @param item
+ *
+ * @return 
+ */
 ZR::RetVal TmRemoteCohorte::forwardItem( RSZRRemoteTxItem * item )
 {
     std::cerr << "Zero Reserve: TX Cohorte: Passing on query" << std::endl;
@@ -99,6 +139,15 @@ ZR::RetVal TmRemoteCohorte::forwardItem( RSZRRemoteTxItem * item )
 }
 
 
+/**
+ * @brief Process item
+ * 
+ * @todo Add timeout - refer to code.
+ *
+ * @param item
+ *
+ * @return 
+ */
 ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
 {
     RSZRRemoteTxItem * reply;
@@ -184,9 +233,13 @@ ZR::RetVal TmRemoteCohorte::abortTx(RSZRRemoteTxItem *item )
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * abortItem = new RSZRRemoteTxItem( item->getAddress(), ABORT, Router::CLIENT, item->getPayerId() );
     std::pair< ZR::PeerAddress, ZR::PeerAddress > route;
+
     if( Router::Instance()->getTunnel( item->getAddress(), route ) == ZR::ZR_FAILURE )
         return ZR::ZR_FAILURE;
+
     abortItem->PeerId( route.first );
     p3zr->sendItem( abortItem );
     return ZR::ZR_SUCCESS;  // only requesting ABORT from coordinator here. Need to stay alive
 }
+
+//   EOF   

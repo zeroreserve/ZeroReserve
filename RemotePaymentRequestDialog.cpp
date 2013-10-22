@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file RemotePaymentRequestDialog.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -31,13 +33,17 @@
 #include <openssl/sha.h>
 
 
+/// @brief Constructor
+///
+/// @param parent
 RemotePaymentRequestDialog::RemotePaymentRequestDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::RemotePaymentRequestDialog)
 {
     ui->setupUi(this);
     int index = 0;
-    while(Currency::currencyNames[ index ]){
+    while(Currency::currencyNames[ index ])
+    {
         ui->currencySelector->addItem( Currency::currencyNames[ index ] );
         index++;
     }
@@ -50,20 +56,33 @@ RemotePaymentRequestDialog::RemotePaymentRequestDialog(QWidget *parent) :
 }
 
 
+/// @brief Destructor
+/// @details Destroys/deletes the user interface
+//
 RemotePaymentRequestDialog::~RemotePaymentRequestDialog()
 {
     delete ui;
 }
 
 
+/// @brief Currency selected
+//
+/// @details 
+///
+/// @param currency
 void RemotePaymentRequestDialog::currencySelected( QString currency )
 {
     QString amount = ui->amount->text();
-    if( !amount.isEmpty() ){
+    if( !amount.isEmpty() )
+    {
         ui->payAddress->setText( getPayAddress( currency, amount ) );
     }
 }
 
+/// @brief Amount entered 
+//
+/// @details 
+/// @param amount
 void RemotePaymentRequestDialog::amountEntered( QString amount )
 {
     QString currency =  QString::fromStdString( Currency::currencySymbols[ Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() ) ] );
@@ -71,6 +90,15 @@ void RemotePaymentRequestDialog::amountEntered( QString amount )
 }
 
 
+/// @brief Get address to pay
+///
+/// @todo FIXME: the getOwnId() must be replaced by a secret - else the originator of the order can be calculated
+/// FIXME: by friends and friends of friends
+// 
+/// @param amount
+/// @param currency
+///
+/// @return 
 QString RemotePaymentRequestDialog::getPayAddress( QString amount, QString currency )
 {
     unsigned char md[ SHA256_DIGEST_LENGTH ];
@@ -88,7 +116,8 @@ QString RemotePaymentRequestDialog::getPayAddress( QString amount, QString curre
     return QString::fromStdString( payAddress );
 }
 
-
+/// @brief Send request
+//
 void RemotePaymentRequestDialog::sendRequest()
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
@@ -99,3 +128,5 @@ void RemotePaymentRequestDialog::sendRequest()
     p3zr->sendRemote( address, amount, currency );
     Payment::addMyRequest( address, Payment::Request( amount, currencySym ));
 }
+
+// EOF   

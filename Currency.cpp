@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file Currency.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -19,6 +21,10 @@
 
 #include <iostream>
 
+/**
+ * @brief const char * const Currency::currencyNames array
+ * 
+ */
 const char * const Currency::currencyNames[] =
     {
 #ifdef ZR_TESTNET
@@ -382,17 +388,31 @@ const char * const Currency::currencySymbols[] =
 
 
 
+/// @brief Constructor
+//
 Currency::Currency()
 {}
 
+/// @brief Destructor
+//
 Currency::~Currency()
 {}
 
+/// @brief 
+///
+/// @details Gets currency by symbol.
+// If the currency symbol can't be found, displays an error
+//
+/// @param currency
+///
+/// @return currency symbol
 Currency::CurrencySymbols Currency::getCurrencyBySymbol( const std::string & currency )
 {
     int index = 0;
-    while(Currency::currencySymbols[ index ]){
-        if( currency == Currency::currencySymbols[ index ]){
+    while(Currency::currencySymbols[ index ])
+    {
+        if( currency == Currency::currencySymbols[ index ])
+        {
             return (Currency::CurrencySymbols)index;
         }
         index++;
@@ -401,11 +421,18 @@ Currency::CurrencySymbols Currency::getCurrencyBySymbol( const std::string & cur
     return INVALID;
 }
 
+/// @brief Get currency by name
+///
+/// @param currency
+///
+/// @return currency symbol
 Currency::CurrencySymbols Currency::getCurrencyByName( const std::string & currency )
 {
     int index = 0;
-    while(Currency::currencyNames[ index ]){
-        if( currency == Currency::currencyNames[ index ]){
+    while(Currency::currencyNames[ index ])
+    {
+        if( currency == Currency::currencyNames[ index ])
+        {
             return (Currency::CurrencySymbols)index;
         }
         index++;
@@ -413,3 +440,5 @@ Currency::CurrencySymbols Currency::getCurrencyByName( const std::string & curre
     std::cerr << "Zero Reserve: Currency Name " << currency << " not found" << std::endl;
     return INVALID;
 }
+
+// EOF  

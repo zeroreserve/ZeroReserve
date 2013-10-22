@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file ZrDummyBitcoin.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -24,42 +26,80 @@
 ZR::Bitcoin * ZR::Bitcoin::instance = NULL;
 
 
+/**
+ * @brief Create an instance
+ *
+ * @return 
+ */
 ZR::Bitcoin * ZR::Bitcoin::Instance()
 {
-    if( instance == NULL ){
+    if( instance == NULL )
+    {
         instance = new ZrDummyBitcoin();
     }
     return instance;
 }
 
 
+/**
+ * @brief Zr Dummy bitcoin
+ */
 ZrDummyBitcoin::ZrDummyBitcoin()
 {
 }
 
+/**
+ * @brief Start dummy bitcoin
+ *
+ * @return 
+ */
 ZR::RetVal ZrDummyBitcoin::start()
 {
     return ZR::ZR_SUCCESS;
 }
 
+/**
+ * @brief Stop dummy bitcoin
+ *
+ * @return 
+ */
 ZR::RetVal ZrDummyBitcoin::stop()
 {
     return ZR::ZR_SUCCESS;
 }
 
 
+/**
+ * @brief Commit dummy bitcoin
+ *
+ * @return 
+ */
 ZR::RetVal ZrDummyBitcoin::commit()
 {
     return ZR::ZR_SUCCESS;
 }
 
 
+/**
+ * @brief Get dummy balance
+ *
+ * @return 
+ */
 ZR::ZR_Number ZrDummyBitcoin::getBalance()
 {
     return 0;
 }
 
+/**
+ * @brief Make a dummy wallet
+ *
+ * @param wType
+ *
+ * @return 
+ */
 ZR::Wallet * ZrDummyBitcoin::mkWallet( ZR::Wallet::WalletType wType )
 {
     return NULL;
 }
+
+// EOF   

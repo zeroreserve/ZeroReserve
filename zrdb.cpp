@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file zrdb.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -42,10 +44,21 @@ RsMutex ZrDB::creation_mutex("creation_mutex");
 
 
 
+/**
+ * @brief Orders Callback
+ *
+ * @param db
+ * @param argc
+ * @param argv
+ * @param 
+ *
+ * @return 
+ */
 static int orders_callback(void * db, int argc, char ** argv, char ** )
 {
     ZrDB * zrdb = static_cast< ZrDB * >( db );
-    if( argc == 7 ){
+    if( argc == 7 )
+    {
         OrderBook::Order * order = new OrderBook::Order( true );
         order->m_order_id = argv[0];
         order->m_orderType = OrderBook::Order::OrderType( atoi( argv[1] ) );
@@ -57,16 +70,28 @@ static int orders_callback(void * db, int argc, char ** argv, char ** )
 
         zrdb->addToOrderList( order );
     }
-    else {
+    else 
+    {
         return SQLITE_ERROR;
     }
     return SQLITE_OK;
 }
 
+/**
+ * @brief Transaction log callback
+ *
+ * @param db
+ * @param argc
+ * @param argv
+ * @param 
+ *
+ * @return 
+ */
 static int txlog_callback(void * db, int argc, char ** argv, char ** )
 {
     ZrDB * zrdb = static_cast< ZrDB * >( db );
-    if(argc == 4){
+    if(argc == 4)
+    {
         ZrDB::TxLogItem item;
         item.id = argv[0];
         item.currency = argv[1];
@@ -75,19 +100,40 @@ static int txlog_callback(void * db, int argc, char ** argv, char ** )
 
         zrdb->addToTxList( item );
     }
-    else {
+    else 
+    {
         return SQLITE_ERROR;
     }
     return SQLITE_OK;
 }
 
 
+/**
+ * @brief NOOP callback
+ *
+ * @param db
+ * @param int
+ * @param 
+ * @param 
+ *
+ * @return 
+ */
 static int noop_callback(void * db, int, char **, char **)
 {
     return SQLITE_OK;
 }
 
 
+/**
+ * @brief Store peer callback
+ *
+ * @param db
+ * @param int
+ * @param 
+ * @param 
+ *
+ * @return 
+ */
 static int store_peer_callback(void * db, int, char **, char **)
 {
     ZrDB * zrdb = static_cast< ZrDB * >( db );
@@ -95,34 +141,68 @@ static int store_peer_callback(void * db, int, char **, char **)
     return SQLITE_OK;
 }
 
+/**
+ * @brief Peer credit callback
+ *
+ * @param db
+ * @param argc
+ * @param argv
+ * @param 
+ *
+ * @return 
+ */
 static int peer_credit_callback(void * db, int argc, char ** argv, char ** )
 {
     ZrDB * zrdb = static_cast< ZrDB * >( db );
-    if(argc == 3){
+    if(argc == 3)
+    {
         zrdb->setPeerCredit( argv[0], argv[1], argv[2] );
     }
-    else {
+    else 
+    {
         return SQLITE_ERROR;
     }
     return SQLITE_OK;
 }
 
+/**
+ * @brief Peer credits callback
+ *
+ * @param db
+ * @param argc
+ * @param argv
+ * @param 
+ *
+ * @return 
+ */
 static int peer_credits_callback(void * db, int argc, char ** argv, char ** )
 {
     ZrDB * zrdb = static_cast< ZrDB * >( db );
-    if(argc == 5){
+    if(argc == 5)
+    {
         Credit * credit = new Credit( argv[0], argv[1]);
         credit->m_credit = ZR::ZR_Number::fromDecimalString( std::string( argv[2] ) );
         credit->m_our_credit = ZR::ZR_Number::fromDecimalString( std::string( argv[3] ) );
         credit->m_balance = ZR::ZR_Number::fromDecimalString( std::string( argv[4] ) );
         zrdb->addPeerCredit( credit );
     }
-    else {
+    else 
+    {
         return SQLITE_ERROR;
     }
     return SQLITE_OK;
 }
 
+/**
+ * @brief Grand total callback
+ *
+ * @param db
+ * @param argc
+ * @param argv
+ * @param 
+ *
+ * @return 
+ */
 static int grandtotal_callback(void * db, int argc, char ** argv, char ** )
 {
     if(argc != 3) return SQLITE_ERROR;
@@ -132,18 +212,33 @@ static int grandtotal_callback(void * db, int argc, char ** argv, char ** )
     return SQLITE_OK;
 }
 
+/**
+ * @brief Peer configuration callback
+ *
+ * @param db
+ * @param argc
+ * @param argv
+ * @param 
+ *
+ * @return 
+ */
 static int peer_config_callback(void * db, int argc, char ** argv, char ** )
 {
     ZrDB * zrdb = static_cast< ZrDB * >( db );
-    if(argc == 1){
+    if(argc == 1)
+    {
         zrdb->setConfigValue( argv[0] );
     }
-    else {
+    else 
+    {
         return SQLITE_ERROR;
     }
     return SQLITE_OK;
 }
 
+/**
+ * @brief Constructor
+ */
 ZrDB::ZrDB() :
         m_peer_mutex("peer_mutex"),
         m_config_mutex("config_mutex"),
@@ -152,6 +247,11 @@ ZrDB::ZrDB() :
 
 }
 
+/**
+ * @brief Create an instance of the database
+ *
+ * @return 
+ */
 ZrDB * ZrDB::Instance()
 {
     RsStackMutex creationMutex( creation_mutex );
@@ -169,16 +269,22 @@ ZrDB * ZrDB::Instance()
     return ZrDB::instance;
 }
 
+/**
+ * @brief Initialise
+ * 
+ */
 void ZrDB::init()
 {
     char *zErrMsg = 0;
     int rc;
+
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     std::string pathname = RsInit::RsConfigDirectory() + "/" +
             p3zr->getOwnId() + "/zeroreserve";
     QDir zrdata ( QString::fromStdString(pathname) );
 
-    if( !zrdata.mkpath( QString::fromStdString( pathname ) ) ){
+    if( !zrdata.mkpath( QString::fromStdString( pathname ) ) )
+    {
         QMessageBox::critical(0, "Error", "Cannot create DB");
         return;
     }
@@ -187,13 +293,17 @@ void ZrDB::init()
 
     std::cerr << "Opening or creating DB " << db_name << std::endl;
     rc = sqlite3_open( db_name.c_str(), &m_db);
-    if( rc ){
+
+    // unable to open database
+    if( rc )
+    {
         std::cerr <<  "Can't open database: " << sqlite3_errmsg(m_db) << std::endl;
         sqlite3_close(m_db);
         throw  std::runtime_error("SQL Error: Cannot open database");
     }
 
-    if( !db_exists ){
+    if( !db_exists )
+    {
         std::cerr << "Populating " << db_name << std::endl;
         std::vector < std::string > tables;
         tables.push_back( "create table if not exists peers ( id varchar(32), currency varchar(3), our_credit decimal(12,8), credit decimal(12,8), balance decimal(12,8) )");
@@ -203,9 +313,11 @@ void ZrDB::init()
         tables.push_back( "create table if not exists mywallet ( secret varchar(64), type int, nick varchar(64) )");
         tables.push_back( "create table if not exists peerwallet ( address varchar(34), nick varchar(64) )");
         tables.push_back( "create unique index if not exists id_curr on peers ( id, currency)");
-        for(std::vector < std::string >::const_iterator it = tables.begin(); it != tables.end(); it++ ){
+        for(std::vector < std::string >::const_iterator it = tables.begin(); it != tables.end(); it++ )
+        {
             rc = sqlite3_exec(m_db, (*it).c_str(), noop_callback, this, &zErrMsg);
-            if( rc!=SQLITE_OK ){
+            if( rc!=SQLITE_OK )
+            {
                 std::cerr << "SQL error: " << zErrMsg << std::endl;
                 sqlite3_free(zErrMsg);
                 throw std::runtime_error("SQL Error: Cannot create table");
@@ -217,6 +329,12 @@ void ZrDB::init()
     openTxLog();
 }
 
+/**
+ * @brief Set the configuration value
+ *
+ * @param key
+ * @param value
+ */
 void ZrDB::setConfig( const std::string & key, const std::string & value )
 {
     RsStackMutex configMutex( m_config_mutex );
@@ -225,6 +343,12 @@ void ZrDB::setConfig( const std::string & key, const std::string & value )
     runQuery( insert );
 }
 
+/**
+ * @brief Update configuration
+ *
+ * @param key
+ * @param value
+ */
 void ZrDB::updateConfig( const std::string & key, const std::string & value )
 {
     RsStackMutex configMutex( m_config_mutex );
@@ -233,6 +357,13 @@ void ZrDB::updateConfig( const std::string & key, const std::string & value )
     runQuery( update );
 }
 
+/**
+ * @brief Get configuration of database
+ *
+ * @param key
+ *
+ * @return 
+ */
 std::string ZrDB::getConfig( const std::string & key )
 {
     char *zErrMsg = 0;
@@ -241,7 +372,8 @@ std::string ZrDB::getConfig( const std::string & key )
     std::string select = "select value from config where key = '";
     select += key + "'";
     int rc = sqlite3_exec(m_db, select.c_str(), peer_config_callback, this, &zErrMsg);
-    if( rc!=SQLITE_OK ){
+    if( rc!=SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( std::string( "SQL Error: Cannot get value " ) + key );
@@ -250,6 +382,13 @@ std::string ZrDB::getConfig( const std::string & key )
 }
 
 
+/**
+ * @brief Load grand total from the database
+ *
+ * @param currency
+ *
+ * @return 
+ */
 ZrDB::GrandTotal & ZrDB::loadGrandTotal( const std::string & currency )
 {
     char *zErrMsg = 0;
@@ -264,7 +403,9 @@ ZrDB::GrandTotal & ZrDB::loadGrandTotal( const std::string & currency )
     std::ostringstream select;
     select << "select our_credit, credit, balance from peers where currency = '" << currency << "'";
     int rc = sqlite3_exec(m_db, select.str().c_str(), grandtotal_callback, this, &zErrMsg);
-    if( rc!=SQLITE_OK ){
+
+    if( rc!=SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot store peer data" );
@@ -272,21 +413,36 @@ ZrDB::GrandTotal & ZrDB::loadGrandTotal( const std::string & currency )
     return grandTotal;
 }
 
+/**
+ * @brief Add to grand total
+ *
+ * @param cols
+ */
 void ZrDB::addToGrandTotal( char ** cols )
 {
     grandTotal.our_credit += atof( cols[0] );
     grandTotal.credit     += atof( cols[1] );
     ZR::ZR_Number peerbalance = atof ( cols[2] );
     grandTotal.balance    += peerbalance;
-    if( peerbalance > 0 ){
+    
+    if( peerbalance > 0 )
+    {
         grandTotal.outstanding += peerbalance;
     }
-    else {
+    else 
+    {
         grandTotal.debt        -= peerbalance;
     }
 }
 
 
+/**
+ * @brief Peer exists ?
+ *
+ * @param peer_in
+ *
+ * @return 
+ */
 bool ZrDB::peerExists( const Credit & peer_in )
 {
     char *zErrMsg = 0;
@@ -296,7 +452,8 @@ bool ZrDB::peerExists( const Credit & peer_in )
     select << "select * from peers where id = '" << peer_in.m_id
            << "' and currency = '" << peer_in.m_currency << "'";
     int rc = sqlite3_exec(m_db, select.str().c_str(), store_peer_callback, this, &zErrMsg);
-    if( rc!=SQLITE_OK ){
+    if( rc!=SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot store peer data" );
@@ -304,6 +461,13 @@ bool ZrDB::peerExists( const Credit & peer_in )
     return m_peer_record_exists;
 }
 
+/**
+ * @brief Update peer credit
+ *
+ * @param peer_in
+ * @param column
+ * @param value
+ */
 void ZrDB::updatePeerCredit( const Credit & peer_in, const std::string & column, ZR::ZR_Number & value )
 {
     RsStackMutex peerMutex( m_peer_mutex );
@@ -316,17 +480,28 @@ void ZrDB::updatePeerCredit( const Credit & peer_in, const std::string & column,
     runQuery( update.str() );
 }
 
+/**
+ * @brief Run a query
+ *
+ * @param sql
+ */
 void ZrDB::runQuery(const std::string & sql )
 {
     char *zErrMsg = 0;
     int rc = sqlite3_exec(m_db, sql.c_str(), noop_callback, this, &zErrMsg);
-    if( rc != SQLITE_OK ){
+    if( rc != SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot update peer data" );
     }
 }
 
+/**
+ * @brief Create a peer record
+ *
+ * @param peer_in
+ */
 void ZrDB::createPeerRecord( const Credit & peer_in )
 {
     std::cerr << "Zero Reserve: Updating peer credit " << peer_in.m_id << std::endl;
@@ -340,6 +515,11 @@ void ZrDB::createPeerRecord( const Credit & peer_in )
 
 
 
+/**
+ * @brief Load peer record
+ *
+ * @param peer_out
+ */
 void ZrDB::loadPeer( Credit & peer_out )
 {
     RsStackMutex peerMutex( m_peer_mutex );
@@ -350,13 +530,20 @@ void ZrDB::loadPeer( Credit & peer_out )
            << peer_out.m_id << "' and currency = '" << peer_out.m_currency << "'";
     std::string selectstr = select.str();
     int rc = sqlite3_exec(m_db, selectstr.c_str(), peer_credit_callback, this, &zErrMsg);
-    if( rc!=SQLITE_OK ){
+    if( rc!=SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot load peer data" );
     }
 }
 
+/**
+ * @brief Load peer overloaded
+ *
+ * @param id
+ * @param peer_out
+ */
 void ZrDB::loadPeer( const std::string & id, Credit::CreditList & peer_out )
 {
     RsStackMutex peerMutex( m_peer_mutex );
@@ -374,6 +561,13 @@ void ZrDB::loadPeer( const std::string & id, Credit::CreditList & peer_out )
 }
 
 
+/**
+ * @brief Set peer credit
+ *
+ * @param credit
+ * @param our_credit
+ * @param balance
+ */
 void ZrDB::setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance )
 {
     m_credit->m_credit = ZR::ZR_Number::fromDecimalString( credit );
@@ -381,29 +575,49 @@ void ZrDB::setPeerCredit( const std::string & credit, const std::string & our_cr
     m_credit->m_balance = ZR::ZR_Number::fromDecimalString( balance );
 }
 
+/**
+ * @brief Add peer credit
+ *
+ * @param credit
+ */
 void ZrDB::addPeerCredit( Credit * credit )
 {
     m_creditList->push_back( credit );
 }
 
+/**
+ * @brief Open transaction log
+ * 
+ */
 void ZrDB::openTxLog()
 {
     char *zErrMsg = 0;
     std::string txLog = getConfig( TXLOGPATH );
     int rc = sqlite3_open( txLog.c_str(), &m_txLog );
-    if( rc ){
+
+    if( rc )
+    {
         std::cerr <<  "Can't open transaction log: " << sqlite3_errmsg( m_txLog ) << std::endl;
         sqlite3_close(m_txLog);
         throw  std::runtime_error("SQL Error: Cannot open database");
     }
+
     rc = sqlite3_exec(m_txLog, "create table if not exists txlog ( uid varchar(32), currency varchar(3), amount decimal(12,8), txtime datetime default current_timestamp )", noop_callback, this, &zErrMsg);
-    if( rc!=SQLITE_OK ){
+    if( rc!=SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error("SQL Error: Cannot create table");
     }
 }
 
+/**
+ * @brief Add transaction to the database log
+ *
+ * @param id
+ * @param currency
+ * @param amount
+ */
 void ZrDB::appendTx(const std::string & id, const std::string & currency, ZR::ZR_Number amount )
 {
     char *zErrMsg = 0;
@@ -414,20 +628,29 @@ void ZrDB::appendTx(const std::string & id, const std::string & currency, ZR::ZR
            << currency << "', "
            << amount.toDouble() << " )";
     int rc = sqlite3_exec(m_txLog, insert.str().c_str(), noop_callback, this, &zErrMsg);
-    if( rc!=SQLITE_OK ){
+    if( rc!=SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot append to TX log" );
     }
 }
 
+/**
+ * @brief Load transaction log
+ *
+ * @param txList
+ */
 void ZrDB::loadTxLog( std::list< TxLogItem > & txList )
 {
     char *zErrMsg = 0;
     RsStackMutex txMutex( m_tx_mutex );
     m_txList = &txList;
+
     int rc = sqlite3_exec(m_txLog, "select uid,currency,amount,txtime from txlog order by txtime desc", txlog_callback, this, &zErrMsg);
-    if( rc != SQLITE_OK ){
+    
+    if( rc != SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot read TX log" );
@@ -435,6 +658,11 @@ void ZrDB::loadTxLog( std::list< TxLogItem > & txList )
 }
 
 
+/**
+ * @brief Add to transaction list
+ *
+ * @param item
+ */
 void ZrDB::addToTxList( const TxLogItem & item )
 {
     m_txList->push_back( item );
@@ -442,6 +670,11 @@ void ZrDB::addToTxList( const TxLogItem & item )
 
 ////////////////////////////////////////////////////////////////
 
+/**
+ * @brief Add order to myorders
+ *
+ * @param order
+ */
 void ZrDB::addOrder( OrderBook::Order * order )
 {
     std::ostringstream insert;
@@ -457,18 +690,29 @@ void ZrDB::addOrder( OrderBook::Order * order )
     runQuery( insert.str() );
 }
 
+/**
+ * @brief Load orders from my orders
+ *
+ * @param orders_out
+ */
 void ZrDB::loadOrders( OrderBook::OrderList * orders_out )
 {
     char *zErrMsg = 0;
     m_orderList = orders_out;
     int rc = sqlite3_exec(m_db, "select orderid, ordertype, amount, price, currency, creationtime, purpose from myorders", orders_callback, this, &zErrMsg);
-    if( rc != SQLITE_OK ){
+    if( rc != SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot read Orders" );
     }
 }
 
+/**
+ * @brief Update my orders
+ *
+ * @param order
+ */
 void ZrDB::updateOrder( OrderBook::Order * order )
 {
     std::cerr << "Zero Reserve: Updating my orders " << order->m_order_id << std::endl;
@@ -479,6 +723,11 @@ void ZrDB::updateOrder( OrderBook::Order * order )
     runQuery( update.str() );
 }
 
+/**
+ * @brief Delete an order from my orders
+ *
+ * @param order
+ */
 void ZrDB::deleteOrder( OrderBook::Order * order )
 {
     std::cerr << "Zero Reserve: Updating my orders " << order->m_order_id << std::endl;
@@ -488,6 +737,13 @@ void ZrDB::deleteOrder( OrderBook::Order * order )
 }
 
 
+/**
+ * @brief Add order to order list
+ * 
+ * The order is being pushed back into the vector
+ *
+ * @param order
+ */
 void ZrDB::addToOrderList( OrderBook::Order * order )
 {
     m_orderList->push_back( order );
@@ -497,6 +753,13 @@ void ZrDB::addToOrderList( OrderBook::Order * order )
 /////////////////////////// Wallet /////////////////////////////////////
 
 
+/**
+ * @brief Add my wallet
+ *
+ * @param secret
+ * @param type
+ * @param nick
+ */
 void ZrDB::addMyWallet( const ZR::WalletSecret & secret, unsigned int type, const std::string & nick )
 {
     std::cerr << "Zero Reserve: Inserting my wallet " << std::endl;
@@ -507,7 +770,8 @@ void ZrDB::addMyWallet( const ZR::WalletSecret & secret, unsigned int type, cons
            << type << "', '"
            << nick << "' )";
     int rc = sqlite3_exec( m_db, insert.str().c_str(), noop_callback, this, &zErrMsg );
-    if( rc != SQLITE_OK ){
+    if( rc != SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot insert my wallet" );
@@ -515,6 +779,12 @@ void ZrDB::addMyWallet( const ZR::WalletSecret & secret, unsigned int type, cons
 }
 
 
+/**
+ * @brief Add peer wallet
+ *
+ * @param address
+ * @param nick
+ */
 void ZrDB::addPeerWallet( const ZR::BitcoinAddress & address, const std::string & nick )
 {
     std::cerr << "Zero Reserve: Inserting peer wallet " << std::endl;
@@ -524,7 +794,8 @@ void ZrDB::addPeerWallet( const ZR::BitcoinAddress & address, const std::string 
            << address << "', '"
            << nick << "' )";
     int rc = sqlite3_exec( m_db, insert.str().c_str(), noop_callback, this, &zErrMsg );
-    if( rc != SQLITE_OK ){
+    if( rc != SQLITE_OK )
+    {
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot insert peer wallet" );
@@ -533,13 +804,22 @@ void ZrDB::addPeerWallet( const ZR::BitcoinAddress & address, const std::string 
 
 ////////////////////////////////////////////////////////////////
 
+/**
+ * @brief Close transaction log
+ */
 void ZrDB::closeTxLog()
 {
     sqlite3_close( m_txLog );
 }
 
+/**
+ * @brief Close the database
+ * 
+ */
 void ZrDB::close()
 {
     sqlite3_close( m_db );
     closeTxLog();
 }
+
+// EOF   

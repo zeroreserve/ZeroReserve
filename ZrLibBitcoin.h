@@ -25,6 +25,7 @@
 
 #include <string>
 
+/// \class ZrLibBitcoin
 class ZrLibBitcoin : public ZR::Bitcoin
 {
 public:
@@ -63,6 +64,7 @@ private:
     bool started;
 };
 
+/// @brief Class LibBit coin Wallet 
 class LibBitcoinWallet : public ZR::MyWallet
 {
     friend ZrLibBitcoin;

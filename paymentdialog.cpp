@@ -27,6 +27,10 @@
 
 #include <QMessageBox>
 
+/// @brief 
+///
+/// @param payee
+/// @param parent
 PaymentDialog::PaymentDialog( const std::string & payee, QWidget *parent ) :
     QDialog( parent ),
     ui( new Ui::PaymentDialog ),
@@ -37,7 +41,8 @@ PaymentDialog::PaymentDialog( const std::string & payee, QWidget *parent ) :
     ui->setupUi(this);
     ui->label->setText( QString::fromUtf8( peername.c_str() ) );
     int index = 0;
-    while(Currency::currencyNames[ index ]){
+    while(Currency::currencyNames[ index ])
+    {
         ui->currencySelector->addItem( Currency::currencyNames[ index ] );
         index++;
     }
@@ -46,11 +51,15 @@ PaymentDialog::PaymentDialog( const std::string & payee, QWidget *parent ) :
     loadAvailableFunds();
 }
 
+/// @brief Destructor
+/// @details Destroys the user interface.
+//
 PaymentDialog::~PaymentDialog()
 {
     delete ui;
 }
 
+/// @brief Pay to
 void PaymentDialog::payTo()
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
@@ -59,12 +68,18 @@ void PaymentDialog::payTo()
     if( ! tm->init() ) delete tm;
 }
 
+/// @brief Load available funds
+///
+/// @param arg
 void PaymentDialog::loadAvailableFunds(QString arg)
 {
     ui->lcdAvailableFunds->display( availableFunds().toDouble() );
 }
 
 
+/// @brief Determine amount of available funds
+///
+/// @return 
 ZR::ZR_Number PaymentDialog::availableFunds()
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
@@ -78,3 +93,6 @@ ZR::ZR_Number PaymentDialog::availableFunds()
 
     return  peerCredit.getMyAvailable();
 }
+
+// 
+// EOF   

@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file TmLocalCoordinator.h
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -20,8 +22,16 @@
 
 #include "TransactionManager.h"
 
+/**
+ * @class Payment
+ * 
+ */
 class Payment;
 
+/**
+ * @class TmLocalCoordinator
+ * 
+ */
 class TmLocalCoordinator : public TransactionManager
 {
 public:

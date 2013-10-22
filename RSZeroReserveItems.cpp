@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file RSZeroReserveItems.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -34,6 +36,12 @@ const uint8_t RsZeroReserveItem::headersOffset = 8;
 const int RsZeroReserveItem::CURRENCY_STRLEN = 3;
 const int RsZeroReserveItem::HOLLERITH_LEN_SPEC = 4;
 
+/// @brief Deserialise
+///
+/// @param data
+/// @param pktsize
+///
+/// @return 
 RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
 {
     std::cerr << "Zero Reserve: deserialise()" << std::endl;
@@ -76,6 +84,12 @@ RsItem* RsZeroReserveSerialiser::deserialise(void *data, uint32_t *pktsize)
 }
 
 
+/// @brief Serialise
+///
+/// @param data
+/// @param 
+///
+/// @return true
 bool RsZeroReserveItem::serialise(void *data,uint32_t & /* size */)
 {
     bool ok = true;
@@ -86,6 +100,11 @@ bool RsZeroReserveItem::serialise(void *data,uint32_t & /* size */)
     return ok;
 }
 
+/// @brief Constructor 
+///
+/// @param data
+/// @param size
+/// @param zeroreserve_subtype
 RsZeroReserveItem::RsZeroReserveItem( void *data,uint32_t& size, uint8_t zeroreserve_subtype ) :
     RsItem(RS_PKT_VERSION_SERVICE,RS_SERVICE_TYPE_ZERORESERVE_PLUGIN, zeroreserve_subtype)
 {
@@ -94,7 +113,8 @@ RsZeroReserveItem::RsZeroReserveItem( void *data,uint32_t& size, uint8_t zerores
     m_Offset = headersOffset;
     uint8_t protocolVersion;
     getRawUInt8(data, rssize, &m_Offset, &protocolVersion );
-    if( protocolVersion != PROTOCOL_VERSION ){
+    if( protocolVersion != PROTOCOL_VERSION )
+    {
         std::cerr << "Unknown protocol version: " << protocolVersion << std::endl;
         throw std::runtime_error( "Unknown protocol version" );
     }
@@ -105,6 +125,12 @@ RsZeroReserveItem::RsZeroReserveItem( void *data,uint32_t& size, uint8_t zerores
 //// Begin Msg Item  /////
 
 
+/// @brief Print a message
+///
+/// @param out
+/// @param indent
+///
+/// @return 
 std::ostream& RsZeroReserveMsgItem::print(std::ostream &out, uint16_t indent)
 {
         printRsItemBase(out, "RsZeroReserveMsgItem", indent);
@@ -119,6 +145,9 @@ std::ostream& RsZeroReserveMsgItem::print(std::ostream &out, uint16_t indent)
         return out;
 }
 
+/// @brief Determine serial size
+///
+/// @return s - the size of the message
 uint32_t RsZeroReserveMsgItem::serial_size() const
 {
         uint32_t s = RsZeroReserveItem::serial_size();
@@ -128,6 +157,12 @@ uint32_t RsZeroReserveMsgItem::serial_size() const
         return s;
 }
 
+/// @brief Serialise overloaded
+///
+/// @param data
+/// @param pktsize
+///
+/// @return 
 bool RsZeroReserveMsgItem::serialise(void *data, uint32_t& pktsize)
 {
         uint32_t tlvsize = serial_size() ;
@@ -150,6 +185,10 @@ bool RsZeroReserveMsgItem::serialise(void *data, uint32_t& pktsize)
         return ok;
 }
 
+/// @brief Message item
+///
+/// @param data
+/// @param pktsize
 RsZeroReserveMsgItem::RsZeroReserveMsgItem(void *data, uint32_t pktsize)
         : RsZeroReserveItem( data, pktsize, ZERORESERVE_MSG_ITEM )
 {
@@ -172,6 +211,10 @@ RsZeroReserveMsgItem::RsZeroReserveMsgItem(void *data, uint32_t pktsize)
         throw std::runtime_error("Deserialisation error!") ;
 }
 
+/// @brief Message type constructor
+///
+/// @param msgType
+/// @param msg
 RsZeroReserveMsgItem::RsZeroReserveMsgItem( MsgType msgType, const std::string & msg )
         : RsZeroReserveItem( ZERORESERVE_MSG_ITEM ),
         m_msgType( msgType ),
@@ -183,6 +226,12 @@ RsZeroReserveMsgItem::RsZeroReserveMsgItem( MsgType msgType, const std::string &
 
 
 
+/// @brief Print credit item information
+///
+/// @param out
+/// @param indent
+///
+/// @return 
 std::ostream& RsZeroReserveCreditItem::print(std::ostream &out, uint16_t indent)
 {
         printRsItemBase(out, "RsZeroReserveCreditItem", indent);
@@ -203,6 +252,9 @@ std::ostream& RsZeroReserveCreditItem::print(std::ostream &out, uint16_t indent)
         return out;
 }
 
+/// @brief Credit item serial size
+///
+/// @return 
 uint32_t RsZeroReserveCreditItem::serial_size() const
 {
         uint32_t s = RsZeroReserveItem::serial_size();
@@ -214,6 +266,12 @@ uint32_t RsZeroReserveCreditItem::serial_size() const
         return s;
 }
 
+/// @brief Credit item serialise
+///
+/// @param data
+/// @param pktsize
+///
+/// @return 
 bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
 {
         uint32_t tlvsize = serial_size() ;
@@ -230,7 +288,8 @@ bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
         ok &= setRawString( data, tlvsize, &m_Offset, m_credit->m_our_credit.toStdString() );
         ok &= setRawString( data, tlvsize, &m_Offset, m_credit->m_balance.toStdString() );
 
-        if (m_Offset != tlvsize){
+        if (m_Offset != tlvsize)
+        {
                 ok = false;
                 std::cerr << "RsZeroReserveCreditItem::serialise() Size Error! " << std::endl;
         }
@@ -238,6 +297,11 @@ bool RsZeroReserveCreditItem::serialise(void *data, uint32_t& pktsize)
         return ok;
 }
 
+/// @brief Credit item constructor
+///
+/// @todo Several FIXME are shown in source code relating to ID
+/// @param data
+/// @param pktsize
 RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
         : RsZeroReserveItem( data, pktsize, ZERORESERVE_CREDIT_ITEM )
 {
@@ -268,6 +332,9 @@ RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
         throw std::runtime_error("Deserialisation error!") ;
 }
 
+/// @brief Credit item constructor
+///
+/// @param credit
 RsZeroReserveCreditItem::RsZeroReserveCreditItem( Credit * credit )
         : RsZeroReserveItem( ZERORESERVE_CREDIT_ITEM )
 {
@@ -275,6 +342,7 @@ RsZeroReserveCreditItem::RsZeroReserveCreditItem( Credit * credit )
     PeerId( credit->m_id );
 }
 
+/// @brief Credit item destructor
 RsZeroReserveCreditItem::~RsZeroReserveCreditItem()
 {
     delete m_credit;
@@ -284,12 +352,21 @@ RsZeroReserveCreditItem::~RsZeroReserveCreditItem()
 
 
 
+/// @brief Transaction constructor
+///
+/// @param phase
+/// @param subtype
 RsZeroReserveTxItem::RsZeroReserveTxItem( TransactionManager::TxPhase phase, RS_PKT_SUBTYPE subtype ) :
     RsZeroReserveItem( (uint8_t)subtype ),
     m_TxPhase(phase)
 {}
 
 
+/// @brief Transaction item constructor
+///
+/// @param data
+/// @param pktsize
+/// @param zeroreserve_subtype
 RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SUBTYPE zeroreserve_subtype )
         : RsZeroReserveItem( data, pktsize, zeroreserve_subtype )
 {
@@ -315,6 +392,9 @@ RsZeroReserveTxItem::RsZeroReserveTxItem(void *data, uint32_t pktsize, RS_PKT_SU
         throw std::runtime_error("Deserialisation error!") ;
 }
 
+/// @brief Transaction item serial size
+///
+/// @return serial size
 uint32_t RsZeroReserveTxItem::serial_size() const
 {
     return RsZeroReserveItem::serial_size()
@@ -322,8 +402,12 @@ uint32_t RsZeroReserveTxItem::serial_size() const
             + m_txId.length() + HOLLERITH_LEN_SPEC;
 }
 
-
-
+/// @brief Transaction item serialise
+///
+/// @param data
+/// @param pktsize
+///
+/// @return 
 bool RsZeroReserveTxItem::serialise(void *data, uint32_t& pktsize)
 {
     uint32_t tlvsize = serial_size() ;
@@ -341,6 +425,12 @@ bool RsZeroReserveTxItem::serialise(void *data, uint32_t& pktsize)
     return ok;
 }
 
+/// @brief Transaction item print
+///
+/// @param out
+/// @param indent
+///
+/// @return 
 std::ostream& RsZeroReserveTxItem::print(std::ostream &out, uint16_t indent)
 {
     printRsItemBase(out, "RsZeroReserveTxItem", indent);
@@ -358,6 +448,10 @@ std::ostream& RsZeroReserveTxItem::print(std::ostream &out, uint16_t indent)
 //// Begin TX INIT Item  /////
 
 
+/// @brief Transaction item initialise
+///
+/// @param data
+/// @param pktsize
 RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
         : RsZeroReserveTxItem( data, pktsize, ZERORESERVE_TX_INIT_ITEM )
 {
@@ -392,14 +486,18 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(void *data, uint32_t pktsize )
     m_payment->referrerId( referrer );
 }
 
-
+/// @brief Get payment
+///
+/// @return 
 Payment * RsZeroReserveInitTxItem::getPayment()
 {
     m_payment->setCounterparty( PeerId() );
     return m_payment;
 }
 
-
+/// @brief Transaction item serial size
+///
+/// @return 
 uint32_t RsZeroReserveInitTxItem::serial_size() const
 {
     return RsZeroReserveTxItem::serial_size()
@@ -410,8 +508,12 @@ uint32_t RsZeroReserveInitTxItem::serial_size() const
             + m_payment->referrerId().length() + HOLLERITH_LEN_SPEC; // freeform data
 }
 
-
-
+/// @brief Transaction item serialise
+///
+/// @param data
+/// @param pktsize
+///
+/// @return 
 bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
 {
     uint32_t tlvsize = serial_size() ;
@@ -424,13 +526,20 @@ bool RsZeroReserveInitTxItem::serialise(void *data, uint32_t& pktsize)
     ok &= setRawUInt8( data, tlvsize, &m_Offset, m_payment->getCategory() );
     ok &= setRawString( data, tlvsize, &m_Offset, m_payment->referrerId() );
 
-    if (m_Offset != tlvsize){
+    if (m_Offset != tlvsize)
+    {
         ok = false;
         std::cerr << "RsZeroReserveInitTxItem::serialise() Size Error! " << std::endl;
     }
     return ok;
 }
 
+/// @brief Transaction item initialise print
+///
+/// @param out
+/// @param indent
+///
+/// @return 
 std::ostream& RsZeroReserveInitTxItem::print(std::ostream &out, uint16_t indent)
 {
     printRsItemBase(out, "RsZeroReserveInitTxItem", indent);
@@ -448,6 +557,9 @@ std::ostream& RsZeroReserveInitTxItem::print(std::ostream &out, uint16_t indent)
     return out;
 }
 
+/// @brief Constructor?
+///
+/// @param payment
 RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(Payment *payment) :
     RsZeroReserveTxItem( TransactionManager::QUERY, ZERORESERVE_TX_INIT_ITEM ),
     m_payment( payment )
@@ -456,7 +568,9 @@ RsZeroReserveInitTxItem::RsZeroReserveInitTxItem(Payment *payment) :
 }
 
 
+/// @brief Destructor
 RsZeroReserveInitTxItem::~RsZeroReserveInitTxItem()
 {
 }
 
+//   EOF   

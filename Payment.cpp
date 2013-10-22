@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file Payment.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -34,6 +36,12 @@ Payment::Requests Payment::requestList;
 Payment::Requests Payment::myRequests;
 
 
+/// @brief Payment constructor
+///
+/// @param counterparty
+/// @param amount
+/// @param currency
+/// @param category
 Payment::Payment( const std::string & counterparty, const ZR::ZR_Number & amount, const std::string & currency, Category category) :
     m_credit( counterparty, currency ),
     m_amount( amount ),
@@ -42,6 +50,9 @@ Payment::Payment( const std::string & counterparty, const ZR::ZR_Number & amount
     m_credit.loadPeer();
 }
 
+/// @brief Set counter party for payment
+///
+/// @param counterparty
 void Payment::setCounterparty( const std::string & counterparty )
 {
     m_credit.m_id = counterparty;
@@ -49,6 +60,11 @@ void Payment::setCounterparty( const std::string & counterparty )
 }
 
 
+/// @brief Get request for payment
+///
+/// @param addr
+///
+/// @return 
 const Payment::Request Payment::getRequest( const ZR::VirtualAddress & addr )
 {
     Requests::iterator it = requestList.find( addr );
@@ -57,6 +73,11 @@ const Payment::Request Payment::getRequest( const ZR::VirtualAddress & addr )
     return (*it).second;
 }
 
+/// @brief Get my request for payment
+///
+/// @param addr
+///
+/// @return 
 const Payment::Request Payment::getMyRequest( const ZR::VirtualAddress & addr )
 {
     Requests::iterator it = myRequests.find( addr );
@@ -67,17 +88,29 @@ const Payment::Request Payment::getMyRequest( const ZR::VirtualAddress & addr )
 
 /////// PaymentReceiver
 
+/// @brief Payment receiver constructor
+///
+/// @param counterparty
+/// @param amount
+/// @param currency
+/// @param category
 PaymentReceiver::PaymentReceiver( const std::string & counterparty, const ZR::ZR_Number & amount, const std::string & currency, Category category) :
     Payment( counterparty, amount, currency, category)
 {}
 
 
+/// @brief New balance
+///
+/// @return 
 ZR::ZR_Number PaymentReceiver::newBalance() const
 {
     return m_credit.m_balance + m_amount;
 }
 
 
+/// @brief Initialise
+///
+/// @return 
 int PaymentReceiver::init()
 {
     switch( m_category )
@@ -97,6 +130,13 @@ int PaymentReceiver::init()
     }
 }
 
+/// @brief Commit
+//
+/// @todo TODO: make atomic! - refer to code
+///
+/// @param txId
+///
+/// @return 
 int PaymentReceiver::commit( const ZR::TransactionId &txId )
 {
     m_credit.loadPeer();
@@ -105,7 +145,8 @@ int PaymentReceiver::commit( const ZR::TransactionId &txId )
     ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
     ZrDB::Instance()->appendTx( m_credit.m_id, m_credit.m_currency, m_amount );
 
-    if( txLogView ){
+    if( txLogView )
+    {
         txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : +" + m_amount.toDecimalQString() );
         txLogView->setCurrentRow( 0 ); // make the view emit currentItemChanged()
     }
@@ -124,23 +165,43 @@ int PaymentReceiver::commit( const ZR::TransactionId &txId )
 
 /////// PaymentSpender
 
+/// @brief Constructor
+///
+/// @param counterparty
+/// @param amount
+/// @param currency
+/// @param category
 PaymentSpender::PaymentSpender(const std::string & counterparty, ZR::ZR_Number amount, const std::string & currency, Category category) :
     Payment( counterparty, amount, currency, category)
 {}
 
+/// @brief New balance of spending some coin
+///
+/// @return 
 ZR::ZR_Number PaymentSpender::newBalance() const
 {
     return m_credit.m_balance - m_amount;
 }
 
+/// @brief Initialise payment spender
+///
+/// @return 
 int PaymentSpender::init()
 {
-    if( m_credit.getMyAvailable() < m_amount ){
+    if( m_credit.getMyAvailable() < m_amount )
+    {
         return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;
 }
 
+/// @brief Commit the transaction id
+///
+/// @todo Make atomic - refer to the code
+//
+/// @param txId
+///
+/// @return 
 int PaymentSpender::commit( const ZR::TransactionId & txId )
 {
     m_credit.loadPeer();
@@ -149,7 +210,8 @@ int PaymentSpender::commit( const ZR::TransactionId & txId )
     ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
     ZrDB::Instance()->appendTx( m_credit.m_id, m_credit.m_currency,  -m_amount );
 
-    if( txLogView ){
+    if( txLogView )
+    {
         txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : -" + m_amount.toDecimalQString() );
         txLogView->setCurrentRow( 0 ); // make the view emit currentItemChanged()
     }
@@ -166,3 +228,4 @@ int PaymentSpender::commit( const ZR::TransactionId & txId )
     return ZR::ZR_SUCCESS;
 }
 
+//   EOF   

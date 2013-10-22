@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file ZeroReserveDialog.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -39,6 +41,14 @@
 #define IMAGE_FRIENDINFO ":/images/peerdetails_16x16.png"
 
 
+/**
+ * @brief Create the main dialog for Zero Reserve
+ * 
+ *
+ * @param bids
+ * @param asks
+ * @param parent
+ */
 ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget *parent )
 : MainPage(parent)
 {
@@ -48,7 +58,8 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     Payment::txLogView = ui.paymentHistoryList;
 
     int index = 0;
-    while(Currency::currencyNames[ index ]){
+    while(Currency::currencyNames[ index ])
+    {
         ui.currencySelector2->addItem( Currency::currencyNames[ index ] );
 #ifdef ZR_TESTNET
         if(QString(Currency::currencyNames[ index ]) != "Testnet Bitcoin" ){
@@ -124,6 +135,10 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 }
 
 
+/**
+ * @brief Load the transaction log
+ * 
+ */
 void ZeroReserveDialog::loadTxLog()
 {
     std::list< ZrDB::TxLogItem > txList;
@@ -135,7 +150,8 @@ void ZeroReserveDialog::loadTxLog()
         std::cerr << "Zero Reserve: " << e.what() << std::endl;
     }
 
-    for( std::list< ZrDB::TxLogItem >::const_iterator it = txList.begin(); it != txList.end(); it++ ){
+    for( std::list< ZrDB::TxLogItem >::const_iterator it = txList.begin(); it != txList.end(); it++ )
+    {
         const ZrDB::TxLogItem & item = *it;
         txStringList.append( item.timestamp.toString() + " : " + item.currency + " : " + item.m_amount.toDecimalQString() );
     }
@@ -143,6 +159,10 @@ void ZeroReserveDialog::loadTxLog()
 }
 
 
+/**
+ * @brief Load grand total
+ * 
+ */
 void ZeroReserveDialog::loadGrandTotal()
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui.currencySelector2->currentText().toStdString() );
@@ -155,6 +175,11 @@ void ZeroReserveDialog::loadGrandTotal()
     ui.lcdTheirCredit->display( gt.credit.toDouble() );
 }
 
+/**
+ * @brief Create context menu friend list
+ *
+ * @param QPoint
+ */
 void ZeroReserveDialog::contextMenuFriendList(QPoint)
 {
     QMenu contextMnu(this);
@@ -175,6 +200,10 @@ void ZeroReserveDialog::contextMenuFriendList(QPoint)
     contextMnu.exec(QCursor::pos());
 }
 
+/**
+ * @brief Friend details display?
+ * 
+ */
 void ZeroReserveDialog::friendDetails()
 {
     FriendSelectionWidget::IdType id = FriendSelectionWidget::IDTYPE_NONE;
@@ -185,6 +214,9 @@ void ZeroReserveDialog::friendDetails()
     d.exec();
 }
 
+/**
+ * @brief Payment to selected friend
+ */
 void ZeroReserveDialog::payTo()
 {
     FriendSelectionWidget::IdType id = FriendSelectionWidget::IDTYPE_NONE;
@@ -193,18 +225,29 @@ void ZeroReserveDialog::payTo()
     d.exec();
 }
 
+/**
+ * @brief Add bid
+ * 
+ */
 void ZeroReserveDialog::addBid()
 {
     OrderBook * bids = static_cast<OrderBook*>(ui.bidsTableView->model());
     doOrder( bids, OrderBook::Order::BID, ZR::ZR_Number::fromDecimalString( ui.bid_price->text() ), ZR::ZR_Number::fromDecimalString( ui.bid_amount->text() ) );
 }
 
+/**
+ * @brief Add ask
+ */
 void ZeroReserveDialog::addAsk()
 {
     OrderBook * asks = static_cast<OrderBook*>(ui.asksTableView->model());
     doOrder( asks, OrderBook::Order::ASK, ZR::ZR_Number::fromDecimalString( ui.ask_price->text() ), ZR::ZR_Number::fromDecimalString( ui.ask_amount->text() ) );
 }
 
+/**
+ * @brief Cancel order
+ * 
+ */
 void ZeroReserveDialog::cancelOrder()
 {
     QModelIndexList indexes = ui.myOrders->selectionModel()->selection().indexes();
@@ -214,6 +257,11 @@ void ZeroReserveDialog::cancelOrder()
     myOrders->cancelOrder( indexes.at( 0 ).row() );
 }
 
+/**
+ * @brief Display context menu of my orders
+ *
+ * @param 
+ */
 void ZeroReserveDialog::contextMenuMyOrders( const QPoint & )
 {
     QMenu contextMnu(this);
@@ -223,6 +271,14 @@ void ZeroReserveDialog::contextMenuMyOrders( const QPoint & )
 }
 
 
+/**
+ * @brief Do order
+ *
+ * @param book
+ * @param type
+ * @param price
+ * @param amount
+ */
 void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType type, ZR::ZR_Number price, ZR::ZR_Number amount )
 {
     OrderBook::Order * order = new OrderBook::Order();
@@ -238,12 +294,19 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
 }
 
 
+/**
+ * @brief Remote request
+ */
 void ZeroReserveDialog::remoteRequest()
 {
     RemotePaymentRequestDialog d;
     d.exec();
 }
 
+/**
+ * @brief Remote payment
+ * 
+ */
 void ZeroReserveDialog::remotePayment()
 {
     RemotePaymentDialog d;
@@ -251,6 +314,12 @@ void ZeroReserveDialog::remotePayment()
 }
 
 
+/**
+ * @brief Update friend list
+ * 
+ * @todo FIXME
+ * 
+ */
 void ZeroReserveDialog::updateFriendList()
 {
 // FIXME:    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
@@ -259,6 +328,11 @@ void ZeroReserveDialog::updateFriendList()
 ///////////////////////// My Addresses //////////////////////////
 
 
+/**
+ * @brief Context menu for my addresses
+ *
+ * @param 
+ */
 void ZeroReserveDialog::contextMenuMyAddresses( const QPoint & )
 {
     QMenu contextMnu(this);
@@ -268,6 +342,10 @@ void ZeroReserveDialog::contextMenuMyAddresses( const QPoint & )
 }
 
 
+/**
+ * @brief New wallet creator
+ * 
+ */
 void ZeroReserveDialog::newWallet()
 {
     NewWallet d( this );
@@ -282,6 +360,11 @@ void ZeroReserveDialog::newWallet()
 
 ///////////////////////// Peer Addresses //////////////////////////
 
+/**
+ * @brief Context menu of peer addresses
+ *
+ * @param 
+ */
 void ZeroReserveDialog::contextMenuPeerAddresses( const QPoint & )
 {
     QMenu contextMnu(this);
@@ -290,6 +373,10 @@ void ZeroReserveDialog::contextMenuPeerAddresses( const QPoint & )
     contextMnu.exec(QCursor::pos());
 }
 
+/**
+ * @brief Add a new peer address
+ * 
+ */
 void ZeroReserveDialog::newPeerAddress()
 {
     PeerAddressDialog d( this );
@@ -301,3 +388,5 @@ void ZeroReserveDialog::newPeerAddress()
     wallet->persist();
     addrs->addWallet( wallet );
 }
+
+//   EOF   

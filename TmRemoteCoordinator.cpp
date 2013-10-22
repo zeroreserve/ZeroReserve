@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file TmRemoteCoordinator.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -22,6 +24,13 @@
 #include "p3ZeroReserverRS.h"
 #include "Payment.h"
 
+/**
+ * @brief Constructor
+ *
+ * @param addr
+ * @param payment
+ * @param myId
+ */
 TmRemoteCoordinator::TmRemoteCoordinator(const ZR::VirtualAddress & addr , Payment *payment, const std::string & myId ) :
     TransactionManager( addr + ':' + myId ),
     m_Destination( addr ),
@@ -30,18 +39,32 @@ TmRemoteCoordinator::TmRemoteCoordinator(const ZR::VirtualAddress & addr , Payme
 {
 }
 
+/**
+ * @brief Destructor
+ * 
+ */
 TmRemoteCoordinator::~TmRemoteCoordinator()
 {
     delete m_Payment;
 }
 
 
+/**
+ * @brief Rollback transaction
+ * 
+ * @note 
+ */
 void TmRemoteCoordinator::rollback()
 {
 
 }
 
 
+/**
+ * @brief Initialiser
+ *
+ * @return 
+ */
 ZR::RetVal TmRemoteCoordinator::init()
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
@@ -56,6 +79,13 @@ ZR::RetVal TmRemoteCoordinator::init()
 }
 
 
+/**
+ * @brief Process item
+ *
+ * @param item
+ *
+ * @return 
+ */
 ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
 {
     RSZRRemoteTxItem * reply;
@@ -97,6 +127,13 @@ ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
     return ZR::ZR_SUCCESS;
 }
 
+/**
+ * @brief Abort transaction
+ *
+ * @param item
+ *
+ * @return 
+ */
 ZR::RetVal TmRemoteCoordinator::abortTx( RSZRRemoteTxItem *item )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
@@ -105,3 +142,5 @@ ZR::RetVal TmRemoteCoordinator::abortTx( RSZRRemoteTxItem *item )
     p3zr->sendItem( abortItem );
     return ZR::ZR_FINISH;
 }
+
+//   EOF   

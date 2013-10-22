@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file Router.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -22,10 +24,16 @@ Router * Router::instance = 0;
 
 
 
+/// @brief Create a router instance
+///
+/// @return 
 Router * Router::Instance()
 {
-    if( !Router::instance ) {
+    if( !Router::instance ) 
+    {
         Router::instance = new TraceRouter();
     }
     return instance;
 }
+
+//  EOF   

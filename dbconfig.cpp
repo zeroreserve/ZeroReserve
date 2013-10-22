@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file dbconfig.cpp
+ * 
     This file is part of the Zero Reserve Plugin for Retroshare.
 
     Zero Reserve is free software: you can redistribute it and/or modify
@@ -22,6 +24,10 @@
 #include "QFileInfo"
 
 
+/// @brief Configuration for the database
+///
+/// @param parent
+/// @param flags
 DBConfig::DBConfig( QWidget *parent, Qt::WFlags flags ) :
     ConfigPage(parent, flags)
 {
@@ -30,16 +36,29 @@ DBConfig::DBConfig( QWidget *parent, Qt::WFlags flags ) :
 }
 
 
+/// @brief Save
+///
+/// @param errmsg
+///
+/// @return true
 bool DBConfig::save(QString &errmsg)
 {
     return true;
 }
 
+/// @brief Load
+//
+/// @details At present does nothing?
+//
 void DBConfig::load()
 {
 
 }
 
+/// @brief Edit transaction log
+//
+/// @details 
+//
 void DBConfig::editTxLog()
 {
     QString txLogPath = QString::fromStdString( ZrDB::Instance()->getConfig( ZrDB::TXLOGPATH ) );
@@ -50,3 +69,5 @@ void DBConfig::editTxLog()
 
     ZrDB::Instance()->updateConfig( ZrDB::TXLOGPATH, newPath.toStdString() );
 }
+
+// EOF   
