@@ -31,7 +31,7 @@ public:
     Wallet() {}
 
     virtual ZR::BitcoinAddress getAddress() = 0;
-    virtual void persist() = 0;
+    virtual ZR::RetVal persist() = 0;
 
     const std::string & getNick(){ return m_nick; }
     void setNick( const std::string & nick ){ m_nick = nick; }
@@ -72,8 +72,8 @@ public:
         m_Address( address )
     {}
     virtual ZR::BitcoinAddress getAddress(){ return m_Address; }
-    virtual void persist(){
-        ZrDB::Instance()->addPeerWallet( m_Address, m_nick );
+    virtual ZR::RetVal persist(){
+        return ZrDB::Instance()->addPeerWallet( m_Address, m_nick );
     }
 
 private:
@@ -90,6 +90,7 @@ public:
     virtual ZR::ZR_Number getBalance() = 0;
 
     virtual MyWallet * mkWallet( MyWallet::WalletType wType ) = 0;
+    virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets ) = 0;
 
     static Bitcoin * Instance();
 

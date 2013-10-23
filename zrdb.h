@@ -58,6 +58,12 @@ public:
          QDateTime timestamp;
     } TxLogItem;
 
+    typedef struct {
+         ZR::WalletSecret secret;
+         std::string nick;
+         int type;
+    } MyWallet;
+
     static ZrDB * Instance();
     void createPeerRecord( const Credit & peer_in );
     void updatePeerCredit(const Credit & peer_in, const std::string & column, ZR::ZR_Number &value );
@@ -97,8 +103,10 @@ public:
     // TODO: void restore() const;
 
 ////////// Bitcoin Wallet //////////////
-    void addMyWallet( const ZR::WalletSecret &secret, unsigned int type, const std::string &nick );
-    void addPeerWallet( const ZR::BitcoinAddress & address, const std::string & nick );
+    ZR::RetVal storeMyWallet( const ZR::WalletSecret &secret, unsigned int type, const std::string &nick );
+    ZR::RetVal addPeerWallet( const ZR::BitcoinAddress & address, const std::string & nick );
+    void loadMyWallets( std::vector< MyWallet > & wallets );
+    void addMyWallet( MyWallet & wallet );
 
 private:
     void setConfig( const std::string & key, const std::string & value );
@@ -121,6 +129,7 @@ private:
     Credit::CreditList * m_creditList;
     std::list< TxLogItem > * m_txList;
     OrderBook::OrderList * m_orderList;
+    std::vector< MyWallet > * m_wallets;
 
     static ZrDB * instance;
     static RsMutex creation_mutex;

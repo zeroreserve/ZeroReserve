@@ -21,6 +21,7 @@
 BitcoinAddressList::BitcoinAddressList(QObject *parent) :
     QAbstractItemModel(parent)
 {
+    loadWallets();
 }
 
 
@@ -84,6 +85,18 @@ void BitcoinAddressList::addWallet( ZR::Wallet * wallet )
 {
     beginResetModel();
     m_walletList.push_back( wallet );
+    endResetModel();
+}
+
+
+void BitcoinAddressList::loadWallets()
+{
+    std::vector< ZR::MyWallet *> wallets;
+    ZR::Bitcoin::Instance()->loadWallets( wallets );
+    beginResetModel();
+    for( std::vector< ZR::MyWallet *>::const_iterator it = wallets.begin(); it != wallets.end(); it++ ){
+        m_walletList.push_back( *it );
+    }
     endResetModel();
 }
 

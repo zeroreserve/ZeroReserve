@@ -42,6 +42,22 @@ RsMutex ZrDB::creation_mutex("creation_mutex");
 
 
 
+static int mywallets_callback(void * db, int argc, char ** argv, char ** )
+{
+    ZrDB * zrdb = static_cast< ZrDB * >( db );
+    if( argc == 3 ){
+        ZrDB::MyWallet wallet;
+        wallet.secret = argv[ 0 ];
+        wallet.type = atoi( argv[ 1 ] );
+        wallet.nick = argv[ 2 ];
+        zrdb->addMyWallet( wallet );
+    }
+    else {
+        return SQLITE_ERROR;
+    }
+    return SQLITE_OK;
+}
+
 static int orders_callback(void * db, int argc, char ** argv, char ** )
 {
     ZrDB * zrdb = static_cast< ZrDB * >( db );
@@ -497,41 +513,53 @@ void ZrDB::addToOrderList( OrderBook::Order * order )
 /////////////////////////// Wallet /////////////////////////////////////
 
 
-void ZrDB::addMyWallet( const ZR::WalletSecret & secret, unsigned int type, const std::string & nick )
+ZR::RetVal ZrDB::storeMyWallet( const ZR::WalletSecret & secret, unsigned int type, const std::string & nick )
 {
     std::cerr << "Zero Reserve: Inserting my wallet " << std::endl;
-    char *zErrMsg = 0;
     std::ostringstream insert;
     insert << "insert into mywallet ( secret, type, nick ) values( '"
            << secret << "', '"
            << type << "', '"
            << nick << "' )";
-    int rc = sqlite3_exec( m_db, insert.str().c_str(), noop_callback, this, &zErrMsg );
-    if( rc != SQLITE_OK ){
-        std::cerr << "SQL error: " << zErrMsg << std::endl;
-        sqlite3_free(zErrMsg);
-        throw std::runtime_error( "SQL Error: Cannot insert my wallet" );
-    }
+    runQuery( insert.str() );
+    return ZR::ZR_SUCCESS;
 }
 
 
-void ZrDB::addPeerWallet( const ZR::BitcoinAddress & address, const std::string & nick )
+ZR::RetVal ZrDB::addPeerWallet( const ZR::BitcoinAddress & address, const std::string & nick )
 {
     std::cerr << "Zero Reserve: Inserting peer wallet " << std::endl;
-    char *zErrMsg = 0;
     std::ostringstream insert;
     insert << "insert into peerwallet ( address, nick ) values( '"
            << address << "', '"
            << nick << "' )";
-    int rc = sqlite3_exec( m_db, insert.str().c_str(), noop_callback, this, &zErrMsg );
-    if( rc != SQLITE_OK ){
+    runQuery( insert.str() );
+    return ZR::ZR_SUCCESS;
+}
+
+
+void ZrDB::loadMyWallets( std::vector< MyWallet > & wallets )
+{
+    char *zErrMsg = 0;
+    m_wallets = &wallets;
+    std::ostringstream select;
+    select << "select secret, type, nick from mywallet";
+    int rc = sqlite3_exec(m_db, select.str().c_str(), mywallets_callback, this, &zErrMsg);
+    if( rc!=SQLITE_OK ){
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
-        throw std::runtime_error( "SQL Error: Cannot insert peer wallet" );
+        throw std::runtime_error( "SQL Error: Cannot store peer data" );
     }
 }
 
-////////////////////////////////////////////////////////////////
+void ZrDB::addMyWallet( MyWallet &wallet )
+{
+    m_wallets->push_back( wallet );
+}
+
+
+
+////////////////////////// Shutdown //////////////////////////////////////
 
 void ZrDB::closeTxLog()
 {

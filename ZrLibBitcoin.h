@@ -29,12 +29,16 @@ class ZrLibBitcoin : public ZR::Bitcoin
 {
 public:
     ZrLibBitcoin();
+    virtual ~ZrLibBitcoin(){}
+
     virtual ZR::RetVal start();
     virtual ZR::RetVal stop();
     virtual ZR::RetVal commit();
     virtual ZR::ZR_Number getBalance();
 
     virtual ZR::MyWallet *mkWallet( ZR::MyWallet::WalletType wType );
+    virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets );
+
 
 private:
     ZR::RetVal initChain( const std::string & pathname );
@@ -72,7 +76,7 @@ public:
     virtual ZR::WalletSeed seed();
     virtual void setSeed( const ZR::WalletSeed & seed );
     virtual ZR::BitcoinAddress getAddress();
-    virtual void persist();
+    virtual ZR::RetVal persist();
 
 
     virtual ZR::RetVal getSecret( ZR::WalletSecret &secret_out  );
