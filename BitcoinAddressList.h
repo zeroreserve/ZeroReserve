@@ -28,6 +28,12 @@ class BitcoinAddressList : public QAbstractItemModel
 {
     Q_OBJECT
 public:
+    enum WalletType
+    {
+        MYWALLET,
+        PEERWALLET
+    };
+
     explicit BitcoinAddressList(QObject *parent = 0);
 
     virtual QModelIndex index(int, int, const QModelIndex&) const;
@@ -48,7 +54,7 @@ public slots:
 
 private:
     QList< ZR::Wallet* > m_walletList;
-    
+    WalletType m_walletType;
 };
 
 #endif // BITCOINADDRESSLIST_H

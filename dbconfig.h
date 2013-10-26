@@ -34,6 +34,8 @@ public:
 
     virtual QPixmap iconPixmap() const { return QPixmap(":/images/bitcoin.png") ; }
     virtual QString pageName() const { return "Zero Reserve"; }
+    virtual QString helpText() const { return ""; }
+
 
 private slots:
     void editTxLog();

@@ -46,6 +46,8 @@ QVariant BitcoinAddressList::headerData(int section, Qt::Orientation orientation
                 return QString("Address");
             case 1:
                 return QString("Nick");
+            case 2:
+                return QString("Balance");
             }
         }
     }
@@ -55,7 +57,7 @@ QVariant BitcoinAddressList::headerData(int section, Qt::Orientation orientation
 
 int BitcoinAddressList::columnCount(const QModelIndex&) const
 {
-    return 2;
+    return 3;
 }
 
 int BitcoinAddressList::rowCount(const QModelIndex&) const
@@ -73,6 +75,8 @@ QVariant BitcoinAddressList::data( const QModelIndex& index, int role ) const
                 return QVariant( QString::fromStdString( wallet->getAddress() ) );
             case 1:
                 return QVariant( QString::fromStdString( wallet->getNick() ) );
+            case 2:
+                return QVariant( wallet->getBalance().toDecimalQString() );
             default:
                 return QVariant();
         }

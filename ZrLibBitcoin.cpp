@@ -702,6 +702,11 @@ ZR::BitcoinAddress LibBitcoinWallet::getAddress()
     return addr.encoded();
 }
 
+ZR::ZR_Number LibBitcoinWallet::getBalance()
+{
+    return 0;
+}
+
 
 ZR::RetVal LibBitcoinWallet::getSecret( ZR::WalletSecret & secret_out )
 {

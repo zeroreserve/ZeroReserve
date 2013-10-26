@@ -77,6 +77,7 @@ public:
     virtual void setSeed( const ZR::WalletSeed & seed );
     virtual ZR::BitcoinAddress getAddress();
     virtual ZR::RetVal persist();
+    virtual ZR::ZR_Number getBalance();
 
 
     virtual ZR::RetVal getSecret( ZR::WalletSecret &secret_out  );

@@ -295,7 +295,7 @@ void ZeroReserveDialog::newPeerAddress()
     PeerAddressDialog d( this );
     if( d.exec() == 0 )
         return;
-    ZR::BitcoinAddressEntry * wallet = new ZR::BitcoinAddressEntry( d.m_address );
+    ZR::PeerWallet * wallet = new ZR::PeerWallet( d.m_address );
     wallet->setNick( d.m_nick );
     BitcoinAddressList * addrs = static_cast< BitcoinAddressList* >( ui.PeerAddresses->model() );
     wallet->persist();
