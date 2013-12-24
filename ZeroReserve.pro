@@ -4,8 +4,9 @@
 DEFINES += ZR_TESTNET
 
 # One of those must be defined
-ZR_BITCOIN = ZR_LIBBITCOIN
+# ZR_BITCOIN = ZR_LIBBITCOIN
 # ZR_BITCOIN = ZR_DUMMYBITCOIN
+ZR_BITCOIN = ZR_SATOSHI
 
 
 CONFIG += qt \
@@ -104,3 +105,7 @@ contains(ZR_BITCOIN, ZR_DUMMYBITCOIN) {
     SOURCES += ZrDummyBitcoin.cpp
 }
 
+contains(ZR_BITCOIN, ZR_SATOSHI) {
+    HEADERS += ZrSatoshiBitcoin.h
+    SOURCES += ZrSatoshiBitcoin.cpp
+}
