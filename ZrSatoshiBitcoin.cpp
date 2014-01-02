@@ -20,3 +20,49 @@
 ZrSatoshiBitcoin::ZrSatoshiBitcoin()
 {
 }
+
+
+ZR::RetVal ZrSatoshiBitcoin::commit()
+{
+    return ZR::ZR_SUCCESS;
+}
+
+ZR::RetVal ZrSatoshiBitcoin::start()
+{
+    return ZR::ZR_SUCCESS;
+}
+
+ZR::RetVal ZrSatoshiBitcoin::stop()
+{
+    return ZR::ZR_SUCCESS;
+}
+
+ZR::ZR_Number ZrSatoshiBitcoin::getBalance()
+{
+    return 0;
+}
+
+
+ZR::MyWallet * ZrSatoshiBitcoin::mkWallet( ZR::MyWallet::WalletType wType )
+{
+    return NULL;
+}
+
+void ZrSatoshiBitcoin::loadWallets( std::vector< ZR::MyWallet *> & wallets )
+{
+    return;
+}
+
+
+/////////////////////////////////////////////////////////////////////
+
+ZR::Bitcoin * ZR::Bitcoin::instance = NULL;
+
+
+ZR::Bitcoin * ZR::Bitcoin::Instance()
+{
+    if( instance == NULL ){
+        instance = new ZrSatoshiBitcoin();
+    }
+    return instance;
+}

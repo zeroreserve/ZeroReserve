@@ -25,6 +25,14 @@ class ZrSatoshiBitcoin : public ZR::Bitcoin
 {
 public:
     ZrSatoshiBitcoin();
+
+    virtual ZR::RetVal commit();
+    virtual ZR::RetVal start();
+    virtual ZR::RetVal stop();
+    virtual ZR::ZR_Number getBalance();
+
+    virtual ZR::MyWallet * mkWallet( ZR::MyWallet::WalletType wType );
+    virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets );
 };
 
 #endif // ZRSATOSHIBITCOIN_H
