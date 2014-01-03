@@ -17,6 +17,9 @@
 
 #include "ZrSatoshiBitcoin.h"
 
+#include "JsonRpc.hpp"
+
+
 ZrSatoshiBitcoin::ZrSatoshiBitcoin()
 {
 }
@@ -39,7 +42,13 @@ ZR::RetVal ZrSatoshiBitcoin::stop()
 
 ZR::ZR_Number ZrSatoshiBitcoin::getBalance()
 {
-    return 0;
+    nmcrpc::RpcSettings settings;
+    settings.readDefaultConfig ();
+    nmcrpc::JsonRpc rpc(settings);
+    nmcrpc::JsonRpc::JsonData res = rpc.executeRpc ("getinfo");
+    ZR::ZR_Number balance = res["balance"].asDouble();
+
+    return balance;
 }
 
 
