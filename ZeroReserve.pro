@@ -108,4 +108,8 @@ contains(ZR_BITCOIN, ZR_DUMMYBITCOIN) {
 contains(ZR_BITCOIN, ZR_SATOSHI) {
     HEADERS += ZrSatoshiBitcoin.h
     SOURCES += ZrSatoshiBitcoin.cpp
+    QMAKE_CXXFLAGS += -std=c++11
+    LIBS    += -L$(HOME)/lib -lnmcrpc -lcurl -ljsoncpp
+    INCLUDEPATH += $(HOME)/lib
 }
+
