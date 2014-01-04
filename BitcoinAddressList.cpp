@@ -104,3 +104,4 @@ void BitcoinAddressList::loadWallets()
     endResetModel();
 }
 
+

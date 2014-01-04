@@ -70,7 +70,7 @@
    <item>
     <widget class="QTabWidget" name="ZeroReserveTabs">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="BitcoinTab">
       <attribute name="title">
@@ -395,7 +395,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLCDNumber" name="lcdNumber">
+          <widget class="QLCDNumber" name="btcBalance">
            <property name="styleSheet">
             <string notr="true">background-color: rgb(59, 59, 59);</string>
            </property>
@@ -409,7 +409,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLCDNumber" name="lcdNumber_2">
+          <widget class="QLCDNumber" name="btcUnconfirmed">
            <property name="styleSheet">
             <string notr="true">background-color: rgb(59, 59, 59);</string>
            </property>

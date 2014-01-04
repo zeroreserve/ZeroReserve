@@ -121,6 +121,8 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     loadGrandTotal();
     loadTxLog();
+
+    refreshWallet();
 }
 
 
@@ -300,4 +302,10 @@ void ZeroReserveDialog::newPeerAddress()
     BitcoinAddressList * addrs = static_cast< BitcoinAddressList* >( ui.PeerAddresses->model() );
     wallet->persist();
     addrs->addWallet( wallet );
+}
+
+void ZeroReserveDialog::refreshWallet()
+{
+    ZR::ZR_Number balance = ZR::Bitcoin::Instance()->getBalance();
+    ui.btcBalance->display( balance.toQString() );
 }

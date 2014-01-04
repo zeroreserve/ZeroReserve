@@ -57,6 +57,7 @@ private slots:
 
     void contextMenuPeerAddresses( const QPoint & );
     void newPeerAddress();
+    void refreshWallet();
 
 
 private:
