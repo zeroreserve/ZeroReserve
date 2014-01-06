@@ -3,14 +3,14 @@ ZeroReserve
 
 Friend 2 Friend Payment and Bitcoin exchange
 
-Prerequisite for building is a successful RetroShare build and sqlite3 and libbitcoin.
+Prerequisite for building is a successful RetroShare build and sqlite3 and libnmcrpc
 RetroShare is available from http://retroshare.sourceforge.net/
 sqlite3 is probably part of your Linux distribution. If you are on Windows,
 get it from http://www.sqlite.org/
 
-Get libbitcoin directly from git because the release doesn't have support for TestNet.
+Get libnmcrpc directly from git:
 ```
-$ git clone git@github.com:spesmilo/libbitcoin.git
+$ git clone git@gitorious.org:libnmcrpc/libnmcrpc.git
 ```
 
 Then configure with :
@@ -28,6 +28,17 @@ To install on Windows, drop the resulting DLL into the
 
 To install on Linux or MacOS, drop the resulting shared object into
 ~/.retroshare/extensions
+
+Running ZeroReserve requires a running Satoshi Client first:
+```
+$ ./bitcoind -server
+```
+This is an example bitcoin.conf with all entries required:
+testnet=1
+rpcuser=anu
+rpcpassword=mysupersecretpassword
+rpcport=18332
+
 
 
 This is experimental software. Use at your own risk. At this stage, leave TestNet
