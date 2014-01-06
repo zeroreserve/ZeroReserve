@@ -31,7 +31,10 @@ To install on Linux or MacOS, drop the resulting shared object into
 
 Running ZeroReserve requires a running Satoshi Client first:
 ```
-$ ./bitcoind -server
+$ ./bitcoind
+or
+$ ./bitcoin-qt -server     # that shows the GUI
+
 ```
 This is an example bitcoin.conf with all entries required:
 testnet=1
