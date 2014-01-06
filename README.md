@@ -37,11 +37,12 @@ $ ./bitcoin-qt -server     # that shows the GUI
 
 ```
 This is an example bitcoin.conf with all entries required:
+```
 testnet=1
 rpcuser=anu
 rpcpassword=mysupersecretpassword
 rpcport=18332
-
+```
 
 
 This is experimental software. Use at your own risk. At this stage, leave TestNet
