@@ -21,7 +21,6 @@
 BitcoinAddressList::BitcoinAddressList(QObject *parent) :
     QAbstractItemModel(parent)
 {
-    loadWallets();
 }
 
 

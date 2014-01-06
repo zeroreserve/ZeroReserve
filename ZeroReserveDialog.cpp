@@ -308,4 +308,7 @@ void ZeroReserveDialog::refreshWallet()
 {
     ZR::ZR_Number balance = ZR::Bitcoin::Instance()->getBalance();
     ui.btcBalance->display( balance.toQString() );
+
+    BitcoinAddressList * myWallets = dynamic_cast< BitcoinAddressList * >( ui.MyAddresses->model() );
+    myWallets->loadWallets();
 }

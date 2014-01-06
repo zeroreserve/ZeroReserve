@@ -17,11 +17,13 @@
 
 #include "ZrSatoshiBitcoin.h"
 
-#include "JsonRpc.hpp"
 
+using namespace nmcrpc;
 
 ZrSatoshiBitcoin::ZrSatoshiBitcoin()
 {
+    std::string home = getenv ("HOME");
+    m_settings.readConfig( home + "/.bitcoin/bitcoin.conf" );
 }
 
 
@@ -42,10 +44,9 @@ ZR::RetVal ZrSatoshiBitcoin::stop()
 
 ZR::ZR_Number ZrSatoshiBitcoin::getBalance()
 {
-    nmcrpc::RpcSettings settings;
-    settings.readDefaultConfig ();
-    nmcrpc::JsonRpc rpc(settings);
-    nmcrpc::JsonRpc::JsonData res = rpc.executeRpc ("getinfo");
+
+    JsonRpc rpc( m_settings );
+    JsonRpc::JsonData res = rpc.executeRpc ( "getinfo" );
     ZR::ZR_Number balance = res["balance"].asDouble();
 
     return balance;
@@ -59,6 +60,28 @@ ZR::MyWallet * ZrSatoshiBitcoin::mkWallet( ZR::MyWallet::WalletType wType )
 
 void ZrSatoshiBitcoin::loadWallets( std::vector< ZR::MyWallet *> & wallets )
 {
+    JsonRpc rpc( m_settings );
+    JsonRpc::JsonData res = rpc.executeRpc ("listaddressgroupings");
+//    assert (res.isArray());
+    for( nmcrpc::JsonRpc::JsonData::iterator it1 = res.begin(); it1 != res.end(); it1++ ){
+        JsonRpc::JsonData res0 = *it1;
+//        assert (res0.isArray());
+        for( nmcrpc::JsonRpc::JsonData::iterator it2 = res0.begin(); it2 != res0.end(); it2++ ){
+            JsonRpc::JsonData res1 = *it2;
+//            assert (res1.isArray());
+
+            JsonRpc::JsonData res2 = res1[ 0u ];
+//            assert (res2.isString());
+            ZR::BitcoinAddress address = res2.asString();
+
+            JsonRpc::JsonData res21 = res1[ 1u ];
+//            assert ( res21.isDouble() );
+            ZR::ZR_Number balance = res21.asDouble();
+            ZR::MyWallet * wallet = new SatoshiWallet( address, balance );
+            wallets.push_back( wallet );
+        }
+    }
+
     return;
 }
 

@@ -20,6 +20,8 @@
 
 #include "ZRBitcoin.h"
 
+#include "JsonRpc.hpp"
+
 
 class ZrSatoshiBitcoin : public ZR::Bitcoin
 {
@@ -33,6 +35,33 @@ public:
 
     virtual ZR::MyWallet * mkWallet( ZR::MyWallet::WalletType wType );
     virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets );
+
+public:
+    nmcrpc::RpcSettings m_settings;
 };
+
+
+
+class SatoshiWallet : public ZR::MyWallet
+{
+public:
+    SatoshiWallet( const ZR::BitcoinAddress & address, const ZR::ZR_Number & balance ) :
+        ZR::MyWallet( WIFIMPORT ),
+        m_Address( address ),
+        m_Balance( balance )
+    {}
+    virtual ZR::BitcoinAddress getAddress(){ return m_Address; }
+    virtual ZR::ZR_Number getBalance(){ return m_Balance; }
+    virtual ZR::RetVal persist(){ return ZR::ZR_SUCCESS; }
+    virtual ZR::WalletSeed seed(){ return ""; }
+    virtual void setSeed( const ZR::WalletSeed & ){}
+    virtual ZR::RetVal getSecret( ZR::WalletSecret & ){ return ZR::ZR_SUCCESS; }
+
+
+private:
+    ZR::BitcoinAddress m_Address;
+    ZR::ZR_Number m_Balance;
+};
+
 
 #endif // ZRSATOSHIBITCOIN_H
