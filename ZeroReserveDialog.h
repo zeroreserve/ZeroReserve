@@ -54,6 +54,7 @@ private slots:
 // Bitcoin Wallet
     void contextMenuMyAddresses( const QPoint & );
     void newWallet();
+    void sendBTCTo();
 
     void contextMenuPeerAddresses( const QPoint & );
     void newPeerAddress();

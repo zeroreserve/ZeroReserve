@@ -264,11 +264,18 @@ void ZeroReserveDialog::updateFriendList()
 void ZeroReserveDialog::contextMenuMyAddresses( const QPoint & )
 {
     QMenu contextMnu(this);
-    QAction *action = contextMnu.addAction(QIcon(), tr("New Wallet"), this, SLOT( newWallet() ) );
+    //    QAction *action = contextMnu.addAction(QIcon(), tr("New Wallet"), this, SLOT( newWallet() ) );
+    //    action->setEnabled(true);
+    QAction *action = contextMnu.addAction(QIcon(), tr("Send to..."), this, SLOT( sendBTCTo() ) );
     action->setEnabled(true);
     contextMnu.exec(QCursor::pos());
 }
 
+
+void ZeroReserveDialog::sendBTCTo()
+{
+
+}
 
 void ZeroReserveDialog::newWallet()
 {
