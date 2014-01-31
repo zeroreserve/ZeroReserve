@@ -15,7 +15,8 @@ $ git clone git@gitorious.org:libnmcrpc/libnmcrpc.git
 
 Then configure with :
 ```
-$ ./configure --enable-leveldb --enable-testnet
+$ autogen.sh
+$ ./configure
 ```
 
 To build, checkout the sources to the plugins directory of Retroshare and build with:
