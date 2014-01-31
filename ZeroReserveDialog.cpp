@@ -33,6 +33,7 @@
 
 #include <QMenu>
 #include <QStandardItem>
+#include <QMessageBox>
 #include <list>
 
 
@@ -313,7 +314,18 @@ void ZeroReserveDialog::newPeerAddress()
 
 void ZeroReserveDialog::refreshWallet()
 {
-    ZR::ZR_Number balance = ZR::Bitcoin::Instance()->getBalance();
+    ZR::ZR_Number balance( 0 );
+    while( true ){
+        try{
+            balance = ZR::Bitcoin::Instance()->getBalance();
+            break;
+        }
+        catch( ... ){
+            QMessageBox::StandardButton pressed = QMessageBox::critical( NULL, "JSON Error", "Can't connect to Satoshi Client", QMessageBox::Retry | QMessageBox::Abort );
+            if ( pressed == QMessageBox::Abort )
+                return;
+        }
+    }
     ui.btcBalance->display( balance.toQString() );
 
     BitcoinAddressList * myWallets = dynamic_cast< BitcoinAddressList * >( ui.MyAddresses->model() );

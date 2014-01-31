@@ -18,6 +18,8 @@
 
 #include "BitcoinAddressList.h"
 
+#include <QMessageBox>
+
 BitcoinAddressList::BitcoinAddressList(QObject *parent) :
     QAbstractItemModel(parent)
 {
@@ -95,7 +97,17 @@ void BitcoinAddressList::addWallet( ZR::Wallet * wallet )
 void BitcoinAddressList::loadWallets()
 {
     std::vector< ZR::MyWallet *> wallets;
-    ZR::Bitcoin::Instance()->loadWallets( wallets );
+    while( true ){
+        try{
+            ZR::Bitcoin::Instance()->loadWallets( wallets );
+            break;
+        }
+        catch( ... ){
+            QMessageBox::StandardButton pressed = QMessageBox::critical( NULL, "JSON Error", "Can't connect to Satoshi Client", QMessageBox::Retry | QMessageBox::Abort );
+            if ( pressed == QMessageBox::Abort )
+                return;
+        }
+    }
     beginResetModel();
     for( std::vector< ZR::MyWallet *>::const_iterator it = wallets.begin(); it != wallets.end(); it++ ){
         m_walletList.push_back( *it );
