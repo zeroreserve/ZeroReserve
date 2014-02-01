@@ -34,6 +34,7 @@
 #include <QMenu>
 #include <QStandardItem>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <list>
 
 
@@ -264,19 +265,9 @@ void ZeroReserveDialog::updateFriendList()
 
 void ZeroReserveDialog::contextMenuMyAddresses( const QPoint & )
 {
-    QMenu contextMnu(this);
-    //    QAction *action = contextMnu.addAction(QIcon(), tr("New Wallet"), this, SLOT( newWallet() ) );
-    //    action->setEnabled(true);
-    QAction *action = contextMnu.addAction(QIcon(), tr("Send to..."), this, SLOT( sendBTCTo() ) );
-    action->setEnabled(true);
-    contextMnu.exec(QCursor::pos());
-}
-
-
-void ZeroReserveDialog::sendBTCTo()
-{
 
 }
+
 
 void ZeroReserveDialog::newWallet()
 {
@@ -297,8 +288,25 @@ void ZeroReserveDialog::contextMenuPeerAddresses( const QPoint & )
     QMenu contextMnu(this);
     QAction *action = contextMnu.addAction(QIcon(), tr("New Peer Address"), this, SLOT( newPeerAddress() ) );
     action->setEnabled(true);
+    action = contextMnu.addAction(QIcon(), tr("Send to..."), this, SLOT( sendBTCTo() ) );
+    action->setEnabled(true);
+
     contextMnu.exec(QCursor::pos());
 }
+
+
+void ZeroReserveDialog::sendBTCTo()
+{
+    QModelIndexList indexes = ui.PeerAddresses->selectionModel()->selection().indexes();
+    const QString address = ( indexes.empty() )? "" : indexes.at( 0 ).data().toString();
+
+    const double amount_d = QInputDialog::getDouble( 0, "Pay To", address + "\nAmount:", 0, 0, 1000., 4 );
+    QString amount_s = QString::number( amount_d );
+    const ZR::ZR_Number amount = ZR::ZR_Number::fromDecimalString( amount_s );
+
+    ZR::Bitcoin::Instance()->send( address.toStdString(), amount );
+}
+
 
 void ZeroReserveDialog::newPeerAddress()
 {

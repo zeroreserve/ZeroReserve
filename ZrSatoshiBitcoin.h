@@ -36,6 +36,8 @@ public:
     virtual ZR::MyWallet * mkWallet( ZR::MyWallet::WalletType wType );
     virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets );
 
+    virtual void send( const std::string & dest, const ZR::ZR_Number & amount );
+
 public:
     nmcrpc::RpcSettings m_settings;
 };

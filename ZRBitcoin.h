@@ -97,6 +97,8 @@ public:
     virtual MyWallet * mkWallet( MyWallet::WalletType wType ) = 0;
     virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets ) = 0;
 
+    virtual void send( const std::string & dest, const ZR::ZR_Number & amount ) = 0;
+
     static Bitcoin * Instance();
 
 protected:

@@ -86,6 +86,16 @@ void ZrSatoshiBitcoin::loadWallets( std::vector< ZR::MyWallet *> & wallets )
 }
 
 
+void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amount )
+{
+    JsonRpc rpc( m_settings );
+    std::vector<JsonRpc::JsonData> params;
+    params.push_back( dest );
+    params.push_back( amount.toDouble() );
+    JsonRpc::JsonData res = rpc.executeRpcList ("sendtoaddress", params );
+}
+
+
 /////////////////////////////////////////////////////////////////////
 
 ZR::Bitcoin * ZR::Bitcoin::instance = NULL;
