@@ -59,7 +59,7 @@ ZR::ZR_Number ZrDummyBitcoin::getBalance()
     return 0;
 }
 
-ZR::Wallet * ZrDummyBitcoin::mkWallet( ZR::Wallet::WalletType wType )
+ZR::Wallet * ZrDummyBitcoin::mkWallet( ZR::MyWallet::WalletType wType )
 {
     return NULL;
 }
