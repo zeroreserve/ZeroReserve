@@ -33,8 +33,9 @@ public:
     virtual ZR::RetVal stop();
     virtual ZR::RetVal commit();
     virtual ZR::ZR_Number getBalance();
-    virtual ZR::Wallet * mkWallet( ZR::MyWallet::WalletType wType );
-
+    virtual ZR::MyWallet * mkWallet( ZR::MyWallet::WalletType wType );
+    virtual void send( const std::string & dest, const ZR::ZR_Number & amount );
+    virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets );
 };
 
 #endif // ZRDUMMYBITCOIN_H

@@ -59,7 +59,14 @@ ZR::ZR_Number ZrDummyBitcoin::getBalance()
     return 0;
 }
 
-ZR::Wallet * ZrDummyBitcoin::mkWallet( ZR::MyWallet::WalletType wType )
+ZR::MyWallet * ZrDummyBitcoin::mkWallet( ZR::MyWallet::WalletType wType )
 {
     return NULL;
 }
+
+void ZrDummyBitcoin::send( const std::string & , const ZR::ZR_Number & )
+{}
+
+
+void ZrDummyBitcoin::loadWallets( std::vector< ZR::MyWallet *> & wallets )
+{}
