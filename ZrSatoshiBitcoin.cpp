@@ -65,7 +65,7 @@ void ZrSatoshiBitcoin::loadWallets( std::vector< ZR::MyWallet *> & wallets )
 //    assert (res.isArray());
     for( nmcrpc::JsonRpc::JsonData::iterator it1 = res.begin(); it1 != res.end(); it1++ ){
         JsonRpc::JsonData res0 = *it1;
-//        assert (res0.isArray());
+        assert (res0.isArray());
         for( nmcrpc::JsonRpc::JsonData::iterator it2 = res0.begin(); it2 != res0.end(); it2++ ){
             JsonRpc::JsonData res1 = *it2;
 //            assert (res1.isArray());
@@ -93,6 +93,22 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
     params.push_back( dest );
     params.push_back( amount.toDouble() );
     JsonRpc::JsonData res = rpc.executeRpcList ("sendtoaddress", params );
+}
+
+
+void ZrSatoshiBitcoin::initDeal( const std::string & pubKey, std::string & myPubKey )
+{
+    JsonRpc rpc( m_settings );
+    JsonRpc::JsonData res = rpc.executeRpc ( "getnewaddress" );
+    ZR::BitcoinAddress address = res.asString();
+
+    std::vector<JsonRpc::JsonData> params;
+    params.push_back( address );
+    JsonRpc::JsonData res1 = rpc.executeRpcList ( "validateaddress", params );
+    myPubKey = res1[ "pubkey" ].asString();
+
+    std::vector<JsonRpc::JsonData> params2;
+    JsonRpc::JsonData res2 = rpc.executeRpcList ( "addmultisigaddress", params2 );
 }
 
 

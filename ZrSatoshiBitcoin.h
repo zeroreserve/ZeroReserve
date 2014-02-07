@@ -38,6 +38,8 @@ public:
 
     virtual void send( const std::string & dest, const ZR::ZR_Number & amount );
 
+    virtual void initDeal(const std::string & pubKey , std::string & myPubKey);
+
 public:
     nmcrpc::RpcSettings m_settings;
 };
