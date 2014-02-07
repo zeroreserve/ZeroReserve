@@ -3,10 +3,12 @@
 # Use bogus currency. If Testnet is a compile time option of the Bitcoin code, set it there, too
 DEFINES += ZR_TESTNET
 
-# One of those must be defined
-# ZR_BITCOIN = ZR_LIBBITCOIN
-# ZR_BITCOIN = ZR_DUMMYBITCOIN
-ZR_BITCOIN = ZR_SATOSHI
+isEmpty(ZR_BITCOIN){
+    # One of those must be defined
+    # ZR_BITCOIN = ZR_LIBBITCOIN
+    # ZR_BITCOIN = ZR_DUMMYBITCOIN
+    ZR_BITCOIN = ZR_SATOSHI
+}
 
 
 CONFIG += qt \
