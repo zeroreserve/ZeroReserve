@@ -98,7 +98,7 @@ public:
     virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets ) = 0;
 
     virtual void send( const std::string & dest, const ZR::ZR_Number & amount ) = 0;
-    virtual void initDeal(const std::string & pubKey , std::string & myPubKey) = 0;
+    virtual void initDeal( const std::string & pubKey , const ZR::ZR_Number & amount , std::string & myPubKey, std::string & txId ) = 0;
 
     static Bitcoin * Instance();
 

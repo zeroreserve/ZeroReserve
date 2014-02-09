@@ -96,25 +96,29 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
 }
 
 
-void ZrSatoshiBitcoin::initDeal( const std::string & pubKey, std::string & myPubKey )
+void ZrSatoshiBitcoin::initDeal( const std::string & pubKey, const ZR::ZR_Number & amount, std::string & myPubKey, std::string & txId )
 {
-    JsonRpc rpc( m_settings );
-    JsonRpc::JsonData res = rpc.executeRpc ( "getnewaddress" );
-    ZR::BitcoinAddress address = res.asString();
+    try{
+        JsonRpc rpc( m_settings );
+        JsonRpc::JsonData res = rpc.executeRpc ( "getnewaddress" );
+        ZR::BitcoinAddress address = res.asString();
 
-    std::vector<JsonRpc::JsonData> params;
-    params.push_back( address );
-    JsonRpc::JsonData res1 = rpc.executeRpcList ( "validateaddress", params );
-    myPubKey = res1[ "pubkey" ].asString();
+        JsonRpc::JsonData res1 = rpc.executeRpc( "validateaddress", address );
+        myPubKey = res1[ "pubkey" ].asString();
 
-    std::vector<JsonRpc::JsonData> params2;
-    params2.push_back( 2 );
-    JsonRpc::JsonData keys( Json::arrayValue );
-    keys.append( myPubKey );
-    keys.append( pubKey );
-    params2.push_back( keys );
-    JsonRpc::JsonData res2 = rpc.executeRpcList ( "addmultisigaddress", params2 );
-    std::cerr << "MMMMMMMMMMMMM " << res2.asString() << std::endl;
+        JsonRpc::JsonData keys( Json::arrayValue );
+        keys.append( myPubKey );
+        keys.append( pubKey );
+        JsonRpc::JsonData res2 = rpc.executeRpc( "addmultisigaddress", 2, keys );
+        ZR::BitcoinAddress multisigAddress = res2.asString();
+
+        JsonRpc::JsonData res3 = rpc.executeRpc( "sendtoaddress", multisigAddress, JsonRpc::JsonData( amount.toDouble() ) );
+        txId = res3.asString();
+        std::cerr << "Zero Reserve: New Multisig Address: " << multisigAddress << " TX ID: " << txId << std::endl;
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+    }
 }
 
 
