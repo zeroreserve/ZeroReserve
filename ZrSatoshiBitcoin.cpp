@@ -108,7 +108,13 @@ void ZrSatoshiBitcoin::initDeal( const std::string & pubKey, std::string & myPub
     myPubKey = res1[ "pubkey" ].asString();
 
     std::vector<JsonRpc::JsonData> params2;
+    params2.push_back( 2 );
+    JsonRpc::JsonData keys( Json::arrayValue );
+    keys.append( myPubKey );
+    keys.append( pubKey );
+    params2.push_back( keys );
     JsonRpc::JsonData res2 = rpc.executeRpcList ( "addmultisigaddress", params2 );
+    std::cerr << "MMMMMMMMMMMMM " << res2.asString() << std::endl;
 }
 
 
