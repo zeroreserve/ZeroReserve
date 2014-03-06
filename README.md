@@ -10,7 +10,7 @@ get it from http://www.sqlite.org/
 
 Get libnmcrpc directly from git:
 ```
-$ git clone git@gitorious.org:libnmcrpc/libnmcrpc.git
+$ git clone git://gitorious.org/libnmcrpc/libnmcrpc.git
 ```
 
 Then configure with :
