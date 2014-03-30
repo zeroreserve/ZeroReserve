@@ -119,6 +119,7 @@ typedef std::string PeerAddress;
 typedef std::string WalletSeed;
 typedef std::string WalletSecret;
 typedef std::string BitcoinAddress;
+typedef std::string BitcoinPubKey;
 
 }
 

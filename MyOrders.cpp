@@ -20,6 +20,7 @@
 #include "p3ZeroReserverRS.h"
 #include "Payment.h"
 #include "TmRemoteCoordinator.h"
+#include "ZRBitcoin.h"
 #include "Router.h"
 #include "zrdb.h"
 
@@ -220,10 +221,10 @@ void MyOrders::buy( Order * order, ZR::ZR_Number amount, const Order::ID & myId 
 
 
 
-int MyOrders::startExecute( Payment * payment )
+int MyOrders::startExecute( Payment * payment, std::string & payload )
 {
     // TODO: start 2/3 Bitcoin TX here
-    std::cerr << "Zero Reserve: Starting Order execution for " << payment->referrerId() << std::endl;
+    std::cerr << "Zero Reserve: Starting Order execution for " << payment->referrerId() << " Remote PubKey " << payload << std::endl;
 
     OrderIterator it = find( payment->referrerId() );
     if( it == end() ) return ZR::ZR_FAILURE;   // no such order
@@ -240,6 +241,12 @@ int MyOrders::startExecute( Payment * payment )
     else {
         order->m_commitment += btcAmount;
     }
+
+    std::string txId, myPubkey;
+    ZR::Bitcoin::Instance()->initDeal( payload, btcAmount, myPubkey, txId );
+    payload = txId + ":" + myPubkey;
+
+    std::cerr << "Zero Reserve: Order execution; My Pubkey: " << myPubkey << " TX ID " << txId << std::endl;
 
     return ZR::ZR_SUCCESS;
 }
@@ -282,12 +289,12 @@ int MyOrders::finishExecute( Payment * payment )
 
 ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress & txId )
 {
-    std::cerr << "Zero Reserve: Updating order" << std::endl;
+    std::cerr << "Zero Reserve: Updating order " << txId << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
     std::map< ZR::TransactionId, std::pair< Order, Order > >::iterator refIt = m_CurrentTxOrders.find( txId );
     if( refIt == m_CurrentTxOrders.end() ){
-        std::cerr << "Zero Reserve: Could not find Reference" << txId << std::endl;
+        std::cerr << "Zero Reserve: Could not find Reference " << txId << std::endl;
         return ZR::ZR_FAILURE;
     }
     OrderIterator orderIt = find( (*refIt).second.first.m_order_id );

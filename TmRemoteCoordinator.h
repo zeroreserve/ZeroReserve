@@ -41,6 +41,7 @@ private:
     ZR::VirtualAddress m_Destination;
     Payment * m_Payment;
     std::string m_myId;
+    std::string m_myPubKey;
 };
 
 #endif // TMREMOTECOORDINATOR_H

@@ -21,6 +21,7 @@
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 #include "Payment.h"
+#include "ZRBitcoin.h"
 
 TmRemoteCoordinator::TmRemoteCoordinator(const ZR::VirtualAddress & addr , Payment *payment, const std::string & myId ) :
     TransactionManager( addr + ':' + myId ),
@@ -47,6 +48,13 @@ ZR::RetVal TmRemoteCoordinator::init()
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxInitItem * item = new RSZRRemoteTxInitItem( m_Destination, QUERY, Router::SERVER, m_Payment, m_myId );
+    if( m_Payment->getCategory() == Payment::BITCOIN ){
+        ZR::MyWallet * wallet = ZR::Bitcoin::Instance()->mkWallet( ZR::MyWallet::WIFIMPORT );
+        m_myPubKey = wallet->getPubKey();
+        item->setPayload( m_myPubKey );
+        delete wallet;
+    }
+
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
     if( addr.empty() )
         return ZR::ZR_FAILURE;
@@ -77,7 +85,15 @@ ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
                 std::cerr << "Zero Reserve: ERROR: reveived payment request higher than original" << std::endl;
                 return abortTx( item ); // someone attempting fraud?
             }
-            m_Payment->setAmount( receivedAmount );
+            m_Payment->setAmount( receivedAmount ); // only partial payment
+        }
+        if( m_Payment->getCategory() == Payment::BITCOIN ){
+            std::string payload = item->getPayload();
+            int pos = payload.find( ':' );  // TODO: Treat npos
+            std::string txId = payload.substr( 0, pos );
+            std::string otherKey = payload.substr( pos + 1 );
+            ZR::Bitcoin::Instance()->registerMultiSig( otherKey, m_myPubKey );
+//            ZR::Bitcoin::Instance()->settleMultiSig( txId, otherKey );
         }
         p3zr->sendItem( reply );
         return ZR::ZR_SUCCESS;

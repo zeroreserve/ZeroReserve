@@ -55,6 +55,12 @@ ZR::ZR_Number ZrSatoshiBitcoin::getBalance()
 
 ZR::MyWallet * ZrSatoshiBitcoin::mkWallet( ZR::MyWallet::WalletType wType )
 {
+    if( wType == ZR::MyWallet::WIFIMPORT ){
+        JsonRpc rpc( m_settings );
+        JsonRpc::JsonData res = rpc.executeRpc ( "getnewaddress" );
+        ZR::BitcoinAddress address = res.asString();
+        return new SatoshiWallet( address, 0 );
+    }
     return NULL;
 }
 
@@ -96,7 +102,27 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
 }
 
 
-void ZrSatoshiBitcoin::initDeal( const std::string & pubKey, const ZR::ZR_Number & amount, std::string & myPubKey, std::string & txId )
+ZR::BitcoinAddress ZrSatoshiBitcoin::registerMultiSig(const ZR::BitcoinPubKey &key1, const ZR::BitcoinPubKey &key2 )
+{
+    std::cerr << "Zero Reserve: Creating new Multisig Address from myKey: " << key1 << std::endl;
+    std::cerr << "                                              otherKey: " << key2 << std::endl;
+    try{
+        JsonRpc rpc( m_settings );
+        JsonRpc::JsonData keys( Json::arrayValue );
+        keys.append( key1 );
+        keys.append( key2 );
+        JsonRpc::JsonData res2 = rpc.executeRpc( "addmultisigaddress", 2, keys );
+        std::cerr << "Zero Reserve: New Multisig Address: " << res2.asString() << std::endl;
+        return res2.asString();
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+    }
+    return "";
+}
+
+
+void ZrSatoshiBitcoin::initDeal( const ZR::BitcoinPubKey & pubKey, const ZR::ZR_Number & amount, ZR::BitcoinPubKey & myPubKey, std::string & txId )
 {
     try{
         JsonRpc rpc( m_settings );
@@ -106,15 +132,11 @@ void ZrSatoshiBitcoin::initDeal( const std::string & pubKey, const ZR::ZR_Number
         JsonRpc::JsonData res1 = rpc.executeRpc( "validateaddress", address );
         myPubKey = res1[ "pubkey" ].asString();
 
-        JsonRpc::JsonData keys( Json::arrayValue );
-        keys.append( myPubKey );
-        keys.append( pubKey );
-        JsonRpc::JsonData res2 = rpc.executeRpc( "addmultisigaddress", 2, keys );
-        ZR::BitcoinAddress multisigAddress = res2.asString();
+        ZR::BitcoinAddress multisigAddress = registerMultiSig( myPubKey, pubKey );
 
         JsonRpc::JsonData res3 = rpc.executeRpc( "sendtoaddress", multisigAddress, JsonRpc::JsonData( amount.toDouble() ) );
         txId = res3.asString();
-        std::cerr << "Zero Reserve: New Multisig Address: " << multisigAddress << " TX ID: " << txId << std::endl;
+        std::cerr << "Zero Reserve: New TX on Multisig Address: " << multisigAddress << " TX ID: " << txId << std::endl;
     }
     catch( nmcrpc::JsonRpc::RpcError e ){
         std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
@@ -133,4 +155,14 @@ ZR::Bitcoin * ZR::Bitcoin::Instance()
         instance = new ZrSatoshiBitcoin();
     }
     return instance;
+}
+
+
+std::string SatoshiWallet::getPubKey()
+{
+    ZrSatoshiBitcoin * bitcoin = dynamic_cast<ZrSatoshiBitcoin*> ( ZR::Bitcoin::Instance() );
+    JsonRpc rpc(bitcoin->m_settings );
+    JsonRpc::JsonData res1 = rpc.executeRpc( "validateaddress", m_Address );
+    std::string myPubKey = res1[ "pubkey" ].asString();
+    return myPubKey;
 }

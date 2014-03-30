@@ -42,7 +42,7 @@ public:
 
 
     /** Seller side: start executing the deal - initiate Bitcoin payment */
-    int startExecute(Payment *payment);
+    int startExecute(Payment *payment, std::string &payload );
 
     /** Seller side: remove Order from the book, if partly filled, publish
      * a new order, finish Bitcoin payment

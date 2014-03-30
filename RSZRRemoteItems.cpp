@@ -144,6 +144,7 @@ uint32_t RSZRRemoteTxItem::serial_size() const
         return  RSZRRemoteItem::serial_size()
                 + sizeof(uint8_t)   // tx phase
                 + sizeof(uint8_t)   // direction
+                + m_Payload.length() + HOLLERITH_LEN_SPEC    // stuff like public keys
                 + m_PayerId.length() + HOLLERITH_LEN_SPEC; // id string supplied by payer
 }
 
@@ -160,12 +161,14 @@ bool RSZRRemoteTxItem::serialise(void *data, uint32_t& pktsize)
         ok &= setRawUInt8( data, tlvsize, &m_Offset, m_TxPhase );
         ok &= setRawUInt8( data, tlvsize, &m_Offset, m_Direction );
         ok &= setRawString( data, tlvsize, &m_Offset, m_PayerId );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_Payload );
 
         return ok;
 }
 
 RSZRRemoteTxItem::RSZRRemoteTxItem(void *data, uint32_t pktsize, uint8_t itemType )
-        : RSZRRemoteItem( data, pktsize, itemType )
+        : RSZRRemoteItem( data, pktsize, itemType ),
+          m_Payload( "" )
 {
     /* get the type and size */
     uint32_t rstype = getRsItemId( data );
@@ -184,10 +187,12 @@ RSZRRemoteTxItem::RSZRRemoteTxItem(void *data, uint32_t pktsize, uint8_t itemTyp
     ok &= getRawUInt8( data, rssize, &m_Offset, &direction );
     m_Direction = ( Router::TunnelDirection ) direction;
     ok &= getRawString( data, rssize, &m_Offset, m_PayerId );
+    ok &= getRawString( data, rssize, &m_Offset, m_Payload );
 }
 
 RSZRRemoteTxItem::RSZRRemoteTxItem( const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase,
-                                    Router::TunnelDirection direction, const OrderBook::Order::ID & payerId, uint8_t itemType )
+                                    Router::TunnelDirection direction,
+                                    const OrderBook::Order::ID & payerId, uint8_t itemType )
         : RSZRRemoteItem( addr, itemType ),
           m_TxPhase( txPhase ),
           m_Direction( direction ),
@@ -268,7 +273,8 @@ RSZRRemoteTxInitItem::RSZRRemoteTxInitItem(void *data, uint32_t pktsize )
 }
 
 RSZRRemoteTxInitItem::RSZRRemoteTxInitItem( const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase,
-                                            Router::TunnelDirection direction, Payment * payment, const OrderBook::Order::ID & payerId )
+                                            Router::TunnelDirection direction, Payment * payment,
+                                            const OrderBook::Order::ID & payerId )
         : RSZRRemoteTxItem( addr, txPhase, direction, payerId,
                             ZR_REMOTE_TX_INIT_ITEM ),
         m_Payment( payment )

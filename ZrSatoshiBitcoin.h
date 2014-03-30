@@ -38,7 +38,8 @@ public:
 
     virtual void send( const std::string & dest, const ZR::ZR_Number & amount );
 
-    virtual void initDeal(const std::string & pubKey , const ZR::ZR_Number & amount , std::string & myPubKey, std::string & txId );
+    virtual ZR::BitcoinAddress registerMultiSig(const ZR::BitcoinPubKey & key1, const ZR::BitcoinPubKey & key2 );
+    virtual void initDeal(const ZR::BitcoinPubKey & pubKey , const ZR::ZR_Number & amount , ZR::BitcoinPubKey & myPubKey, std::string & txId );
 
 public:
     nmcrpc::RpcSettings m_settings;
@@ -56,6 +57,7 @@ public:
     {}
     virtual ZR::BitcoinAddress getAddress(){ return m_Address; }
     virtual ZR::ZR_Number getBalance(){ return m_Balance; }
+    virtual std::string getPubKey();
     virtual ZR::RetVal persist(){ return ZR::ZR_SUCCESS; }
     virtual ZR::WalletSeed seed(){ return ""; }
     virtual void setSeed( const ZR::WalletSeed & ){}

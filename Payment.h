@@ -60,7 +60,7 @@ public:
     virtual ~Payment(){}
 
     virtual ZR::ZR_Number newBalance() const = 0;
-    virtual int init() = 0;
+    virtual int init( std::string &txPayload ) = 0;
     virtual int commit( const ZR::TransactionId &txId ) = 0;
 
     const std::string & getCounterparty(){ return m_credit.m_id; }
@@ -106,7 +106,7 @@ public:
     virtual ~PaymentReceiver(){}
 
     virtual ZR::ZR_Number newBalance() const;
-    virtual int init();
+    virtual int init(std::string &txPayload );
     virtual int commit( const ZR::TransactionId &txId );
 };
 
@@ -118,7 +118,7 @@ public:
     virtual ~PaymentSpender(){}
 
     virtual ZR::ZR_Number newBalance() const;
-    virtual int init();
+    virtual int init( std::string &txPayload );
     virtual int commit( const ZR::TransactionId &txId );
 };
 

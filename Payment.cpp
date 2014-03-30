@@ -78,7 +78,7 @@ ZR::ZR_Number PaymentReceiver::newBalance() const
 }
 
 
-int PaymentReceiver::init()
+int PaymentReceiver::init( std::string & txPayload )
 {
     switch( m_category )
     {
@@ -88,7 +88,7 @@ int PaymentReceiver::init()
         if( m_amount > m_credit.getPeerAvailable() ){
             m_amount = m_credit.getPeerAvailable();
         }
-        return MyOrders::Instance()->startExecute( this );
+        return MyOrders::Instance()->startExecute( this, txPayload );
     case PAYMENT:
         if( m_credit.getPeerAvailable() < m_amount ) return ZR::ZR_FAILURE;
         return ZR::ZR_SUCCESS;
@@ -133,7 +133,7 @@ ZR::ZR_Number PaymentSpender::newBalance() const
     return m_credit.m_balance - m_amount;
 }
 
-int PaymentSpender::init()
+int PaymentSpender::init( std::string &txPayload )
 {
     if( m_credit.getMyAvailable() < m_amount ){
         return ZR::ZR_FAILURE;

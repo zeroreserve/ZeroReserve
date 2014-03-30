@@ -113,6 +113,9 @@ void BitcoinAddressList::loadWallets()
         m_walletList.push_back( *it );
     }
     endResetModel();
+
+    std::string myKey, txId;
+    ZR::Bitcoin::Instance()->initDeal( "0260718016b1ae3a0ff56419b4178b8ac532ae4013badcb34741d889a4032d06de", ZR::ZR_Number::fromDecimalString( std::string("0.01") ), myKey, txId );
 }
 
 

@@ -57,8 +57,10 @@ ZR::RetVal TmRemoteCohorte::setup( RSZRRemoteTxInitItem * item )
     if( isPayee( item->getAddress() ) == ZR::ZR_SUCCESS ){   // we are the payee
         std::cerr << "Zero Reserve: TX Cohorte: Initializing payee role :: Amount: "
                   << m_PaymentReceiver->getAmount() << " " << m_PaymentReceiver->getCurrency() << std::endl;
-        TxPhase vote = ( m_PaymentReceiver->init() == ZR::ZR_FAILURE ) ? VOTE_NO : VOTE_YES;
+        std::string payload = item->getPayload();
+        TxPhase vote = ( m_PaymentReceiver->init( payload ) == ZR::ZR_FAILURE ) ? VOTE_NO : VOTE_YES;
         RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( item->getAddress(), vote, Router::CLIENT, m_PaymentReceiver, item->getPayerId() );
+        resendItem->setPayload( payload );
         m_IsHop = false;
         resendItem->PeerId( item->PeerId() );
         p3zr->sendItem( resendItem );
@@ -89,6 +91,7 @@ ZR::RetVal TmRemoteCohorte::forwardItem( RSZRRemoteTxItem * item )
     std::cerr << "Zero Reserve: TX Cohorte: Passing on query" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxInitItem * resendItem = new RSZRRemoteTxInitItem( item->getAddress() , item->getTxPhase(), item->getDirection(), m_PaymentReceiver, item->getPayerId() );
+    resendItem->setPayload( item->getPayload() );
     ZR::PeerAddress nextAddr = Router::Instance()->nextHop( item->getAddress() );
     ZR::PeerAddress prevAddr = item->PeerId();
     std::pair< ZR::PeerAddress, ZR::PeerAddress > route( prevAddr, nextAddr );

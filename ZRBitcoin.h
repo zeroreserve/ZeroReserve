@@ -55,11 +55,13 @@ public:
 
     MyWallet( WalletType wType ) : m_walletType( wType )
     {}
+    virtual ~MyWallet(){}
 
     virtual ZR::WalletSeed seed() = 0;
     virtual void setSeed( const ZR::WalletSeed & seed ) = 0;
 
     virtual ZR::RetVal getSecret( ZR::WalletSecret & secret_out ) = 0;
+    virtual std::string getPubKey() = 0;
 
 protected:
     WalletType m_walletType;
@@ -98,6 +100,7 @@ public:
     virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets ) = 0;
 
     virtual void send( const std::string & dest, const ZR::ZR_Number & amount ) = 0;
+    virtual ZR::BitcoinAddress registerMultiSig( const ZR::BitcoinPubKey & key1, const ZR::BitcoinPubKey & key2 ) = 0;
     virtual void initDeal( const std::string & pubKey , const ZR::ZR_Number & amount , std::string & myPubKey, std::string & txId ) = 0;
 
     static Bitcoin * Instance();

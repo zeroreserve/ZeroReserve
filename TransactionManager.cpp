@@ -46,7 +46,7 @@ int TransactionManager::handleTxItem( RSZRRemoteTxItem * item )
     std::cerr << "Zero Reserve: TX Manger handling incoming item - Destination: " << item->getAddress() << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     ZR::TransactionId txId = item->getAddress() + ":" + item->getPayerId();
-    std::cerr << "\n\nXXXXXXXXXXXXXXXX     " << txId << std::endl;
+    std::cerr << "Zero Reserve: TransactionManager: TX ID = " << txId << std::endl;
     TransactionManager * tm;
     TxManagers::iterator it = currentTX.find( txId );
     if( it == currentTX.end() ){
@@ -113,13 +113,15 @@ TransactionManager::TransactionManager( const ZR::TransactionId & txId ) :
     m_Phase( INIT ),
     m_startOfPhase( QDateTime::currentMSecsSinceEpoch() )
 {
-    m_maxTime[ INIT ]       = 5000;
-    m_maxTime[ QUERY ]      = 5000;
-    m_maxTime[ VOTE_YES ]   = 5000;
-    m_maxTime[ VOTE_NO ]    = 5000;
-    m_maxTime[ COMMIT ]     = 5000;
-    m_maxTime[ ACK_COMMIT ] = 5000;
-    m_maxTime[ ABORT ]      = 5000;
+    const unsigned int defaultTimeOut = 3600000; // one hour
+
+    m_maxTime[ INIT ]       = defaultTimeOut;
+    m_maxTime[ QUERY ]      = defaultTimeOut;
+    m_maxTime[ VOTE_YES ]   = defaultTimeOut;
+    m_maxTime[ VOTE_NO ]    = defaultTimeOut;
+    m_maxTime[ COMMIT ]     = defaultTimeOut;
+    m_maxTime[ ACK_COMMIT ] = defaultTimeOut;
+    m_maxTime[ ABORT ]      = defaultTimeOut;
 
     currentTX[ txId ] = this;
 }
