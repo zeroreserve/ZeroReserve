@@ -99,8 +99,11 @@ public:
     virtual MyWallet * mkWallet( MyWallet::WalletType wType ) = 0;
     virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets ) = 0;
 
+    virtual unsigned int getConfirmations( const std::string & txId ) = 0;
+
     virtual void send( const std::string & dest, const ZR::ZR_Number & amount ) = 0;
     virtual ZR::BitcoinAddress registerMultiSig( const ZR::BitcoinPubKey & key1, const ZR::BitcoinPubKey & key2 ) = 0;
+    virtual std::string settleMultiSig( const std::string & txId, const ZR::BitcoinPubKey & key ) = 0;
     virtual void initDeal( const std::string & pubKey , const ZR::ZR_Number & amount , std::string & myPubKey, std::string & txId ) = 0;
 
     static Bitcoin * Instance();

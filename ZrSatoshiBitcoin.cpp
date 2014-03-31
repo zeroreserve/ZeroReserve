@@ -102,6 +102,37 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
 }
 
 
+std::string ZrSatoshiBitcoin::settleMultiSig( const std::string & txId, const ZR::BitcoinPubKey & key )
+{
+    try{
+        JsonRpc rpc( m_settings );
+        JsonRpc::JsonData tx( Json::arrayValue );
+
+        JsonRpc::JsonData txObj;
+        txObj[ Json::StaticString( "txid" ) ] = txId;
+        tx.append( txObj );
+
+        JsonRpc::JsonData voutObj;
+        voutObj[ Json::StaticString( "vout" ) ] = 1;   // FIXME!!!!
+        tx.append( voutObj );
+
+        JsonRpc::JsonData addr = rpc.executeRpc ( "getnewaddress" );
+        JsonRpc::JsonData dest;
+        dest[ Json::StaticString( addr.asString().c_str() ) ] = 0.01;  // FIXME!!!!
+
+        JsonRpc::JsonData res = rpc.executeRpc ("createrawtransaction", tx, dest );
+        std::string rawTx = res.asString();
+        JsonRpc::JsonData res1 = rpc.executeRpc ("signrawtransaction", res );
+        std::string signedRawTx = res1.asString();
+        return signedRawTx;
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+    }
+    return "";
+}
+
+
 ZR::BitcoinAddress ZrSatoshiBitcoin::registerMultiSig(const ZR::BitcoinPubKey &key1, const ZR::BitcoinPubKey &key2 )
 {
     std::cerr << "Zero Reserve: Creating new Multisig Address from myKey: " << key1 << std::endl;
@@ -144,6 +175,20 @@ void ZrSatoshiBitcoin::initDeal( const ZR::BitcoinPubKey & pubKey, const ZR::ZR_
 }
 
 
+unsigned int ZrSatoshiBitcoin::getConfirmations( const std::string & txId )
+{
+    try{
+        JsonRpc rpc( m_settings );
+        JsonRpc::JsonData res = rpc.executeRpc ( "getrawtransaction", txId, 1 );
+        unsigned int confirmations = res[ "confirmations" ].asUInt();
+        return confirmations;
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+    }
+    return 0;
+}
+
 /////////////////////////////////////////////////////////////////////
 
 ZR::Bitcoin * ZR::Bitcoin::instance = NULL;
@@ -166,3 +211,5 @@ std::string SatoshiWallet::getPubKey()
     std::string myPubKey = res1[ "pubkey" ].asString();
     return myPubKey;
 }
+
+
