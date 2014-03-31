@@ -93,7 +93,7 @@ ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
             std::string txId = payload.substr( 0, pos );
             std::string otherKey = payload.substr( pos + 1 );
             ZR::Bitcoin::Instance()->registerMultiSig( otherKey, m_myPubKey );
-//            ZR::Bitcoin::Instance()->settleMultiSig( txId, m_myPubKey );
+            ZR::Bitcoin::Instance()->settleMultiSig( txId );
         }
         p3zr->sendItem( reply );
         return ZR::ZR_SUCCESS;

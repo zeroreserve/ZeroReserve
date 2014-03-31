@@ -102,23 +102,21 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
 }
 
 
-std::string ZrSatoshiBitcoin::settleMultiSig( const std::string & txId, const ZR::BitcoinPubKey & key )
+std::string ZrSatoshiBitcoin::settleMultiSig( const std::string & txId )
 {
     try{
         JsonRpc rpc( m_settings );
-        JsonRpc::JsonData tx( Json::arrayValue );
 
+        JsonRpc::JsonData tx( Json::arrayValue );
         JsonRpc::JsonData txObj;
         txObj[ Json::StaticString( "txid" ) ] = txId;
+        txObj[ Json::StaticString( "vout" ) ] = 1;   // FIXME!!!!
         tx.append( txObj );
 
-        JsonRpc::JsonData voutObj;
-        voutObj[ Json::StaticString( "vout" ) ] = 1;   // FIXME!!!!
-        tx.append( voutObj );
-
-        JsonRpc::JsonData addr = rpc.executeRpc ( "getnewaddress" );
+        JsonRpc::JsonData resAddr = rpc.executeRpc ( "getnewaddress" );
+        std::string addr = resAddr.asString();
         JsonRpc::JsonData dest;
-        dest[ Json::StaticString( addr.asString().c_str() ) ] = 0.01;  // FIXME!!!!
+        dest[ Json::StaticString( addr.c_str() ) ] = 0.01;  // FIXME!!!!
 
         JsonRpc::JsonData res = rpc.executeRpc ("createrawtransaction", tx, dest );
         std::string rawTx = res.asString();
