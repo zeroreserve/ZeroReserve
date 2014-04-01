@@ -36,10 +36,11 @@ void BtcContract::pollContracts()
 }
 
 
-BtcContract::BtcContract( const std::string & txId, const ZR::ZR_Number & fiatAmount, const std::string & currencySym ):
+BtcContract::BtcContract(const std::string & txId, const ZR::ZR_Number & fiatAmount, const std::string & currencySym , Party party):
     m_txId( txId ),
     m_fiatAmount( fiatAmount ),
-    m_currencySym( currencySym )
+    m_currencySym( currencySym ),
+    m_party( party )
 {
 }
 

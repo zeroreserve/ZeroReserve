@@ -31,12 +31,18 @@
 class BtcContract
 {
 public:    
-    BtcContract( const std::string & txId, const ZR::ZR_Number & fiatAmount, const std::string & currencySym );
+    /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
+    enum Party { RECEIVER, SENDER };
+
+    BtcContract( const std::string & txId, const ZR::ZR_Number & fiatAmount, const std::string & currencySym, Party party );
 
     /** make sure we survive a crash or a shutdown once we're committed */
     void persist();
     /** last steps of this deal - remove from DB */
     void finalize();
+
+    bool isReceiver(){ return m_party == RECEIVER; }
+    bool isSender(){ return m_party == SENDER; }
 
 private:
     void poll();
@@ -46,6 +52,7 @@ private:
     std::string m_txId;
     ZR::ZR_Number m_fiatAmount;
     std::string m_currencySym;
+    Party m_party;
 
 public:
     typedef std::vector< BtcContract* >::const_iterator ContractIterator;
