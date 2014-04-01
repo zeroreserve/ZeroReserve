@@ -235,8 +235,8 @@ ZR::RetVal MyOrders::initMultiSig( const ZR::BitcoinPubKey & myPubKey, std::stri
     int pos = payload.find( ':' );  // TODO: Treat npos
     std::string btcTxId = payload.substr( 0, pos );
     std::string otherKey = payload.substr( pos + 1 );
-    ZR::Bitcoin::Instance()->registerMultiSig( otherKey, myPubKey );
-    payload = ZR::Bitcoin::Instance()->settleMultiSig( btcTxId, amount );
+    ZR::BitcoinAddress multisigAddr = ZR::Bitcoin::Instance()->registerMultiSig( otherKey, myPubKey );
+    payload = ZR::Bitcoin::Instance()->settleMultiSig( btcTxId, amount, multisigAddr );
 }
 
 

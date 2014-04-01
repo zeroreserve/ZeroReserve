@@ -41,7 +41,7 @@ public:
     virtual void send( const std::string & dest, const ZR::ZR_Number & amount );
 
     virtual ZR::BitcoinAddress registerMultiSig(const ZR::BitcoinPubKey & key1, const ZR::BitcoinPubKey & key2 );
-    virtual std::string settleMultiSig(const std::string & txId, const ZR::ZR_Number & amount );
+    virtual std::string settleMultiSig( const std::string & txId, const ZR::ZR_Number & amount, const ZR::BitcoinAddress & multiSigAddr );
     virtual void finalizeMultiSig( const std::string & tx );
 
     virtual void initDeal(const ZR::BitcoinPubKey & pubKey , const ZR::ZR_Number & amount , ZR::BitcoinPubKey & myPubKey, std::string & txId );

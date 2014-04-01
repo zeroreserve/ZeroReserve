@@ -102,15 +102,37 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
 }
 
 
-std::string ZrSatoshiBitcoin::settleMultiSig(const std::string & txId , const ZR::ZR_Number & amount )
+std::string ZrSatoshiBitcoin::settleMultiSig(const std::string & txId , const ZR::ZR_Number & amount, const ZR::BitcoinAddress & multiSigAddr )
 {
     try{
         JsonRpc rpc( m_settings );
+        sleep(3);
+
+        // first find the output with our address
+        JsonRpc::JsonData msigTx = rpc.executeRpc ( "getrawtransaction", txId, 1 );
+        JsonRpc::JsonData msigVout = msigTx[ "vout" ];
+        unsigned int voutIndex = 0;
+        bool found = false;
+        for( JsonRpc::JsonData::iterator it = msigVout.begin(); it != msigVout.end(); it++ ){
+            JsonRpc::JsonData output = *it;
+            JsonRpc::JsonData scriptPubKey = output[ "scriptPubKey" ];
+            JsonRpc::JsonData addrArray = scriptPubKey[ "addresses" ];
+            if( addrArray[ 0u ] == multiSigAddr ){
+                found = true;
+                break;
+            }
+            voutIndex++;
+        }
+        if( !found ){
+            std::cerr << "Zero Reserve: Unable to find output to " << txId << std::endl;
+            std::cerr << "                              Address: " << multiSigAddr << std::endl;
+            return "";
+        }
 
         JsonRpc::JsonData tx( Json::arrayValue );
         JsonRpc::JsonData txObj;
         txObj[ Json::StaticString( "txid" ) ] = txId;
-        txObj[ Json::StaticString( "vout" ) ] = 1;   // FIXME!!!!
+        txObj[ Json::StaticString( "vout" ) ] = voutIndex;
         tx.append( txObj );
 
         JsonRpc::JsonData resAddr = rpc.executeRpc ( "getnewaddress" );
@@ -163,8 +185,9 @@ ZR::BitcoinAddress ZrSatoshiBitcoin::registerMultiSig(const ZR::BitcoinPubKey &k
         keys.append( key1 );
         keys.append( key2 );
         JsonRpc::JsonData res2 = rpc.executeRpc( "addmultisigaddress", 2, keys );
-        std::cerr << "Zero Reserve: New Multisig Address: " << res2.asString() << std::endl;
-        return res2.asString();
+        ZR::BitcoinAddress multisigAddr = res2.asString();
+        std::cerr << "Zero Reserve: New Multisig Address: " << multisigAddr << std::endl;
+        return multisigAddr;
     }
     catch( nmcrpc::JsonRpc::RpcError e ){
         std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
