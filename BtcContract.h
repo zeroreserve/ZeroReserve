@@ -41,8 +41,9 @@ public:
     /** last steps of this deal - remove from DB */
     void finalize();
 
-    bool isReceiver(){ return m_party == RECEIVER; }
-    bool isSender(){ return m_party == SENDER; }
+    bool isReceiver() const { return m_party == RECEIVER; }
+    bool isSender() const { return m_party == SENDER; }
+    bool isContract( const std::string & contractId ) const { return contractId == m_txId; }
 
 private:
     void poll();
