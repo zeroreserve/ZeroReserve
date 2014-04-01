@@ -142,14 +142,15 @@ ZR::RetVal TmRemoteCohorte::processItem( RSZRRemoteTxItem * item )
         }
         else {
             std::cerr << "Zero Reserve: TX Cohorte: Payee committing" << std::endl;
-            m_PaymentReceiver->commit( m_TxId );
+            std::string payload = item->getPayload();
+            m_PaymentReceiver->commit( m_TxId, payload );
             reply = new RSZRRemoteTxItem( item->getAddress(), ACK_COMMIT, Router::CLIENT, item->getPayerId() );
             reply->PeerId( item->PeerId() );
             p3zr->sendItem( reply );
             return ZR::ZR_FINISH;
         }
         break;
-    case ACK_COMMIT:
+    case ACK_COMMIT: // we are always a hop
     {
         std::cerr << "Zero Reserve: TX Cohorte: Received ACK_COMMIT" << std::endl;
         if( m_Phase != COMMIT )

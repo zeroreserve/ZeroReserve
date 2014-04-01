@@ -47,12 +47,14 @@ public:
     /** Seller side: remove Order from the book, if partly filled, publish
      * a new order, finish Bitcoin payment
      */
-    int finishExecute( Payment *payment );
+    int finishExecute( Payment *payment , const std::string & payload );
     ZR::RetVal updateOrders( Payment * payment , const ZR::VirtualAddress &txId );
     void rollback( PaymentReceiver *payment );
     void rollback( PaymentSpender *payment, const ZR::VirtualAddress & txId );
 
     void cancelOrder( int index );
+
+    ZR::RetVal initMultiSig( const ZR::BitcoinPubKey & myPubKey, std::string & payload, const ZR::TransactionId & id );
 
     static MyOrders * Instance();
 

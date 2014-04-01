@@ -22,6 +22,7 @@
 #include "p3ZeroReserverRS.h"
 #include "Payment.h"
 #include "ZRBitcoin.h"
+#include "MyOrders.h"
 
 TmRemoteCoordinator::TmRemoteCoordinator(const ZR::VirtualAddress & addr , Payment *payment, const std::string & myId ) :
     TransactionManager( addr + ':' + myId ),
@@ -89,11 +90,8 @@ ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
         }
         if( m_Payment->getCategory() == Payment::BITCOIN ){
             std::string payload = item->getPayload();
-            int pos = payload.find( ':' );  // TODO: Treat npos
-            std::string txId = payload.substr( 0, pos );
-            std::string otherKey = payload.substr( pos + 1 );
-            ZR::Bitcoin::Instance()->registerMultiSig( otherKey, m_myPubKey );
-            ZR::Bitcoin::Instance()->settleMultiSig( txId );
+            MyOrders::Instance()->initMultiSig( m_myPubKey, payload, m_TxId ); // TODO failure
+            reply->setPayload( payload );
         }
         p3zr->sendItem( reply );
         return ZR::ZR_SUCCESS;

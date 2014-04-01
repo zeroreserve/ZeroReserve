@@ -97,7 +97,7 @@ int PaymentReceiver::init( std::string & txPayload )
     }
 }
 
-int PaymentReceiver::commit( const ZR::TransactionId &txId )
+int PaymentReceiver::commit( const ZR::TransactionId &txId, const std::string & payload )
 {
     m_credit.loadPeer();
     m_credit.m_balance = newBalance();
@@ -113,7 +113,7 @@ int PaymentReceiver::commit( const ZR::TransactionId &txId )
     switch( m_category )
     {
     case BITCOIN:
-        return MyOrders::Instance()->finishExecute( this );
+        return MyOrders::Instance()->finishExecute( this, payload );
     case PAYMENT:
         return ZR::ZR_SUCCESS;
     default:
@@ -141,7 +141,7 @@ int PaymentSpender::init( std::string &txPayload )
     return ZR::ZR_SUCCESS;
 }
 
-int PaymentSpender::commit( const ZR::TransactionId & txId )
+int PaymentSpender::commit( const ZR::TransactionId & txId, const std::string & payload )
 {
     m_credit.loadPeer();
     m_credit.m_balance = newBalance();

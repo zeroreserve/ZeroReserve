@@ -102,7 +102,7 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
 }
 
 
-std::string ZrSatoshiBitcoin::settleMultiSig( const std::string & txId )
+std::string ZrSatoshiBitcoin::settleMultiSig(const std::string & txId , const ZR::ZR_Number & amount )
 {
     try{
         JsonRpc rpc( m_settings );
@@ -114,20 +114,42 @@ std::string ZrSatoshiBitcoin::settleMultiSig( const std::string & txId )
         tx.append( txObj );
 
         JsonRpc::JsonData resAddr = rpc.executeRpc ( "getnewaddress" );
+
         std::string addr = resAddr.asString();
         JsonRpc::JsonData dest;
-        dest[ Json::StaticString( addr.c_str() ) ] = 0.01;  // FIXME!!!!
+        dest[ Json::StaticString( addr.c_str() ) ] = amount.toDouble();
 
         JsonRpc::JsonData res = rpc.executeRpc ("createrawtransaction", tx, dest );
         std::string rawTx = res.asString();
         JsonRpc::JsonData res1 = rpc.executeRpc ("signrawtransaction", res );
-        std::string signedRawTx = res1.asString();
+        std::string signedRawTx = res1[ "hex" ].asString();
+        std::cerr << "Zero Reserve: First sig on : " << signedRawTx << std::endl;
+        std::cerr << "              Address : " << addr << std::endl;
         return signedRawTx;
     }
     catch( nmcrpc::JsonRpc::RpcError e ){
         std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
     }
     return "";
+}
+
+
+void ZrSatoshiBitcoin::finalizeMultiSig( const std::string & tx )
+{
+    std::cerr << "Zero Reserve: Second signature on: " << tx << std::endl;
+    try{
+        JsonRpc rpc( m_settings );
+        JsonRpc::JsonData res1 = rpc.executeRpc ("signrawtransaction", tx );
+//        if( res1[ "complete" ].asBool() ){
+            std::string signedTX = res1[ "hex"].asString();
+            std::cerr << "Zero Reserve: Publishing " << signedTX << std::endl;
+            JsonRpc::JsonData res2 = rpc.executeRpc ("sendrawtransaction", signedTX );
+            std::cerr << "Zero Reserve: Published " << res2.asString() << std::endl;
+//        }
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+    }
 }
 
 
