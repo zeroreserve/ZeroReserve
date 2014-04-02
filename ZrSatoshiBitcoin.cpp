@@ -125,7 +125,7 @@ std::string ZrSatoshiBitcoin::settleMultiSig(const std::string & txId , const ZR
         }
         if( !found ){
             std::cerr << "Zero Reserve: Unable to find output to " << txId << std::endl;
-            std::cerr << "                              Address: " << multiSigAddr << std::endl;
+            std::cerr << "Zero Reserve:                 Address: " << multiSigAddr << std::endl;
             return "";
         }
 
@@ -177,8 +177,8 @@ void ZrSatoshiBitcoin::finalizeMultiSig( const std::string & tx )
 
 ZR::BitcoinAddress ZrSatoshiBitcoin::registerMultiSig(const ZR::BitcoinPubKey &key1, const ZR::BitcoinPubKey &key2 )
 {
-    std::cerr << "Zero Reserve: Creating new Multisig Address from myKey: " << key1 << std::endl;
-    std::cerr << "                                              otherKey: " << key2 << std::endl;
+    std::cerr << "Zero Reserve: Creating new Multisig Address from key 1: " << key1 << std::endl;
+    std::cerr << "Zero Reserve:                                    key 2: " << key2 << std::endl;
     try{
         JsonRpc rpc( m_settings );
         JsonRpc::JsonData keys( Json::arrayValue );

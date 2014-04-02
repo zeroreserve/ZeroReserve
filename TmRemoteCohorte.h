@@ -37,7 +37,8 @@ protected:
 
     virtual void rollback();
 
-    ZR::RetVal forwardItem( RSZRRemoteTxItem *item );
+    ZR::RetVal forwardItem(RSZRRemoteTxInitItem *item );
+    ZR::RetVal forwardItem(RSZRRemoteTxItem *item );
 
 private:
     ZR::RetVal setup( RSZRRemoteTxInitItem *item );
