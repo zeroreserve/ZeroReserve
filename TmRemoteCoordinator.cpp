@@ -49,7 +49,7 @@ ZR::RetVal TmRemoteCoordinator::init()
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxInitItem * item = new RSZRRemoteTxInitItem( m_Destination, QUERY, Router::SERVER, m_Payment, m_myId );
-    if( m_Payment->getCategory() == Payment::BITCOIN ){
+    if( m_Payment->getCategory() == Payment::BITCOIN23 ){
         ZR::MyWallet * wallet = ZR::Bitcoin::Instance()->mkWallet( ZR::MyWallet::WIFIMPORT );
         m_myPubKey = wallet->getPubKey();
         item->setPayload( m_myPubKey );
@@ -88,7 +88,7 @@ ZR::RetVal TmRemoteCoordinator::processItem( RSZRRemoteTxItem * item )
             }
             m_Payment->setAmount( receivedAmount ); // only partial payment
         }
-        if( m_Payment->getCategory() == Payment::BITCOIN ){
+        if( m_Payment->getCategory() == Payment::BITCOIN23 ){
             std::string payload = item->getPayload();
             MyOrders::Instance()->initMultiSig( m_myPubKey, payload, m_TxId ); // TODO failure
             reply->setPayload( payload );

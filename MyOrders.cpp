@@ -213,7 +213,7 @@ ZR::RetVal MyOrders::match( Order * order )
 
 void MyOrders::buy( Order * order, ZR::ZR_Number amount, const Order::ID & myId )
 {
-    Payment * payment = new PaymentSpender( Router::Instance()->nextHop( order->m_order_id), amount, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN );
+    Payment * payment = new PaymentSpender( Router::Instance()->nextHop( order->m_order_id), amount, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN23 );
     payment->referrerId( order->m_order_id );
     TmRemoteCoordinator * tm = new TmRemoteCoordinator( order->m_order_id, payment, myId );
     if( ZR::ZR_FAILURE == tm->init() ) delete tm;

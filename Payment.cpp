@@ -82,7 +82,7 @@ int PaymentReceiver::init( std::string & txPayload )
 {
     switch( m_category )
     {
-    case BITCOIN:
+    case BITCOIN23:
         if( m_credit.getPeerAvailable() <= 0 )
             return ZR::ZR_FAILURE;
         if( m_amount > m_credit.getPeerAvailable() ){
@@ -112,7 +112,7 @@ int PaymentReceiver::commit( const ZR::TransactionId &txId, const std::string & 
 
     switch( m_category )
     {
-    case BITCOIN:
+    case BITCOIN23:
         return MyOrders::Instance()->finishExecute( this, payload );
     case PAYMENT:
         return ZR::ZR_SUCCESS;
@@ -156,7 +156,7 @@ int PaymentSpender::commit( const ZR::TransactionId & txId, const std::string & 
 
     switch( m_category )
     {
-    case BITCOIN:
+    case BITCOIN23:
         return MyOrders::Instance()->updateOrders( this, txId );
     case PAYMENT:
         return ZR::ZR_SUCCESS;
