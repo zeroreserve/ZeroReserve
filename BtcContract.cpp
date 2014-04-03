@@ -18,6 +18,7 @@
 
 #include "BtcContract.h"
 #include "ZRBitcoin.h"
+#include "TmContract.h"
 
 const unsigned int BtcContract::reqConfirmations = 6;
 std::vector< BtcContract* > BtcContract::contracts;
@@ -35,18 +36,29 @@ void BtcContract::pollContracts()
     }
 }
 
+///// End static functions
 
-BtcContract::BtcContract(const std::string & txId, const ZR::ZR_Number & fiatAmount, const std::string & currencySym , Party party):
-    m_txId( txId ),
+
+BtcContract::BtcContract( const ZR::ZR_Number & fiatAmount, const std::string & currencySym , Party party):
     m_fiatAmount( fiatAmount ),
     m_currencySym( currencySym ),
-    m_party( party )
+    m_party( party ),
+    m_contractTx( NULL )
 {
+    contracts.push_back( this );
+}
+
+BtcContract::~BtcContract()
+{
+    for( ContractIterator it = contracts.begin(); it != contracts.end(); it++){
+        if( (*it) == this )
+            contracts.erase( it );
+    }
 }
 
 void BtcContract::poll()
 {
-    unsigned int confirmations = ZR::Bitcoin::Instance()->getConfirmations( m_txId );
+    unsigned int confirmations = ZR::Bitcoin::Instance()->getConfirmations( m_btcTxId );
     if( confirmations >= reqConfirmations ){
         execute();
     }
@@ -60,4 +72,10 @@ void BtcContract::persist()
 void BtcContract::execute()
 {
 
+}
+
+void BtcContract::startTransaction( const ZR::VirtualAddress & addr, const std::string & myId )
+{
+    m_contractTx = new TmContractCoordinator( addr, myId ); // we are coordinator
+    m_contractTx->init();
 }

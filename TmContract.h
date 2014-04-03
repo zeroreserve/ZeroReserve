@@ -33,6 +33,35 @@ class TmContract : public TransactionManager
 {
 public:
     TmContract( const ZR::VirtualAddress & addr, const std::string & myId );
+    virtual ~TmContract(){}
+
+    virtual ZR::RetVal init() = 0;
+    virtual void rollback() = 0;
+
+};
+
+
+class TmContractCoordinator : public TmContract
+{
+public:
+    TmContractCoordinator( const ZR::VirtualAddress & addr, const std::string & myId );
+    virtual ~TmContractCoordinator(){}
+
+    virtual ZR::RetVal init();
+    virtual void rollback();
+
+};
+
+
+class TmContractCohorte : public TmContract
+{
+public:
+    TmContractCohorte( const ZR::VirtualAddress & addr, const std::string & myId );
+    virtual ~TmContractCohorte(){}
+
+    virtual ZR::RetVal init();
+    virtual void rollback();
+
 };
 
 #endif // TMCONTRACT_H

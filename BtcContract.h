@@ -21,6 +21,8 @@
 #include "zrtypes.h"
 #include "Currency.h"
 
+class TmContract;
+
 /**
  * @brief Bitcoin sale contract
  *
@@ -35,7 +37,10 @@ public:
     /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
     enum Party { RECEIVER, SENDER };
 
-    BtcContract( const std::string & txId, const ZR::ZR_Number & fiatAmount, const std::string & currencySym, Party party );
+    BtcContract( const ZR::ZR_Number & fiatAmount, const std::string & currencySym, Party party );
+    virtual ~BtcContract();
+
+    void startTransaction( const ZR::VirtualAddress & addr, const std::string & myId );
 
     /** make sure we survive a crash or a shutdown once we're committed */
     void persist();
@@ -44,20 +49,21 @@ public:
 
     bool isReceiver() const { return m_party == RECEIVER; }
     bool isSender() const { return m_party == SENDER; }
-    bool isContract( const std::string & contractId ) const { return contractId == m_txId; }
+    bool isContract( const std::string & contractId ) const { return contractId == m_btcTxId; }
 
 private:
     void poll();
     void execute();
 
 private:
-    std::string m_txId;
+    std::string m_btcTxId;
+    TmContract * m_contractTx;
     ZR::ZR_Number m_fiatAmount;
     std::string m_currencySym;
     Party m_party;
 
 public:
-    typedef std::vector< BtcContract* >::const_iterator ContractIterator;
+    typedef std::vector< BtcContract* >::iterator ContractIterator;
     /** container for all active btcContracts */
     static std::vector< BtcContract* > contracts;
     static void loadContracts();

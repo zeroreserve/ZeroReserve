@@ -22,3 +22,44 @@ TmContract::TmContract( const ZR::VirtualAddress & addr, const std::string & myI
     TransactionManager( addr + ':' + myId )
 {
 }
+
+
+///////////////////// TmContractCoordinator /////////////////////////////
+
+TmContractCoordinator::TmContractCoordinator( const ZR::VirtualAddress & addr, const std::string & myId ) :
+    TmContract( addr, myId )
+{
+
+}
+
+
+ZR::RetVal TmContractCoordinator::init()
+{
+    return ZR::ZR_SUCCESS;
+}
+
+void TmContractCoordinator::rollback()
+{
+
+}
+
+
+///////////////////// TmContractCohorte /////////////////////////////
+
+
+TmContractCohorte::TmContractCohorte( const ZR::VirtualAddress & addr, const std::string & myId ) :
+    TmContract( addr, myId )
+{
+
+}
+
+
+ZR::RetVal TmContractCohorte::init()
+{
+    return ZR::ZR_SUCCESS;
+}
+
+void TmContractCohorte::rollback()
+{
+
+}
