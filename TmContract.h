@@ -22,6 +22,13 @@
 #include "TransactionManager.h"
 #include "zrtypes.h"
 
+/**
+ * @brief Remote contract transaction.
+ * @see   BtcContract
+ * This class implements a 3PC transaction. The result will be a series of contracts
+ * between all friends in a payment.
+ */
+
 class TmContract : public TransactionManager
 {
 public:

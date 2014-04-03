@@ -24,7 +24,8 @@
 /**
  * @brief Bitcoin sale contract
  *
- * This class implements a local contract of money transfer with a friend. The money
+ * This class implements a local contract of money transfer with a friend. The
+ * conditions of the contract will be monitored. The money
  * is released when an agreed upon Bitcoin transaction has at least 6 confirmations.
  */
 
