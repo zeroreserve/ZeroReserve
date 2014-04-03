@@ -42,7 +42,8 @@ SOURCES = ZeroReserveDialog.cpp \
     NewWallet.cpp \
     BitcoinAddressList.cpp \
     PeerAddressDialog.cpp \
-    BtcContract.cpp
+    BtcContract.cpp \
+    TmContract.cpp
 
 LIBS += -lsqlite3
 
@@ -80,7 +81,8 @@ HEADERS = ZeroReserveDialog.h \
     NewWallet.h \
     BitcoinAddressList.h \
     PeerAddressDialog.h \
-    BtcContract.h
+    BtcContract.h \
+    TmContract.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
