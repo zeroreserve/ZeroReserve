@@ -22,6 +22,8 @@
 #include "TransactionManager.h"
 #include "zrtypes.h"
 
+class RSZRRemoteTxItem;
+
 /**
  * @brief Remote contract transaction.
  * @see   BtcContract
@@ -56,15 +58,35 @@ private:
 };
 
 
-class TmContractCohorte : public TmContract
+class TmContractCohortePayee : public TmContract
 {
 public:
-    TmContractCohorte( const ZR::VirtualAddress & addr, const std::string & myId );
-    virtual ~TmContractCohorte(){}
+    TmContractCohortePayee( const ZR::VirtualAddress & addr, const std::string & myId );
+    virtual ~TmContractCohortePayee(){}
 
+    virtual ZR::RetVal processItem( RSZRRemoteTxItem *item );
     virtual ZR::RetVal init();
     virtual void rollback();
 
+private:
+    ZR::RetVal doQuery( RSZRRemoteTxItem * item );
+    ZR::RetVal doCommit( RSZRRemoteTxItem * item );
+};
+
+
+class TmContractCohorteHop : public TmContract
+{
+public:
+    TmContractCohorteHop( const ZR::VirtualAddress & addr, const std::string & myId );
+    virtual ~TmContractCohorteHop(){}
+
+    virtual ZR::RetVal processItem( RSZRRemoteTxItem *item );
+    virtual ZR::RetVal init();
+    virtual void rollback();
+
+private:
+    ZR::RetVal doQuery( RSZRRemoteTxItem * item );
+    ZR::RetVal doCommit( RSZRRemoteTxItem * item );
 };
 
 #endif // TMCONTRACT_H

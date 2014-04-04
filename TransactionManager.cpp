@@ -17,7 +17,7 @@
 
 #include "TransactionManager.h"
 #include "TmLocalCohorte.h"
-#include "TmRemoteCohorte.h"
+#include "TmContract.h"
 #include "RSZeroReserveItems.h"
 #include "RSZRRemoteItems.h"
 #include "ZeroReservePlugin.h"
@@ -25,6 +25,7 @@
 #include "Payment.h"
 #include "zrtypes.h"
 #include "Router.h"
+#include "MyOrders.h"
 
 #include <stdexcept>
 #include <sstream>
@@ -45,12 +46,19 @@ int TransactionManager::handleTxItem( RSZRRemoteTxItem * item )
     ZR::RetVal retVal;
     std::cerr << "Zero Reserve: TX Manger handling incoming item - Destination: " << item->getAddress() << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    ZR::TransactionId txId = item->getAddress() + ":" + item->getPayerId();
+
+    ZR::VirtualAddress addr = item->getAddress();
+    ZR::TransactionId txId = addr + ":" + item->getPayerId();
     std::cerr << "Zero Reserve: TransactionManager: TX ID = " << txId << std::endl;
     TransactionManager * tm;
     TxManagers::iterator it = currentTX.find( txId );
     if( it == currentTX.end() ){
-        tm = new TmRemoteCohorte( txId );
+        if( MyOrders::Instance()->find( addr ) != MyOrders::Instance()->end() ){
+            tm = new TmContractCohortePayee( addr, item->getPayerId() );
+        }
+        else {
+            tm = new TmContractCohorteHop( addr, item->getPayerId() );
+        }
     }
     else {
         tm = (*it).second;

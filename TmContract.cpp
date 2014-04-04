@@ -61,24 +61,94 @@ void TmContractCoordinator::rollback()
 }
 
 
-///////////////////// TmContractCohorte /////////////////////////////
+///////////////////// TmContractCohortePayee /////////////////////////////
 
 
-TmContractCohorte::TmContractCohorte( const ZR::VirtualAddress & addr, const std::string & myId ) :
+TmContractCohortePayee::TmContractCohortePayee( const ZR::VirtualAddress & addr, const std::string & myId ) :
     TmContract( addr, myId )
 {
 
 }
 
 
-ZR::RetVal TmContractCohorte::init()
+ZR::RetVal TmContractCohortePayee::init()
 {
-    std::cerr << "Zero Reserve: Setting Contract TX manager up as cohorte" << std::endl;
+    std::cerr << "Zero Reserve: Setting Contract TX manager up as cohorte Payee" << std::endl;
 
     return ZR::ZR_SUCCESS;
 }
 
-void TmContractCohorte::rollback()
+ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
+{
+    return ZR::ZR_SUCCESS;
+}
+
+ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
+{
+    return ZR::ZR_SUCCESS;
+}
+
+ZR::RetVal TmContractCohortePayee::processItem( RSZRRemoteTxItem * item )
+{
+    switch( item->getTxPhase() )
+    {
+    case QUERY:
+        return doQuery( item );
+    case COMMIT:
+        return doCommit( item );
+    default:
+        throw std::runtime_error( "Unknown Transaction Phase");
+    }
+}
+
+void TmContractCohortePayee::rollback()
 {
 
 }
+
+
+///////////////////// TmContractCohorteHop /////////////////////////////
+
+
+TmContractCohorteHop::TmContractCohorteHop( const ZR::VirtualAddress & addr, const std::string & myId ) :
+    TmContract( addr, myId )
+{
+
+}
+
+
+ZR::RetVal TmContractCohorteHop::init()
+{
+    std::cerr << "Zero Reserve: Setting Contract TX manager up as cohorte Payee" << std::endl;
+
+    return ZR::ZR_SUCCESS;
+}
+
+ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
+{
+    return ZR::ZR_SUCCESS;
+}
+
+ZR::RetVal TmContractCohorteHop::doCommit( RSZRRemoteTxItem * item )
+{
+    return ZR::ZR_SUCCESS;
+}
+
+ZR::RetVal TmContractCohorteHop::processItem( RSZRRemoteTxItem * item )
+{
+    switch( item->getTxPhase() )
+    {
+    case QUERY:
+        return doQuery( item );
+    case COMMIT:
+        return doCommit( item );
+    default:
+        throw std::runtime_error( "Unknown Transaction Phase");
+    }
+}
+
+void TmContractCohorteHop::rollback()
+{
+
+}
+
