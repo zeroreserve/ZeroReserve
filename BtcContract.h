@@ -21,6 +21,8 @@
 #include "zrtypes.h"
 #include "Currency.h"
 
+#include <vector>
+
 class TmContract;
 
 /**
