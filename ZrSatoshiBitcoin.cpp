@@ -106,7 +106,6 @@ std::string ZrSatoshiBitcoin::settleMultiSig(const std::string & txId , const ZR
 {
     try{
         JsonRpc rpc( m_settings );
-        sleep(3); // FIXME !!!
 
         // first find the output with our address
         JsonRpc::JsonData msigTx = rpc.executeRpc ( "getrawtransaction", txId, 1 );
