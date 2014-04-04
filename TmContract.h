@@ -50,6 +50,9 @@ public:
     virtual ZR::RetVal init();
     virtual void rollback();
 
+private:
+    ZR::VirtualAddress m_Destination;
+    std::string m_myId;
 };
 
 
