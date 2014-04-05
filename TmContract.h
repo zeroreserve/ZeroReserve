@@ -20,9 +20,11 @@
 #define TMCONTRACT_H
 
 #include "TransactionManager.h"
+#include "OrderBook.h"
 #include "zrtypes.h"
 
 class RSZRRemoteTxItem;
+class BtcContract;
 
 /**
  * @brief Remote contract transaction.
@@ -46,7 +48,7 @@ public:
 class TmContractCoordinator : public TmContract
 {
 public:
-    TmContractCoordinator( const ZR::VirtualAddress & addr, const std::string & myId );
+    TmContractCoordinator( const OrderBook::Order * order, const ZR::ZR_Number & amount, const std::string & myId );
     virtual ~TmContractCoordinator(){}
 
     virtual ZR::RetVal init();
@@ -55,6 +57,7 @@ public:
 private:
     ZR::VirtualAddress m_Destination;
     std::string m_myId;
+    BtcContract * payer;
 };
 
 
@@ -71,6 +74,8 @@ public:
 private:
     ZR::RetVal doQuery( RSZRRemoteTxItem * item );
     ZR::RetVal doCommit( RSZRRemoteTxItem * item );
+
+    BtcContract * payee;
 };
 
 
@@ -87,6 +92,11 @@ public:
 private:
     ZR::RetVal doQuery( RSZRRemoteTxItem * item );
     ZR::RetVal doCommit( RSZRRemoteTxItem * item );
+    ZR::RetVal doVote( RSZRRemoteTxItem * item );
+
+
+    BtcContract * payer;
+    BtcContract * payee;
 };
 
 #endif // TMCONTRACT_H

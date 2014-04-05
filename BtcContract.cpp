@@ -76,6 +76,4 @@ void BtcContract::execute()
 
 void BtcContract::startTransaction( const ZR::VirtualAddress & addr, const std::string & myId )
 {
-    m_contractTx = new TmContractCoordinator( addr, myId ); // we are coordinator
-    m_contractTx->init();
 }

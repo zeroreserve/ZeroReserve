@@ -48,8 +48,6 @@ private slots:
     void loadGrandTotal();
     void cancelOrder();
     void contextMenuMyOrders(const QPoint & );
-    void remoteRequest();
-    void remotePayment();
 
 // Bitcoin Wallet
     void contextMenuMyAddresses( const QPoint & );

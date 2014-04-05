@@ -32,13 +32,9 @@ SOURCES = ZeroReserveDialog.cpp \
     dbconfig.cpp \
     Router.cpp \
     TraceRouter.cpp \
-    RemotePaymentDialog.cpp \
-    RemotePaymentRequestDialog.cpp \
     RSZRRemoteItems.cpp \
-    TmRemoteCoordinator.cpp \
     TmLocalCoordinator.cpp \
     TmLocalCohorte.cpp \
-    TmRemoteCohorte.cpp \
     NewWallet.cpp \
     BitcoinAddressList.cpp \
     PeerAddressDialog.cpp \
@@ -69,13 +65,9 @@ HEADERS = ZeroReserveDialog.h \
     dbconfig.h \
     Router.h \
     TraceRouter.h \
-    RemotePaymentDialog.h \
-    RemotePaymentRequestDialog.h \
     RSZRRemoteItems.h \
-    TmRemoteCoordinator.h \
     TmLocalCoordinator.h \
     TmLocalCohorte.h \
-    TmRemoteCohorte.h \
     ZRBitcoin.h \
     ZrLibBitcoin.h \
     NewWallet.h \

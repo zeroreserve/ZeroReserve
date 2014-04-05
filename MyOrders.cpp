@@ -19,7 +19,7 @@
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
 #include "Payment.h"
-#include "TmRemoteCoordinator.h"
+#include "TmContract.h"
 #include "ZRBitcoin.h"
 #include "Router.h"
 #include "zrdb.h"
@@ -213,9 +213,7 @@ ZR::RetVal MyOrders::match( Order * order )
 
 void MyOrders::buy( Order * order, ZR::ZR_Number amount, const Order::ID & myId )
 {
-    Payment * payment = new PaymentSpender( Router::Instance()->nextHop( order->m_order_id), amount, Currency::currencySymbols[ order->m_currency ], Payment::BITCOIN23 );
-    payment->referrerId( order->m_order_id );
-    TmRemoteCoordinator * tm = new TmRemoteCoordinator( order->m_order_id, payment, myId );
+    TmContractCoordinator * tm = new TmContractCoordinator( order, amount, myId );
     if( ZR::ZR_FAILURE == tm->init() ) delete tm;
 }
 

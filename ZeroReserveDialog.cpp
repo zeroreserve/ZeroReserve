@@ -24,8 +24,6 @@
 #include "p3ZeroReserverRS.h"
 #include "zrdb.h"
 #include "Payment.h"
-#include "RemotePaymentDialog.h"
-#include "RemotePaymentRequestDialog.h"
 #include "ZRBitcoin.h"
 #include "NewWallet.h"
 #include "BitcoinAddressList.h"
@@ -241,18 +239,6 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
     book->processMyOrder( order );
 }
 
-
-void ZeroReserveDialog::remoteRequest()
-{
-    RemotePaymentRequestDialog d;
-    d.exec();
-}
-
-void ZeroReserveDialog::remotePayment()
-{
-    RemotePaymentDialog d;
-    d.exec();
-}
 
 
 void ZeroReserveDialog::updateFriendList()

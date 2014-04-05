@@ -118,7 +118,6 @@ void p3ZeroReserveRS::processIncoming()
             handleBuyRequest( dynamic_cast < RSZRBuyRequestItem *>( item ) );
             break;
         case RsZeroReserveItem::ZR_REMOTE_TX_ITEM:
-        case RsZeroReserveItem::ZR_REMOTE_TX_INIT_ITEM:
             TransactionManager::handleTxItem( dynamic_cast<RSZRRemoteTxItem*>( item ) );
             break;
         default:

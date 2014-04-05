@@ -60,8 +60,7 @@ public:
 
         ZR_REMOTE_PAYREQUEST_ITEM,
         ZR_REMOTE_BUYREQUEST_ITEM,
-        ZR_REMOTE_TX_ITEM,
-        ZR_REMOTE_TX_INIT_ITEM
+        ZR_REMOTE_TX_ITEM
     };
 
     virtual ~RsZeroReserveItem() {};

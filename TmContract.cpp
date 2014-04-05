@@ -17,10 +17,12 @@
 
 
 #include "TmContract.h"
+#include "BtcContract.h"
 #include "p3ZeroReserverRS.h"
 #include "ZeroReservePlugin.h"
 #include "Router.h"
 #include "RSZRRemoteItems.h"
+#include "OrderBook.h"
 
 
 TmContract::TmContract( const ZR::VirtualAddress & addr, const std::string & myId ) :
@@ -31,9 +33,9 @@ TmContract::TmContract( const ZR::VirtualAddress & addr, const std::string & myI
 
 ///////////////////// TmContractCoordinator /////////////////////////////
 
-TmContractCoordinator::TmContractCoordinator( const ZR::VirtualAddress & addr, const std::string & myId ) :
-    TmContract( addr, myId ),
-    m_Destination( addr ),
+TmContractCoordinator::TmContractCoordinator( const OrderBook::Order * order, const ZR::ZR_Number & amount, const std::string & myId ) :
+    TmContract( order->m_order_id , myId ),
+    m_Destination( order->m_order_id ),
     m_myId( myId )
 {
 
@@ -80,6 +82,8 @@ ZR::RetVal TmContractCohortePayee::init()
 
 ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
 {
+    std::cerr << "Zero Reserve: TmContractCohortePayee: Received Query" << std::endl;
+
     return ZR::ZR_SUCCESS;
 }
 
@@ -119,7 +123,7 @@ TmContractCohorteHop::TmContractCohorteHop( const ZR::VirtualAddress & addr, con
 
 ZR::RetVal TmContractCohorteHop::init()
 {
-    std::cerr << "Zero Reserve: Setting Contract TX manager up as cohorte Payee" << std::endl;
+    std::cerr << "Zero Reserve: Setting Contract TX manager up as cohorte Hop" << std::endl;
 
     return ZR::ZR_SUCCESS;
 }
@@ -134,12 +138,20 @@ ZR::RetVal TmContractCohorteHop::doCommit( RSZRRemoteTxItem * item )
     return ZR::ZR_SUCCESS;
 }
 
+ZR::RetVal TmContractCohorteHop::doVote( RSZRRemoteTxItem * item )
+{
+    return ZR::ZR_SUCCESS;
+}
+
 ZR::RetVal TmContractCohorteHop::processItem( RSZRRemoteTxItem * item )
 {
     switch( item->getTxPhase() )
     {
     case QUERY:
         return doQuery( item );
+    case VOTE_NO:
+    case VOTE_YES:
+        return doVote( item );
     case COMMIT:
         return doCommit( item );
     default:

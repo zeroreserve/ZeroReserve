@@ -140,33 +140,7 @@ protected:
     std::string m_Payload;
 };
 
-/**
- * @brief follows a route from the coordinator of a transaction (payer) to the payee and back.
- * @see RSZRRemoteTxItem
- * This item sets up the transaction. It carries payment information of the TX which the hops
- * need to VOTE on.
- */
 
-class RSZRRemoteTxInitItem : public RSZRRemoteTxItem
-{
-    RSZRRemoteTxInitItem();
-public:
-
-    RSZRRemoteTxInitItem( void *data, uint32_t size );
-    RSZRRemoteTxInitItem(const ZR::VirtualAddress & addr, TransactionManager::TxPhase txPhase, Router::TunnelDirection direction, Payment * payment, const OrderBook::Order::ID & payerId );
-
-    virtual bool serialise(void *data,uint32_t& size) ;
-    virtual uint32_t serial_size() const ;
-    virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
-
-    Payment * getPayment(){
-        m_Payment->setCounterparty( PeerId() );
-        return m_Payment;
-    }
-
-protected:
-    Payment * m_Payment;
-};
 
 /**
  * @brief route a buy request along an existing route to an order
