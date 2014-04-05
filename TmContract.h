@@ -53,8 +53,13 @@ public:
 
     virtual ZR::RetVal init();
     virtual void rollback();
+    virtual ZR::RetVal processItem( RSZRRemoteTxItem * item );
+
 
 private:
+    virtual ZR::RetVal doTx( RSZRRemoteTxItem * item );
+    ZR::RetVal abortTx( RSZRRemoteTxItem *item );
+
     ZR::VirtualAddress m_Destination;
     std::string m_myId;
     BtcContract * payer;

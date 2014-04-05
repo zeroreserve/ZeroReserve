@@ -47,6 +47,7 @@ ZR::RetVal TmContractCoordinator::init()
     std::cerr << "Zero Reserve: Setting Contract TX manager up as coordinator" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * item = new RSZRRemoteTxItem( m_Destination, QUERY, Router::SERVER, m_myId );
+    item->setPayload( "Staat heisst das kälteste aller kalten Ungeheuer" );
 
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
     if( addr.empty() )
@@ -57,11 +58,35 @@ ZR::RetVal TmContractCoordinator::init()
     return ZR::ZR_SUCCESS;
 }
 
+
+ZR::RetVal TmContractCoordinator::processItem( RSZRRemoteTxItem * item )
+{
+    switch( item->getTxPhase() )
+    {
+    case VOTE_NO:
+        return abortTx( item );
+    case VOTE_YES:
+        return doTx( item );
+    default:
+        throw std::runtime_error( "Unknown Transaction Phase");
+    }
+}
+
+ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
+{
+
+}
+
 void TmContractCoordinator::rollback()
 {
 
 }
 
+
+ZR::RetVal TmContractCoordinator::abortTx( RSZRRemoteTxItem *item )
+{
+
+}
 
 ///////////////////// TmContractCohortePayee /////////////////////////////
 
@@ -83,6 +108,7 @@ ZR::RetVal TmContractCohortePayee::init()
 ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
 {
     std::cerr << "Zero Reserve: TmContractCohortePayee: Received Query" << std::endl;
+    std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
 
     return ZR::ZR_SUCCESS;
 }
