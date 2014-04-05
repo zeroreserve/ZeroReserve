@@ -79,8 +79,6 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), bids, SLOT( setCurrency(QString) ) );
     connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), asks, SLOT( setCurrency(QString) ) );
     connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), myOrders, SLOT( setCurrency(QString) ) );
-    connect( ui.remotePayment, SIGNAL( clicked() ), this, SLOT( remotePayment() ) );
-    connect( ui.remoteRequest, SIGNAL( clicked() ), this, SLOT( remoteRequest() ) );
     connect( ui.paymentHistoryList, SIGNAL( currentItemChanged(QListWidgetItem*,QListWidgetItem*) ), this, SLOT( loadGrandTotal() ) );
 
     ui.myOrders->setContextMenuPolicy( Qt::CustomContextMenu );
