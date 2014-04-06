@@ -38,7 +38,7 @@ TmContractCoordinator::TmContractCoordinator( const OrderBook::Order * order, co
     m_Destination( order->m_order_id ),
     m_myId( myId )
 {
-
+    m_payer = new BtcContract( amount, Currency::currencySymbols[ order->m_currency ], BtcContract::SENDER );
 }
 
 
@@ -47,7 +47,8 @@ ZR::RetVal TmContractCoordinator::init()
     std::cerr << "Zero Reserve: Setting Contract TX manager up as coordinator" << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * item = new RSZRRemoteTxItem( m_Destination, QUERY, Router::SERVER, m_myId );
-    item->setPayload( "Staat heisst das kälteste aller kalten Ungeheuer" );
+    std::string payload = m_payer->getFiatAmount().toStdString() + ':' + m_payer->getCurrencySym();
+    item->setPayload( payload );
 
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
     if( addr.empty() )
@@ -104,7 +105,8 @@ ZR::RetVal TmContractCoordinator::abortTx( RSZRRemoteTxItem *item )
 
 
 TmContractCohortePayee::TmContractCohortePayee( const ZR::VirtualAddress & addr, const std::string & myId ) :
-    TmContract( addr, myId )
+    TmContract( addr, myId ),
+    m_payee( NULL )
 {
 
 }
@@ -165,7 +167,9 @@ void TmContractCohortePayee::rollback()
 
 
 TmContractCohorteHop::TmContractCohorteHop( const ZR::VirtualAddress & addr, const std::string & myId ) :
-    TmContract( addr, myId )
+    TmContract( addr, myId ),
+    m_payer( NULL ),
+    m_payee( NULL )
 {
 
 }

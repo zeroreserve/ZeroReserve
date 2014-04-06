@@ -39,7 +39,7 @@ public:
     /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
     enum Party { RECEIVER, SENDER };
 
-    BtcContract( const ZR::ZR_Number & fiatAmount, const std::string & currencySym, Party party );
+    BtcContract( const ZR::ZR_Number & btcAmount, const std::string & currencySym, Party party );
     virtual ~BtcContract();
 
     void startTransaction( const ZR::VirtualAddress & addr, const std::string & myId );
@@ -52,6 +52,9 @@ public:
     bool isReceiver() const { return m_party == RECEIVER; }
     bool isSender() const { return m_party == SENDER; }
     bool isContract( const std::string & contractId ) const { return contractId == m_btcTxId; }
+    const ZR::ZR_Number & getBtcAmount() const { return m_btcAmount; }
+    const ZR::ZR_Number getFiatAmount() const { return m_btcAmount * m_price; }
+    const std::string & getCurrencySym() const { return m_currencySym; }
 
 private:
     void poll();
@@ -60,7 +63,8 @@ private:
 private:
     std::string m_btcTxId;
     TmContract * m_contractTx;
-    ZR::ZR_Number m_fiatAmount;
+    ZR::ZR_Number m_btcAmount;
+    ZR::ZR_Number m_price;
     std::string m_currencySym;
     Party m_party;
 

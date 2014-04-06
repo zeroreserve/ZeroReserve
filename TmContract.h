@@ -62,7 +62,7 @@ private:
 
     ZR::VirtualAddress m_Destination;
     std::string m_myId;
-    BtcContract * payer;
+    BtcContract * m_payer;
 };
 
 
@@ -80,7 +80,7 @@ private:
     ZR::RetVal doQuery( RSZRRemoteTxItem * item );
     ZR::RetVal doCommit( RSZRRemoteTxItem * item );
 
-    BtcContract * payee;
+    BtcContract * m_payee;
 };
 
 
@@ -101,8 +101,8 @@ private:
     ZR::RetVal forwardItem( RSZRRemoteTxItem * item );
     void mkTunnel( RSZRRemoteTxItem * item );
 
-    BtcContract * payer;
-    BtcContract * payee;
+    BtcContract * m_payer;
+    BtcContract * m_payee;
 };
 
 #endif // TMCONTRACT_H

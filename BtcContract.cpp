@@ -39,8 +39,8 @@ void BtcContract::pollContracts()
 ///// End static functions
 
 
-BtcContract::BtcContract( const ZR::ZR_Number & fiatAmount, const std::string & currencySym , Party party):
-    m_fiatAmount( fiatAmount ),
+BtcContract::BtcContract( const ZR::ZR_Number & btcAmount, const std::string & currencySym , Party party):
+    m_btcAmount( btcAmount ),
     m_currencySym( currencySym ),
     m_party( party ),
     m_contractTx( NULL )
