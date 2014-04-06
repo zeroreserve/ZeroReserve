@@ -98,7 +98,8 @@ private:
     ZR::RetVal doQuery( RSZRRemoteTxItem * item );
     ZR::RetVal doCommit( RSZRRemoteTxItem * item );
     ZR::RetVal doVote( RSZRRemoteTxItem * item );
-
+    ZR::RetVal forwardItem( RSZRRemoteTxItem * item );
+    void mkTunnel( RSZRRemoteTxItem * item );
 
     BtcContract * payer;
     BtcContract * payee;

@@ -74,7 +74,19 @@ ZR::RetVal TmContractCoordinator::processItem( RSZRRemoteTxItem * item )
 
 ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
 {
+    std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_Destination, COMMIT, Router::SERVER, m_myId );
+    resendItem->setPayload( "Ich, der Staat, bin das Volk" );
 
+    ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
+    if( addr.empty() )
+        return ZR::ZR_FAILURE;
+
+    resendItem->PeerId( addr );
+    p3zr->sendItem( resendItem );
+
+    return ZR::ZR_SUCCESS;
 }
 
 void TmContractCoordinator::rollback()
@@ -101,20 +113,32 @@ TmContractCohortePayee::TmContractCohortePayee( const ZR::VirtualAddress & addr,
 ZR::RetVal TmContractCohortePayee::init()
 {
     std::cerr << "Zero Reserve: Setting Contract TX manager up as cohorte Payee" << std::endl;
-
     return ZR::ZR_SUCCESS;
 }
 
 ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
 {
-    std::cerr << "Zero Reserve: TmContractCohortePayee: Received Query" << std::endl;
+    std::cerr << "Zero Reserve: TmContractCohortePayee: Received QUERY" << std::endl;
     std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
+
+    if( m_Phase != INIT || item == NULL )
+        return abortTx( item );
+    m_Phase = QUERY;
+
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    TxPhase vote = VOTE_YES; // TODO: A vote is not limited to saying YES!!!
+    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( item->getAddress(), vote, Router::CLIENT, item->getPayerId() );
+    resendItem->setPayload( "Kalt lügt es auch. Und diese Lüge kriecht aus seinem Munde:" );
+    resendItem->PeerId( item->PeerId() );
+    p3zr->sendItem( resendItem );
 
     return ZR::ZR_SUCCESS;
 }
 
 ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
 {
+    std::cerr << "Zero Reserve: TmContractCohortePayee: Received COMMIT" << std::endl;
+    std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
     return ZR::ZR_SUCCESS;
 }
 
@@ -150,22 +174,42 @@ TmContractCohorteHop::TmContractCohorteHop( const ZR::VirtualAddress & addr, con
 ZR::RetVal TmContractCohorteHop::init()
 {
     std::cerr << "Zero Reserve: Setting Contract TX manager up as cohorte Hop" << std::endl;
-
     return ZR::ZR_SUCCESS;
 }
 
 ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
 {
+    std::cerr << "Zero Reserve: TX Cohorte: Passing on QUERY" << std::endl;
+    std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
+
+    if( m_Phase != INIT || item == NULL )
+        return abortTx( item );
+    m_Phase = QUERY;
+
+    mkTunnel( item );
+
+    forwardItem( item );
     return ZR::ZR_SUCCESS;
 }
 
 ZR::RetVal TmContractCohorteHop::doCommit( RSZRRemoteTxItem * item )
 {
+    std::cerr << "Zero Reserve: TX Cohorte: Passing on COMMIT" << std::endl;
+    std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
+    forwardItem( item );
     return ZR::ZR_SUCCESS;
 }
 
 ZR::RetVal TmContractCohorteHop::doVote( RSZRRemoteTxItem * item )
 {
+    std::cerr << "Zero Reserve: TX Cohorte: Passing on VOTE" << std::endl;
+    std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
+
+    if( m_Phase != QUERY || item == NULL )
+        return abortTx( item );
+    m_Phase = item->getTxPhase();
+
+    forwardItem( item );
     return ZR::ZR_SUCCESS;
 }
 
@@ -185,8 +229,39 @@ ZR::RetVal TmContractCohorteHop::processItem( RSZRRemoteTxItem * item )
     }
 }
 
+
 void TmContractCohorteHop::rollback()
 {
 
 }
+
+
+void TmContractCohorteHop::mkTunnel( RSZRRemoteTxItem * item )
+{
+    ZR::PeerAddress nextAddr = Router::Instance()->nextHop( item->getAddress() );
+    ZR::PeerAddress prevAddr = item->PeerId();
+    std::pair< ZR::PeerAddress, ZR::PeerAddress > route( prevAddr, nextAddr );
+    Router::Instance()->addTunnel( item->getAddress(), route );
+}
+
+
+ZR::RetVal TmContractCohorteHop::forwardItem( RSZRRemoteTxItem * item )
+{
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( item->getAddress() , item->getTxPhase(), item->getDirection(), item->getPayerId() );
+    resendItem->setPayload( item->getPayload() );
+
+
+    std::pair< ZR::PeerAddress, ZR::PeerAddress > route;
+    if( Router::Instance()->getTunnel( item->getAddress(), route ) == ZR::ZR_FAILURE )
+        return ZR::ZR_FAILURE;
+    if( item->getDirection() == Router::SERVER )
+        resendItem->PeerId( route.second );
+    else
+        resendItem->PeerId( route.first );
+
+    p3zr->sendItem( resendItem );
+    return ZR::ZR_SUCCESS;
+}
+
 

@@ -121,7 +121,9 @@ TransactionManager::TransactionManager( const ZR::TransactionId & txId ) :
     m_Phase( INIT ),
     m_startOfPhase( QDateTime::currentMSecsSinceEpoch() )
 {
-    const unsigned int defaultTimeOut = 3600000; // one hour
+    static const unsigned int defaultTimeOut = 3600000; // one hour
+
+    std::cerr << "Zero Reserve: NEW TX Manager: " << m_TxId << std::endl;
 
     m_maxTime[ INIT ]       = defaultTimeOut;
     m_maxTime[ QUERY ]      = defaultTimeOut;
@@ -136,7 +138,7 @@ TransactionManager::TransactionManager( const ZR::TransactionId & txId ) :
 
 TransactionManager::~TransactionManager()
 {
-    std::cerr << "Zero Reserve: TX Manager: Cleaning up." << std::endl;
+    std::cerr << "Zero Reserve: TX Manager: Cleaning up: " << m_TxId << std::endl;
     currentTX.erase( m_TxId );
 }
 
