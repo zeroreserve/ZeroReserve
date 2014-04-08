@@ -234,6 +234,8 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
     order->m_purpose = OrderBook::Order::NEW;
     order->m_timeStamp = QDateTime::currentMSecsSinceEpoch();
     order->setOrderId();
+    order->m_btcAddr = ( type == OrderBook::Order::ASK )? ZR::Bitcoin::Instance()->mkOrderAddress( amount ) : "";
+
     book->processMyOrder( order );
 }
 

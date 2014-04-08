@@ -46,6 +46,11 @@ public:
 
     virtual void initDeal(const ZR::BitcoinPubKey & pubKey , const ZR::ZR_Number & amount , ZR::BitcoinPubKey & myPubKey, std::string & txId );
 
+    virtual const ZR::BitcoinAddress newAddress() const;
+    virtual const ZR::BitcoinTxHex mkRawTx( const ZR::ZR_Number & btcAmount, const ZR::BitcoinAddress & sendAddr, const ZR::BitcoinAddress & recvAddr ) const;
+    virtual ZR::BitcoinAddress mkOrderAddress( const ZR::ZR_Number & amount );
+
+
 public:
     nmcrpc::RpcSettings m_settings;
 };

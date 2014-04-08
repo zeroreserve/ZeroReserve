@@ -199,10 +199,10 @@ ZR::RetVal MyOrders::match( Order * order )
         m_CurrentTxOrders[ other->m_order_id + ':' + order->m_order_id ] = std::pair< Order, Order > ( *order, *other ); // remember the matched order pair for later
 
         if( amount > other->m_amount ){
-            buy( other, other->m_amount * other->m_price, order->m_order_id );
+            buy( other, other->m_amount, order->m_order_id );
         }
         else {
-            buy( other, amount * other->m_price, order->m_order_id );
+            buy( other, amount, order->m_order_id );
             return ZR::ZR_FINISH;
         }
         amount -= other->m_amount;
@@ -238,31 +238,29 @@ ZR::RetVal MyOrders::initMultiSig( const ZR::BitcoinPubKey & myPubKey, std::stri
 }
 
 
-int MyOrders::startExecute( Payment * payment, std::string & payload )
+int MyOrders::startExecute( ZR::ZR_Number & in_out_fiatAmount , const std::string &orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex )
 {
-    std::cerr << "Zero Reserve: Starting Order execution for " << payment->referrerId() << " Remote PubKey " << payload << std::endl;
+    std::cerr << "Zero Reserve: Starting Order execution for " << orderId << std::endl;
 
-    OrderIterator it = find( payment->referrerId() );
+    OrderIterator it = find( orderId );
     if( it == end() ) return ZR::ZR_FAILURE;   // no such order
 
     Order * order = *it;
     ZR::ZR_Number leftover = order->m_amount - order->m_commitment;
     if( leftover == 0 )return ZR::ZR_FAILURE; // nothing left in this order
 
-    ZR::ZR_Number btcAmount = payment->getAmount() / order->m_price;
+    ZR::ZR_Number btcAmount = in_out_fiatAmount / order->m_price;
     if( btcAmount > leftover ){
         order->m_commitment = order->m_amount;
-        payment->setAmount( leftover * order->m_price );
+        in_out_fiatAmount = leftover * order->m_price;
     }
     else {
         order->m_commitment += btcAmount;
     }
 
-    std::string txId, myPubkey;
-    ZR::Bitcoin::Instance()->initDeal( payload, btcAmount, myPubkey, txId );
-    payload = txId + ":" + myPubkey;
+    out_txHex = ZR::Bitcoin::Instance()->mkRawTx( btcAmount, order->m_btcAddr, recvAddr );
 
-    std::cerr << "Zero Reserve: Order execution; My Pubkey: " << myPubkey << " TX ID " << txId << std::endl;
+    std::cerr << "Zero Reserve: Order execution; TX: " << out_txHex << std::endl;
 
     return ZR::ZR_SUCCESS;
 }

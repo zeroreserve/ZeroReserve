@@ -107,6 +107,10 @@ public:
     virtual void finalizeMultiSig( const std::string & tx ) = 0;
     virtual void initDeal( const std::string & pubKey , const ZR::ZR_Number & amount , std::string & myPubKey, std::string & txId ) = 0;
 
+    virtual const ZR::BitcoinAddress newAddress() const = 0;
+    virtual const ZR::BitcoinTxHex mkRawTx( const ZR::ZR_Number & btcAmount, const ZR::BitcoinAddress & sendAddr, const ZR::BitcoinAddress & recvAddr ) const = 0;
+    virtual ZR::BitcoinAddress mkOrderAddress( const ZR::ZR_Number & amount ) = 0;
+
     static Bitcoin * Instance();
 
 protected:

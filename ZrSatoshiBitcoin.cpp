@@ -155,6 +155,83 @@ std::string ZrSatoshiBitcoin::settleMultiSig(const std::string & txId , const ZR
 }
 
 
+const ZR::BitcoinTxHex ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, const ZR::BitcoinAddress & sendAddr, const ZR::BitcoinAddress & recvAddr ) const
+{
+    ZR::BitcoinTxHex tx;
+    try{
+        JsonRpc rpc( m_settings );
+        JsonRpc::JsonData addrArray( Json::arrayValue );
+        addrArray.append( sendAddr );
+        JsonRpc::JsonData res = rpc.executeRpc ( "listunspent", 0, 999999, addrArray );
+        std::string txId = res[0u][ "txid" ].asString();
+        unsigned int vout = res[0u][ "vout" ].asUInt();
+
+        JsonRpc::JsonData txArray( Json::arrayValue );
+        JsonRpc::JsonData txObj;
+        txObj[ Json::StaticString( "txid" ) ] = txId;
+        txObj[ Json::StaticString( "vout" ) ] = vout;
+        txArray.append( txObj );
+
+        JsonRpc::JsonData dest;
+        dest[ Json::StaticString( recvAddr.c_str() ) ] = btcAmount.toDouble();
+        JsonRpc::JsonData res1 = rpc.executeRpc ("createrawtransaction", txArray, dest );
+        tx = res1.asString();
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+    }
+    return tx;
+}
+
+
+ZR::BitcoinAddress ZrSatoshiBitcoin::mkOrderAddress( const ZR::ZR_Number & amount )
+{
+    std::string addr = newAddress();
+
+    try{
+        JsonRpc rpc( m_settings );
+        JsonRpc::JsonData res = rpc.executeRpc ( "sendtoaddress", addr, JsonRpc::JsonData( amount.toDouble() ) );
+        // TODO: Error handling
+        std::string id = res.asString();
+
+        // make sure the Satoshi client does not touch "id"
+        // this will go away if the Satoshi client is restarted
+        // may be unnecessary for other implementations of this class, e.g. libbitcoin
+        JsonRpc::JsonData addrArray( Json::arrayValue );
+        addrArray.append( addr );
+        JsonRpc::JsonData res2 = rpc.executeRpc ( "listunspent", 0, 999999, addrArray );
+        unsigned int vout = res2[0u][ "vout" ].asUInt();
+        JsonRpc::JsonData lockObjArray( Json::arrayValue );
+        JsonRpc::JsonData lockObj;
+        lockObj[ "txid" ] = id;
+        lockObj[ "vout" ] = vout;
+        lockObjArray.append( lockObj );
+        JsonRpc::JsonData res1 = rpc.executeRpc ( "lockunspent", true, lockObjArray );
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+    }
+    return addr;
+}
+
+
+
+const ZR::BitcoinAddress ZrSatoshiBitcoin::newAddress() const
+{
+    std::string addr;
+    try{
+        JsonRpc rpc( m_settings );
+        JsonRpc::JsonData resAddr = rpc.executeRpc ( "getnewaddress" );
+        addr = resAddr.asString();
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+    }
+    return addr;
+}
+
+
+
 void ZrSatoshiBitcoin::finalizeMultiSig( const std::string & tx )
 {
     std::cerr << "Zero Reserve: Second signature on: " << tx << std::endl;

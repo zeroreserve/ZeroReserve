@@ -77,6 +77,15 @@ int TransactionManager::handleTxItem( RSZRRemoteTxItem * item )
     return retVal;
 }
 
+void TransactionManager::split(const std::string & s, std::vector< std::string > & v, const char sep )
+{
+    std::stringstream ss( s );
+    std::string tok;
+
+    while (getline(ss, tok, sep )) {
+        v.push_back( tok );
+    }
+}
 
 /**
  * @brief Handle local Transaction Items

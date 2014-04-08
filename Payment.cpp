@@ -82,13 +82,6 @@ int PaymentReceiver::init( std::string & txPayload )
 {
     switch( m_category )
     {
-    case BITCOIN23:
-        if( m_credit.getPeerAvailable() <= 0 )
-            return ZR::ZR_FAILURE;
-        if( m_amount > m_credit.getPeerAvailable() ){
-            m_amount = m_credit.getPeerAvailable();
-        }
-        return MyOrders::Instance()->startExecute( this, txPayload );
     case PAYMENT:
         if( m_credit.getPeerAvailable() < m_amount ) return ZR::ZR_FAILURE;
         return ZR::ZR_SUCCESS;

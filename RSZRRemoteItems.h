@@ -130,7 +130,7 @@ public:
     TransactionManager::TxPhase getTxPhase() { return m_TxPhase; }
     Router::TunnelDirection getDirection() { return m_Direction; }
     const OrderBook::Order::ID & getPayerId(){ return m_PayerId; }
-    std::string & getPayload(){ return m_Payload; }
+    const std::string & getPayload(){ return m_Payload; }
     void setPayload( const std::string & payload ){ m_Payload = payload; }
 
 protected:

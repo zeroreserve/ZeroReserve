@@ -39,7 +39,7 @@ public:
     /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
     enum Party { RECEIVER, SENDER };
 
-    BtcContract( const ZR::ZR_Number & btcAmount, const std::string & currencySym, Party party );
+    BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price, const std::string & currencySym, Party party );
     virtual ~BtcContract();
 
     void startTransaction( const ZR::VirtualAddress & addr, const std::string & myId );

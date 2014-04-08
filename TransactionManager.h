@@ -85,6 +85,8 @@ protected:
     qint64 m_maxTime[ PHASE_NUMBER ];
 
     static TxManagers currentTX;
+
+    static void split(const std::string & s, std::vector< std::string > & v, const char sep = ':' );
 };
 
 #endif // TRANSACTIONMANAGER_H

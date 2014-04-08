@@ -23,6 +23,9 @@
 #include "Router.h"
 #include "RSZRRemoteItems.h"
 #include "OrderBook.h"
+#include "MyOrders.h"
+#include "ZRBitcoin.h"
+
 
 
 TmContract::TmContract( const ZR::VirtualAddress & addr, const std::string & myId ) :
@@ -38,16 +41,23 @@ TmContractCoordinator::TmContractCoordinator( const OrderBook::Order * order, co
     m_Destination( order->m_order_id ),
     m_myId( myId )
 {
-    m_payer = new BtcContract( amount, Currency::currencySymbols[ order->m_currency ], BtcContract::SENDER );
+    m_payer = new BtcContract( amount, order->m_price, Currency::currencySymbols[ order->m_currency ], BtcContract::SENDER );
 }
 
 
 ZR::RetVal TmContractCoordinator::init()
 {
     std::cerr << "Zero Reserve: Setting Contract TX manager up as coordinator" << std::endl;
+
+    m_btcAddr = ZR::Bitcoin::Instance()->newAddress();
+    if( m_btcAddr.empty() ){
+        std::cerr << "Zero Reserve: ERROR getting Bitcoin Address" << std::endl;
+        return ZR::ZR_FAILURE;
+    }
+
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * item = new RSZRRemoteTxItem( m_Destination, QUERY, Router::SERVER, m_myId );
-    std::string payload = m_payer->getFiatAmount().toStdString() + ':' + m_payer->getCurrencySym();
+    std::string payload = m_payer->getFiatAmount().toStdString() + ':' + m_payer->getCurrencySym() + ':' + m_btcAddr;
     item->setPayload( payload );
 
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
@@ -118,6 +128,7 @@ ZR::RetVal TmContractCohortePayee::init()
     return ZR::ZR_SUCCESS;
 }
 
+
 ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
 {
     std::cerr << "Zero Reserve: TmContractCohortePayee: Received QUERY" << std::endl;
@@ -127,15 +138,28 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
         return abortTx( item );
     m_Phase = QUERY;
 
+    std::vector< std::string > v_payload;
+    split( item->getPayload(), v_payload );
+    if( v_payload.size() != 3 ){
+        std::cerr << "Zero Reserve: Payload ERROR: Protocol mismatch" << std::endl;
+        return abortTx( item );
+    }
+
+    ZR::ZR_Number fiatAmount = ZR::ZR_Number::fromFractionString( v_payload[0] );
+
+    ZR::BitcoinTxHex txHex;
+    MyOrders::Instance()->startExecute( fiatAmount, item->getAddress(), v_payload[2], txHex );
+
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     TxPhase vote = VOTE_YES; // TODO: A vote is not limited to saying YES!!!
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( item->getAddress(), vote, Router::CLIENT, item->getPayerId() );
-    resendItem->setPayload( "Kalt lügt es auch. Und diese Lüge kriecht aus seinem Munde:" );
+    resendItem->setPayload( txHex );
     resendItem->PeerId( item->PeerId() );
     p3zr->sendItem( resendItem );
 
     return ZR::ZR_SUCCESS;
 }
+
 
 ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
 {
@@ -143,6 +167,7 @@ ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
     std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
     return ZR::ZR_SUCCESS;
 }
+
 
 ZR::RetVal TmContractCohortePayee::processItem( RSZRRemoteTxItem * item )
 {
@@ -156,6 +181,7 @@ ZR::RetVal TmContractCohortePayee::processItem( RSZRRemoteTxItem * item )
         throw std::runtime_error( "Unknown Transaction Phase");
     }
 }
+
 
 void TmContractCohortePayee::rollback()
 {

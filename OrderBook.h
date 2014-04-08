@@ -67,6 +67,7 @@ public:
         OrderBook::Order::Purpose m_purpose;
         ZR::ZR_Number m_commitment;    // the amount which is currently processed by active TX
                                        // m_commitment <= m_amount
+        ZR::BitcoinAddress m_btcAddr;  // address where those Bitcoins are on
 
         bool operator == (const Order & other);
         bool operator < ( const Order & other) const;
