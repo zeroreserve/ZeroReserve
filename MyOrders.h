@@ -54,8 +54,6 @@ public:
 
     void cancelOrder( int index );
 
-    ZR::RetVal initMultiSig( const ZR::BitcoinPubKey & myPubKey, std::string & payload, const ZR::TransactionId & id );
-
     static MyOrders * Instance();
 
 protected:

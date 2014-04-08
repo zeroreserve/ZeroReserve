@@ -218,26 +218,6 @@ void MyOrders::buy( Order * order, ZR::ZR_Number amount, const Order::ID & myId 
 }
 
 
-ZR::RetVal MyOrders::initMultiSig( const ZR::BitcoinPubKey & myPubKey, std::string & payload, const ZR::TransactionId & id )
-{
-    std::map< ZR::TransactionId, std::pair< Order, Order > >::iterator refIt = m_CurrentTxOrders.find( id );
-    if( refIt == m_CurrentTxOrders.end() ){
-        std::cerr << "Zero Reserve: MyOrders::initMultiSig: Could not find Reference " << id << std::endl;
-        return ZR::ZR_FAILURE;
-    }
-    OrderIterator orderIt = find( (*refIt).second.first.m_order_id );
-    if( orderIt == end() ) return ZR::ZR_FAILURE;
-    Order * order = *orderIt;
-    ZR::ZR_Number amount = order->m_amount;
-
-    int pos = payload.find( ':' );  // TODO: Treat npos
-    std::string btcTxId = payload.substr( 0, pos );
-    std::string otherKey = payload.substr( pos + 1 );
-    ZR::BitcoinAddress multisigAddr = ZR::Bitcoin::Instance()->registerMultiSig( otherKey, myPubKey );
-    payload = ZR::Bitcoin::Instance()->settleMultiSig( btcTxId, amount, multisigAddr );
-}
-
-
 int MyOrders::startExecute( ZR::ZR_Number & in_out_fiatAmount , const std::string &orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex )
 {
     std::cerr << "Zero Reserve: Starting Order execution for " << orderId << std::endl;
@@ -291,7 +271,7 @@ int MyOrders::finishExecute( Payment * payment, const std::string & payload )
             remove( payment->referrerId() );
             m_asks->remove( payment->referrerId() );
         }
-        ZR::Bitcoin::Instance()->finalizeMultiSig( payload );
+//        ZR::Bitcoin::Instance()->finalizeMultiSig( payload ); #### Replace by signing TX
         p3zr->publishOrder( oldOrder );
     }
     else {
