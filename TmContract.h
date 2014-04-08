@@ -48,6 +48,12 @@ public:
 class TmContractCoordinator : public TmContract
 {
 public:
+    /**
+     * @brief TmContractCoordinator
+     * @param order the seller's order
+     * @param amount Bitcoin amount to buy as part of the seller's order
+     * @param myId my order id
+     */
     TmContractCoordinator( const OrderBook::Order * order, const ZR::ZR_Number & amount, const std::string & myId );
     virtual ~TmContractCoordinator(){}
 

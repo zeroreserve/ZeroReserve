@@ -149,11 +149,11 @@ ZR::RetVal MyOrders::matchOther( Order * other )
         m_CurrentTxOrders[ other->m_order_id + ':' + order->m_order_id ] = std::pair< Order, Order > ( *order, *other ); // remember the matched order pair for later
 
         if( order->m_amount > amount ){
-            buy( other, amount * other->m_price, order->m_order_id );
+            buy( other, amount, order->m_order_id );
             return ZR::ZR_FINISH;
         }
         else {
-            buy( other, order->m_amount * other->m_price, order->m_order_id );
+            buy( other, order->m_amount, order->m_order_id );
         }
         amount -= order->m_amount;
     }
