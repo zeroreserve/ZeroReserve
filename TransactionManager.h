@@ -49,6 +49,7 @@ public:
         COMMIT,
         ACK_COMMIT,
         ABORT,
+        ABORT_REQUEST,
         PHASE_NUMBER
     };
     enum Role {

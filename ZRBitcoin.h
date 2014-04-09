@@ -104,7 +104,7 @@ public:
     virtual void send( const std::string & dest, const ZR::ZR_Number & amount ) = 0;
 
     virtual const ZR::BitcoinAddress newAddress() const = 0;
-    virtual const ZR::RetVal mkRawTx( const ZR::ZR_Number & btcAmount, const ZR::BitcoinAddress & sendAddr, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & outTx, ZR::TransactionId & outId ) const = 0;
+    virtual ZR::RetVal mkRawTx( const ZR::ZR_Number & btcAmount, const ZR::BitcoinAddress & sendAddr, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & outTx, ZR::TransactionId & outId ) const = 0;
     virtual ZR::BitcoinAddress mkOrderAddress( const ZR::ZR_Number & amount ) = 0;
     virtual ZR::RetVal sendRaw( const ZR::BitcoinTxHex & txHex ) = 0;
 

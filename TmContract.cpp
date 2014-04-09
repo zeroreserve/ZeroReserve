@@ -271,6 +271,12 @@ ZR::RetVal TmContractCohorteHop::processItem( RSZRRemoteTxItem * item )
         return doVote( item );
     case COMMIT:
         return doCommit( item );
+    case ABORT:
+        forwardItem( item );
+        return ZR::ZR_FAILURE;
+    case ABORT_REQUEST:
+        forwardItem( item );
+        return ZR::ZR_SUCCESS;
     default:
         throw std::runtime_error( "Unknown Transaction Phase");
     }
@@ -298,7 +304,6 @@ ZR::RetVal TmContractCohorteHop::forwardItem( RSZRRemoteTxItem * item )
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( item->getAddress() , item->getTxPhase(), item->getDirection(), item->getPayerId() );
     resendItem->setPayload( item->getPayload() );
 
-
     std::pair< ZR::PeerAddress, ZR::PeerAddress > route;
     if( Router::Instance()->getTunnel( item->getAddress(), route ) == ZR::ZR_FAILURE )
         return ZR::ZR_FAILURE;
@@ -312,3 +317,7 @@ ZR::RetVal TmContractCohorteHop::forwardItem( RSZRRemoteTxItem * item )
 }
 
 
+ZR::RetVal TmContractCohorteHop::abortTx( RSZRRemoteTxItem *item )
+{
+
+}

@@ -80,6 +80,8 @@ public:
 
 private:
     ZR::RetVal doTx( RSZRRemoteTxItem * item );
+
+    // unlike the other TM, which request an abort on calling this function, a coordinator aborts.
     ZR::RetVal abortTx( RSZRRemoteTxItem *item );
 
     ZR::VirtualAddress m_Destination;
@@ -102,6 +104,8 @@ public:
 private:
     ZR::RetVal doQuery( RSZRRemoteTxItem * item );
     ZR::RetVal doCommit( RSZRRemoteTxItem * item );
+
+    // request an abort
     ZR::RetVal abortTx( RSZRRemoteTxItem *item );
 
     BtcContract * m_payee;
@@ -125,6 +129,9 @@ private:
     ZR::RetVal doVote( RSZRRemoteTxItem * item );
     ZR::RetVal forwardItem( RSZRRemoteTxItem * item );
     void mkTunnel( RSZRRemoteTxItem * item );
+
+    // request an abort
+    ZR::RetVal abortTx( RSZRRemoteTxItem *item );
 
     BtcContract * m_payer;
     BtcContract * m_payee;

@@ -104,7 +104,7 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
 
 
 
-const ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, const ZR::BitcoinAddress & sendAddr, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & outTx, ZR::TransactionId & outId ) const
+ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, const ZR::BitcoinAddress & sendAddr, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & outTx, ZR::TransactionId & outId ) const
 {
     try{
         JsonRpc rpc( m_settings );

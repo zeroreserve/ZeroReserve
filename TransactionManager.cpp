@@ -134,13 +134,14 @@ TransactionManager::TransactionManager( const ZR::TransactionId & txId ) :
 
     std::cerr << "Zero Reserve: NEW TX Manager: " << m_TxId << std::endl;
 
-    m_maxTime[ INIT ]       = defaultTimeOut;
-    m_maxTime[ QUERY ]      = defaultTimeOut;
-    m_maxTime[ VOTE_YES ]   = defaultTimeOut;
-    m_maxTime[ VOTE_NO ]    = defaultTimeOut;
-    m_maxTime[ COMMIT ]     = defaultTimeOut;
-    m_maxTime[ ACK_COMMIT ] = defaultTimeOut;
-    m_maxTime[ ABORT ]      = defaultTimeOut;
+    m_maxTime[ INIT ]          = defaultTimeOut;
+    m_maxTime[ QUERY ]         = defaultTimeOut;
+    m_maxTime[ VOTE_YES ]      = defaultTimeOut;
+    m_maxTime[ VOTE_NO ]       = defaultTimeOut;
+    m_maxTime[ COMMIT ]        = defaultTimeOut;
+    m_maxTime[ ACK_COMMIT ]    = defaultTimeOut;
+    m_maxTime[ ABORT ]         = defaultTimeOut;
+    m_maxTime[ ABORT_REQUEST ] = defaultTimeOut;
 
     currentTX[ txId ] = this;
 }
