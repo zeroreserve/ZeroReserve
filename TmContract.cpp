@@ -88,7 +88,7 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
     std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_Destination, COMMIT, Router::SERVER, m_myId );
-    resendItem->setPayload( "Ich, der Staat, bin das Volk" );
+    resendItem->setPayload( "" );
 
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
     if( addr.empty() )
@@ -164,7 +164,7 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
 ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
 {
     std::cerr << "Zero Reserve: TmContractCohortePayee: Received COMMIT" << std::endl;
-    std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
+
     return ZR::ZR_SUCCESS;
 }
 

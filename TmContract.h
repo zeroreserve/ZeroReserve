@@ -29,8 +29,13 @@ class BtcContract;
 /**
  * @brief Remote contract transaction.
  * @see   BtcContract
- * This class implements a 3PC transaction. The result will be a series of contracts
- * between all friends in a payment.
+ * @see   TmContractCoordinator
+ * @see   TmContractCohortePayee
+ * @see   TmContractCohorteHop
+ * Subclasses of this interface implement a 1 1/2 PC protocol. The COMMIT phase results in a series of contracts
+ * between all hops in a payment chain. This contract will get fulfilled when a particular
+ * condition on the Bitcoin blockchain is met. The contract times out if the condition is not met
+ * within a timeout period.
  */
 
 class TmContract : public TransactionManager
@@ -44,6 +49,17 @@ public:
 
 };
 
+/**
+ * @brief The TmContractCoordinator class
+ * @see TmContract
+ * @see   TmContractCohortePayee
+ * @see   TmContractCohorteHop
+ *
+ * Implement the TmContract interface.
+ * Phase QUERY:    Submit relevant TX data for both hops and payee
+ * Phase VOTE_YES: Nodes indicate that they are OK with the TX, maybe with some changes, like lowering the amount
+ * Phase COMMIT:   Commit to the contract as implemented in @see BtcContract
+ */
 
 class TmContractCoordinator : public TmContract
 {
@@ -63,7 +79,7 @@ public:
 
 
 private:
-    virtual ZR::RetVal doTx( RSZRRemoteTxItem * item );
+    ZR::RetVal doTx( RSZRRemoteTxItem * item );
     ZR::RetVal abortTx( RSZRRemoteTxItem *item );
 
     ZR::VirtualAddress m_Destination;
