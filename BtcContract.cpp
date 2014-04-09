@@ -20,7 +20,12 @@
 #include "ZRBitcoin.h"
 #include "TmContract.h"
 
+#ifdef ZR_TESTNET
+const unsigned int BtcContract::reqConfirmations = 1;
+#else
 const unsigned int BtcContract::reqConfirmations = 6;
+#endif
+
 std::vector< BtcContract* > BtcContract::contracts;
 
 

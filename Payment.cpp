@@ -105,8 +105,6 @@ int PaymentReceiver::commit( const ZR::TransactionId &txId, const std::string & 
 
     switch( m_category )
     {
-    case BITCOIN23:
-        return MyOrders::Instance()->finishExecute( this, payload );
     case PAYMENT:
         return ZR::ZR_SUCCESS;
     default:
@@ -149,8 +147,6 @@ int PaymentSpender::commit( const ZR::TransactionId & txId, const std::string & 
 
     switch( m_category )
     {
-    case BITCOIN23:
-        return MyOrders::Instance()->updateOrders( this, txId );
     case PAYMENT:
         return ZR::ZR_SUCCESS;
     default:

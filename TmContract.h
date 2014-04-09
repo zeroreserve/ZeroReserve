@@ -102,8 +102,10 @@ public:
 private:
     ZR::RetVal doQuery( RSZRRemoteTxItem * item );
     ZR::RetVal doCommit( RSZRRemoteTxItem * item );
+    ZR::RetVal abortTx( RSZRRemoteTxItem *item );
 
     BtcContract * m_payee;
+    ZR::BitcoinTxHex m_txHex;
 };
 
 

@@ -31,6 +31,10 @@ class TmContract;
  * This class implements a local contract of money transfer with a friend. The
  * conditions of the contract will be monitored. The money
  * is released when an agreed upon Bitcoin transaction has at least 6 confirmations.
+ *
+ * Sender's main pupose is to poll the conditions for a payment
+ * Receiver's main purpose is to poll the conditions for payment and check whether the
+ * payment arrives. If not, user need to be notified
  */
 
 class BtcContract

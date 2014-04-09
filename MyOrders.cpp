@@ -218,16 +218,16 @@ void MyOrders::buy( Order * order, ZR::ZR_Number amount, const Order::ID & myId 
 }
 
 
-int MyOrders::startExecute( ZR::ZR_Number & in_out_fiatAmount , const std::string &orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex )
+OrderBook::Order * MyOrders::startExecute( ZR::ZR_Number & in_out_fiatAmount , const std::string &orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex, ZR::TransactionId & outId )
 {
     std::cerr << "Zero Reserve: Starting Order execution for " << orderId << std::endl;
 
     OrderIterator it = find( orderId );
-    if( it == end() ) return ZR::ZR_FAILURE;   // no such order
+    if( it == end() ) return NULL;   // no such order
 
     Order * order = *it;
     ZR::ZR_Number leftover = order->m_amount - order->m_commitment;
-    if( leftover == 0 )return ZR::ZR_FAILURE; // nothing left in this order
+    if( leftover == 0 )return NULL; // nothing left in this order
 
     ZR::ZR_Number btcAmount = in_out_fiatAmount / order->m_price;
     if( btcAmount > leftover ){
@@ -238,28 +238,28 @@ int MyOrders::startExecute( ZR::ZR_Number & in_out_fiatAmount , const std::strin
         order->m_commitment += btcAmount;
     }
 
-    out_txHex = ZR::Bitcoin::Instance()->mkRawTx( btcAmount, order->m_btcAddr, recvAddr );
+    if( ZR::Bitcoin::Instance()->mkRawTx( btcAmount, order->m_btcAddr, recvAddr, out_txHex, outId ) != ZR::ZR_SUCCESS )
+        return NULL;
 
     std::cerr << "Zero Reserve: Order execution; TX: " << out_txHex << std::endl;
 
-    return ZR::ZR_SUCCESS;
+    return order;
 }
 
 
-int MyOrders::finishExecute( Payment * payment, const std::string & payload )
+int MyOrders::finishExecute( const std::string & orderId, const ZR::ZR_Number & btcAmount, const ZR::BitcoinTxHex & txHex )
 {
     // TODO: sign 2/3 Bitcoin TX here
-    std::cerr << "Zero Reserve: Finishing Order execution for " << payment->referrerId() << std::endl;
+    std::cerr << "Zero Reserve: Finishing Order execution for " << orderId << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
-    OrderIterator it = find( payment->referrerId() );
+    OrderIterator it = find( orderId );
     if( it != end() ){
         Order * oldOrder = *it;
-        if( oldOrder->m_amount * oldOrder->m_price >  payment->getAmount() ){ // order only partly filled
+        if( oldOrder->m_amount >  btcAmount ){ // order only partly filled
             beginResetModel();
             m_asks->beginReset();
             oldOrder->m_purpose = Order::PARTLY_FILLED;
-            ZR::ZR_Number btcAmount = payment->getAmount() / oldOrder->m_price;
             oldOrder->m_amount -= btcAmount;
             oldOrder->m_commitment -= btcAmount;
             ZrDB::Instance()->updateOrder( oldOrder );
@@ -268,10 +268,10 @@ int MyOrders::finishExecute( Payment * payment, const std::string & payload )
         }
         else {  // completely filled
             oldOrder->m_purpose = Order::FILLED;
-            remove( payment->referrerId() );
-            m_asks->remove( payment->referrerId() );
+            remove( orderId );
+            m_asks->remove( orderId );
         }
-//        ZR::Bitcoin::Instance()->finalizeMultiSig( payload ); #### Replace by signing TX
+        ZR::Bitcoin::Instance()->sendRaw( txHex );
         p3zr->publishOrder( oldOrder );
     }
     else {

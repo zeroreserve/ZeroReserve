@@ -42,12 +42,12 @@ public:
 
 
     /** Seller side: start executing the deal - initiate Bitcoin payment */
-    int startExecute( ZR::ZR_Number & in_out_fiatAmount, const std::string & orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex );
+    OrderBook::Order * startExecute( ZR::ZR_Number & in_out_fiatAmount, const std::string & orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex , ZR::TransactionId & outId );
 
     /** Seller side: remove Order from the book, if partly filled, publish
      * a new order, finish Bitcoin payment
      */
-    int finishExecute( Payment *payment , const std::string & payload );
+    int finishExecute( const std::string & orderId , const ZR::ZR_Number & btcAmount, const ZR::BitcoinTxHex & txHex );
     ZR::RetVal updateOrders( Payment * payment , const ZR::VirtualAddress &txId );
     void rollback( PaymentReceiver *payment );
     void rollback( PaymentSpender *payment, const ZR::VirtualAddress & txId );

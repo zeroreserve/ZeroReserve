@@ -104,9 +104,8 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
 
 
 
-const ZR::BitcoinTxHex ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, const ZR::BitcoinAddress & sendAddr, const ZR::BitcoinAddress & recvAddr ) const
+const ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, const ZR::BitcoinAddress & sendAddr, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & outTx, ZR::TransactionId & outId ) const
 {
-    ZR::BitcoinTxHex tx;
     try{
         JsonRpc rpc( m_settings );
         JsonRpc::JsonData addrArray( Json::arrayValue );
@@ -124,12 +123,18 @@ const ZR::BitcoinTxHex ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmoun
         JsonRpc::JsonData dest;
         dest[ Json::StaticString( recvAddr.c_str() ) ] = btcAmount.toDouble();
         JsonRpc::JsonData res1 = rpc.executeRpc ("createrawtransaction", txArray, dest );
-        tx = res1.asString();
+        std::string rawTx = res1.asString();
+        JsonRpc::JsonData res2 = rpc.executeRpc ( "signrawtransaction", rawTx );
+        if( !res2[ "complete" ] ) return ZR::ZR_FAILURE;
+        outTx = res2[ "hex" ].asString();
+        JsonRpc::JsonData res3 = rpc.executeRpc ( "decoderawtransaction", outTx );
+        outId = res3[ "txid" ].asString();
     }
     catch( nmcrpc::JsonRpc::RpcError e ){
         std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+        return ZR::ZR_FAILURE;
     }
-    return tx;
+    return ZR::ZR_SUCCESS;
 }
 
 
@@ -159,8 +164,23 @@ ZR::BitcoinAddress ZrSatoshiBitcoin::mkOrderAddress( const ZR::ZR_Number & amoun
     }
     catch( nmcrpc::JsonRpc::RpcError e ){
         std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+        return "";
     }
     return addr;
+}
+
+
+ZR::RetVal ZrSatoshiBitcoin::sendRaw( const ZR::BitcoinTxHex & txHex )
+{
+    try{
+        JsonRpc rpc( m_settings );
+        JsonRpc::JsonData res1 = rpc.executeRpc ( "sendrawtransaction", txHex );
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+        return ZR::ZR_FAILURE;
+    }
+    return ZR::ZR_SUCCESS;
 }
 
 

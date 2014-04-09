@@ -38,7 +38,6 @@ public:
     enum Category {
         PAYMENT,         // generic payment where the other leg of the deal is outside the system
         DEBT_CANCEL,     // triangle payments with the aim to cancel out debt
-        BITCOIN23,       // Bitcoin deal controlled by a 2/3 Escrow
         BITCOIN_CONTRACT // Bitcoin deal governed by a series of contracts
     };
 
