@@ -55,11 +55,16 @@ ZR::ZR_Number ZrSatoshiBitcoin::getBalance()
 
 ZR::MyWallet * ZrSatoshiBitcoin::mkWallet( ZR::MyWallet::WalletType wType )
 {
-    if( wType == ZR::MyWallet::WIFIMPORT ){
-        JsonRpc rpc( m_settings );
-        JsonRpc::JsonData res = rpc.executeRpc ( "getnewaddress" );
-        ZR::BitcoinAddress address = res.asString();
-        return new SatoshiWallet( address, 0 );
+    JsonRpc rpc( m_settings );
+    try{
+        if( wType == ZR::MyWallet::WIFIMPORT ){
+            JsonRpc::JsonData res = rpc.executeRpc ( "getnewaddress" );
+            ZR::BitcoinAddress address = res.asString();
+            return new SatoshiWallet( address, 0 );
+        }
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: loadWallets: Exception caught: " << e.what() << std::endl;
     }
     return NULL;
 }
@@ -67,38 +72,38 @@ ZR::MyWallet * ZrSatoshiBitcoin::mkWallet( ZR::MyWallet::WalletType wType )
 void ZrSatoshiBitcoin::loadWallets( std::vector< ZR::MyWallet *> & wallets )
 {
     JsonRpc rpc( m_settings );
-    JsonRpc::JsonData res = rpc.executeRpc ("listaddressgroupings");
-//    assert (res.isArray());
-    for( nmcrpc::JsonRpc::JsonData::iterator it1 = res.begin(); it1 != res.end(); it1++ ){
-        JsonRpc::JsonData res0 = *it1;
-        assert (res0.isArray());
-        for( nmcrpc::JsonRpc::JsonData::iterator it2 = res0.begin(); it2 != res0.end(); it2++ ){
-            JsonRpc::JsonData res1 = *it2;
-//            assert (res1.isArray());
+    try{
+        JsonRpc::JsonData res = rpc.executeRpc ("listaddressgroupings");
+        for( nmcrpc::JsonRpc::JsonData::iterator it1 = res.begin(); it1 != res.end(); it1++ ){
+            JsonRpc::JsonData res0 = *it1;
+            assert (res0.isArray());
+            for( nmcrpc::JsonRpc::JsonData::iterator it2 = res0.begin(); it2 != res0.end(); it2++ ){
+                JsonRpc::JsonData res1 = *it2;
+                JsonRpc::JsonData res2 = res1[ 0u ];
+                ZR::BitcoinAddress address = res2.asString();
 
-            JsonRpc::JsonData res2 = res1[ 0u ];
-//            assert (res2.isString());
-            ZR::BitcoinAddress address = res2.asString();
-
-            JsonRpc::JsonData res21 = res1[ 1u ];
-//            assert ( res21.isDouble() );
-            ZR::ZR_Number balance = res21.asDouble();
-            ZR::MyWallet * wallet = new SatoshiWallet( address, balance );
-            wallets.push_back( wallet );
+                JsonRpc::JsonData res21 = res1[ 1u ];
+                ZR::ZR_Number balance = res21.asDouble();
+                ZR::MyWallet * wallet = new SatoshiWallet( address, balance );
+                wallets.push_back( wallet );
+            }
         }
     }
-
-    return;
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: loadWallets: Exception caught: " << e.what() << std::endl;
+    }
 }
 
 
 void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amount )
 {
     JsonRpc rpc( m_settings );
-    std::vector<JsonRpc::JsonData> params;
-    params.push_back( dest );
-    params.push_back( amount.toDouble() );
-    JsonRpc::JsonData res = rpc.executeRpcList ("sendtoaddress", params );
+    try{
+        JsonRpc::JsonData res = rpc.executeRpc ("sendtoaddress", dest, amount.toDouble() );
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: send: Exception caught: " << e.what() << std::endl;
+    }
 }
 
 
@@ -131,7 +136,7 @@ ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, const ZR:
         outId = res3[ "txid" ].asString();
     }
     catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+        std::cerr << "Zero Reserve: mkRawTx: Exception caught: " << e.what() << std::endl;
         return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;
@@ -163,7 +168,7 @@ ZR::BitcoinAddress ZrSatoshiBitcoin::mkOrderAddress( const ZR::ZR_Number & amoun
         JsonRpc::JsonData res1 = rpc.executeRpc ( "lockunspent", true, lockObjArray );
     }
     catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+        std::cerr << "Zero Reserve: mkOrderAddress: Exception caught: " << e.what() << std::endl;
         return "";
     }
     return addr;
@@ -193,7 +198,7 @@ const ZR::BitcoinAddress ZrSatoshiBitcoin::newAddress() const
         addr = resAddr.asString();
     }
     catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+        std::cerr << "Zero Reserve: sendRaw: Exception caught: " << e.what() << std::endl;
     }
     return addr;
 }
@@ -208,7 +213,7 @@ unsigned int ZrSatoshiBitcoin::getConfirmations( const std::string & txId )
         return confirmations;
     }
     catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+        std::cerr << "Zero Reserve: getConfirmations: Exception caught: " << e.what() << std::endl;
     }
     return 0;
 }

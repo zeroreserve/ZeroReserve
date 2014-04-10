@@ -18,7 +18,8 @@
 
 #include "BtcContract.h"
 #include "ZRBitcoin.h"
-#include "TmContract.h"
+#include "Payment.h"
+#include "TmLocalCoordinator.h"
 
 #ifdef ZR_TESTNET
 const unsigned int BtcContract::reqConfirmations = 1;
@@ -31,7 +32,7 @@ std::vector< BtcContract* > BtcContract::contracts;
 
 void BtcContract::loadContracts()
 {
-
+// TODO:
 }
 
 void BtcContract::pollContracts()
@@ -41,29 +42,50 @@ void BtcContract::pollContracts()
     }
 }
 
+void BtcContract::rmContract( BtcContract * contract )
+{
+    // TODO: Remove contract from DB
+    for( ContractIterator it = contracts.begin(); it != contracts.end(); it++){
+        if( (*it) == contract ){
+            contracts.erase( it );
+            delete contract;
+        }
+    }
+}
+
+void BtcContract::rmContract( const ZR::TransactionId & id )
+{
+    // TODO: Remove contract from DB
+    for( ContractIterator it = contracts.begin(); it != contracts.end(); it++){
+        if( (*it)->m_btcTxId == id ){
+            contracts.erase( it );
+            delete (*it);
+        }
+    }
+}
+
 ///// End static functions
 
 
-BtcContract::BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price , const std::string & currencySym , Party party):
+BtcContract::BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price , const std::string & currencySym , Party party, const std::string & counterParty ):
     m_btcAmount( btcAmount ),
     m_price( price ),
     m_currencySym( currencySym ),
     m_party( party ),
-    m_contractTx( NULL )
+    m_counterParty( counterParty )
 {
     contracts.push_back( this );
 }
 
 BtcContract::~BtcContract()
 {
-    for( ContractIterator it = contracts.begin(); it != contracts.end(); it++){
-        if( (*it) == this )
-            contracts.erase( it );
-    }
 }
 
 void BtcContract::poll()
 {
+    if( m_btcTxId.empty() ) return; // not yet active
+    if( m_party == RECEIVER )return;
+
     unsigned int confirmations = ZR::Bitcoin::Instance()->getConfirmations( m_btcTxId );
     if( confirmations >= reqConfirmations ){
         execute();
@@ -72,14 +94,17 @@ void BtcContract::poll()
 
 void BtcContract::persist()
 {
-
+    // TODO:
 }
 
 void BtcContract::execute()
 {
-
+    Payment * payment = new PaymentSpender( m_counterParty, m_btcAmount * m_price, m_currencySym, Payment::PAYMENT );
+    TmLocalCoordinator * tm = new TmLocalCoordinator( payment );
+    if( ! tm->init() ) delete tm;
 }
 
 void BtcContract::startTransaction( const ZR::VirtualAddress & addr, const std::string & myId )
 {
+        // TODO:
 }

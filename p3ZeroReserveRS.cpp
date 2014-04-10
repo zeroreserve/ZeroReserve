@@ -23,6 +23,7 @@
 #include "ZeroReservePlugin.h"
 #include "ZeroReserveDialog.h"
 #include "MyOrders.h"
+#include "BtcContract.h"
 
 #include "pqi/p3linkmgr.h"
 
@@ -90,6 +91,7 @@ void p3ZeroReserveRS::janitor()
     m_bids->timeoutOrders();
 
     TransactionManager::timeout();
+    BtcContract::pollContracts();
 }
 
 void p3ZeroReserveRS::processIncoming()

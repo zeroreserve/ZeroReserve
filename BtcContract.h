@@ -23,7 +23,6 @@
 
 #include <vector>
 
-class TmContract;
 
 /**
  * @brief Bitcoin sale contract
@@ -43,8 +42,7 @@ public:
     /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
     enum Party { RECEIVER, SENDER };
 
-    BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price, const std::string & currencySym, Party party );
-    virtual ~BtcContract();
+    BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price, const std::string & currencySym, Party party, const std::string & counterParty );
 
     void startTransaction( const ZR::VirtualAddress & addr, const std::string & myId );
 
@@ -59,18 +57,21 @@ public:
     const ZR::ZR_Number & getBtcAmount() const { return m_btcAmount; }
     const ZR::ZR_Number getFiatAmount() const { return m_btcAmount * m_price; }
     const std::string & getCurrencySym() const { return m_currencySym; }
+    const std::string & getCounterParty() const { return m_counterParty; }
 
 private:
+    /** check if our TX is in the blockchain and has sufficient confirmations */
     void poll();
     void execute();
+    virtual ~BtcContract();
 
 private:
     std::string m_btcTxId;
-    TmContract * m_contractTx;
     ZR::ZR_Number m_btcAmount;
     ZR::ZR_Number m_price;
     std::string m_currencySym;
     Party m_party;
+    std::string m_counterParty;
 
 public:
     typedef std::vector< BtcContract* >::iterator ContractIterator;
@@ -78,6 +79,10 @@ public:
     static std::vector< BtcContract* > contracts;
     static void loadContracts();
     static void pollContracts();
+    static void rmContract( BtcContract * contract );
+    static void rmContract( const ZR::TransactionId &id );
+
+
     static const unsigned int reqConfirmations;
 };
 
