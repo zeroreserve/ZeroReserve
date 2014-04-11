@@ -70,7 +70,7 @@
    <item>
     <widget class="QTabWidget" name="ZeroReserveTabs">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="BitcoinTab">
       <attribute name="title">
@@ -337,96 +337,6 @@
             <string/>
            </property>
           </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="BitcoinWalletTab">
-      <attribute name="title">
-       <string>Bitcoin Wallet</string>
-      </attribute>
-      <layout class="QHBoxLayout" name="BitcoinTabLayout">
-       <item>
-        <layout class="QVBoxLayout" name="BitcoinAddrLayout">
-         <item>
-          <widget class="QLabel" name="label_16">
-           <property name="text">
-            <string>My Addresses</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QTableView" name="MyAddresses"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_17">
-           <property name="text">
-            <string>Peer Addresses</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QTableView" name="PeerAddresses"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="BitcoinTxLogLayout">
-         <item>
-          <widget class="QLabel" name="label_18">
-           <property name="text">
-            <string>Transactions</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QListView" name="btcTxList"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="BitcoinDisplayLayout">
-         <item>
-          <widget class="QLabel" name="label_19">
-           <property name="text">
-            <string>Balance</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLCDNumber" name="btcBalance">
-           <property name="styleSheet">
-            <string notr="true">background-color: rgb(59, 59, 59);</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_20">
-           <property name="text">
-            <string>Unconfirmed</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLCDNumber" name="btcUnconfirmed">
-           <property name="styleSheet">
-            <string notr="true">background-color: rgb(59, 59, 59);</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
          </item>
         </layout>
        </item>

@@ -101,6 +101,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.friendSelectionWidget->setShowType(FriendSelectionWidget::SHOW_GROUP | FriendSelectionWidget::SHOW_SSL);
     ui.friendSelectionWidget->start();
 
+#if 0 // Bitcoin Wallet stuff
     ui.MyAddresses->setContextMenuPolicy( Qt::CustomContextMenu );
     ui.MyAddresses->setSelectionBehavior( QAbstractItemView::SelectRows );
     ui.MyAddresses->setSelectionMode( QAbstractItemView::SingleSelection );
@@ -116,11 +117,13 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     ui.MyAddresses->setModel( myWallets );
     ui.PeerAddresses->setModel( peerAddrs );
-
+#endif
     loadGrandTotal();
     loadTxLog();
 
+#if 0 // Bitcoin Wallet stuff
     refreshWallet();
+#endif
 }
 
 
@@ -248,12 +251,12 @@ void ZeroReserveDialog::updateFriendList()
 
 ///////////////////////// My Addresses //////////////////////////
 
+#if 0 // Bitcoin Wallet
 
 void ZeroReserveDialog::contextMenuMyAddresses( const QPoint & )
 {
 
 }
-
 
 void ZeroReserveDialog::newWallet()
 {
@@ -325,3 +328,5 @@ void ZeroReserveDialog::refreshWallet()
     BitcoinAddressList * myWallets = dynamic_cast< BitcoinAddressList * >( ui.MyAddresses->model() );
     myWallets->loadWallets();
 }
+
+#endif
