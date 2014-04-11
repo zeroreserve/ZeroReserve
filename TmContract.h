@@ -87,7 +87,6 @@ private:
     ZR::VirtualAddress m_Destination;
     std::string m_myId;
     BtcContract * m_payer;
-    ZR::BitcoinAddress m_btcAddr;
 };
 
 

@@ -54,16 +54,17 @@ ZR::RetVal TmContractCoordinator::init()
     std::cerr << "Zero Reserve: Setting Contract TX manager up as coordinator" << std::endl;
     if( m_payer == NULL) return ZR::ZR_FAILURE;
 
-    m_btcAddr = ZR::Bitcoin::Instance()->newAddress();
-    if( m_btcAddr.empty() ){
+    ZR::BitcoinAddress btcAddr = ZR::Bitcoin::Instance()->newAddress();
+    if( btcAddr.empty() ){
         std::cerr << "Zero Reserve: ERROR getting Bitcoin Address" << std::endl;
         return ZR::ZR_FAILURE;
     }
+    m_payer->setBtcAddress( btcAddr );
 
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * item = new RSZRRemoteTxItem( m_Destination, QUERY, Router::SERVER, m_myId );
     std::string payload = m_payer->getFiatAmount().toStdString() + ':' + m_payer->getCurrencySym() + ':' +
-            m_btcAddr + ':' + m_payer->getBtcAmount().toStdString();
+            btcAddr + ':' + m_payer->getBtcAmount().toStdString();
     item->setPayload( payload );
     item->PeerId( m_payer->getCounterParty() );
     p3zr->sendItem( item );
@@ -91,11 +92,21 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
 {
     // TODO: Store raw tx / id and check if destination addr is what we want and matches with the amount we get back
     std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
+
+    std::vector< std::string > v_payload;
+    split( item->getPayload(), v_payload );
+    if( v_payload.size() != 2 ){
+        std::cerr << "Zero Reserve: Payload ERROR: Protocol mismatch" << std::endl;
+        return abortTx( item );
+    }
+    ZR::TransactionId btcTxId = v_payload[ 1 ];
+    m_payer->setBtcTxId( btcTxId );
+
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_Destination, COMMIT, Router::SERVER, m_myId );
     resendItem->setPayload( "" );
-
     resendItem->PeerId( m_payer->getCounterParty() );
+    m_payer->activate();
     p3zr->sendItem( resendItem );
 
     return ZR::ZR_SUCCESS;
@@ -166,6 +177,8 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
     if( Currency::currencySymbols[ order->m_currency ] != currencySym ) return abortTx( item );
 
     m_payee = new BtcContract( fiatAmount / order->m_price, order->m_price, currencySym, BtcContract::RECEIVER, item->PeerId() );
+    m_payee->setBtcAddress( destinationBtcAddr );
+    m_payee->setBtcTxId( outTxId );
 
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     TxPhase vote = VOTE_YES; // TODO: A vote is not limited to saying YES!!!
@@ -184,6 +197,7 @@ ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
 {
     std::cerr << "Zero Reserve: TmContractCohortePayee: Received COMMIT" << std::endl;
 
+    m_payee->activate();
     MyOrders::Instance()->finishExecute( item->getAddress(), m_payee->getBtcAmount(), m_txHex );
 
     return ZR::ZR_FINISH;
@@ -270,6 +284,9 @@ ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
     m_payee = new BtcContract( btcAmount, price, currencySym, BtcContract::RECEIVER, route.first );
     m_payer = new BtcContract( btcAmount, price, currencySym, BtcContract::SENDER, route.second );
 
+    m_payee->setBtcAddress( destinationBtcAddr );
+    m_payer->setBtcAddress( destinationBtcAddr );
+
     forwardItem( item );
     return ZR::ZR_SUCCESS;
 }
@@ -278,6 +295,10 @@ ZR::RetVal TmContractCohorteHop::doCommit( RSZRRemoteTxItem * item )
 {
     std::cerr << "Zero Reserve: TX Cohorte: Passing on COMMIT" << std::endl;
     std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
+
+    m_payer->activate();
+    m_payee->activate();
+
     forwardItem( item );
     return ZR::ZR_SUCCESS;
 }
@@ -290,6 +311,17 @@ ZR::RetVal TmContractCohorteHop::doVote( RSZRRemoteTxItem * item )
     if( m_Phase != QUERY || item == NULL )
         return abortTx( item );
     m_Phase = item->getTxPhase();
+
+    std::vector< std::string > v_payload;
+    split( item->getPayload(), v_payload );
+    if( v_payload.size() != 2 ){
+        std::cerr << "Zero Reserve: Payload ERROR: Protocol mismatch" << std::endl;
+        return abortTx( item );
+    }
+    ZR::TransactionId btcTxId = v_payload[ 1 ];
+    m_payer->setBtcTxId( btcTxId );
+    m_payee->setBtcTxId( btcTxId );
+    // TODO: set amount
 
     forwardItem( item );
     return ZR::ZR_SUCCESS;

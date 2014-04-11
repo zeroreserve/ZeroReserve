@@ -44,8 +44,6 @@ public:
 
     BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price, const std::string & currencySym, Party party, const std::string & counterParty );
 
-    void startTransaction( const ZR::VirtualAddress & addr, const std::string & myId );
-
     /** make sure we survive a crash or a shutdown once we're committed */
     void persist();
     /** last steps of this deal - remove from DB */
@@ -58,20 +56,26 @@ public:
     const ZR::ZR_Number getFiatAmount() const { return m_btcAmount * m_price; }
     const std::string & getCurrencySym() const { return m_currencySym; }
     const std::string & getCounterParty() const { return m_counterParty; }
+    void activate( bool val = true ){ m_activated = val; }
+    void setBtcAddress( const ZR::BitcoinAddress & addr ){ m_destAddress = addr; }
+    const ZR::BitcoinAddress & getBtcAddress(){ return m_destAddress; }
+    void setBtcTxId( const ZR::TransactionId & id ){ m_btcTxId = id; }
 
 private:
     /** check if our TX is in the blockchain and has sufficient confirmations */
-    void poll();
+    bool poll();
     void execute();
     virtual ~BtcContract();
 
 private:
-    std::string m_btcTxId;
-    ZR::ZR_Number m_btcAmount;
+    std::string m_btcTxId;            // checked for final payment
+    ZR::ZR_Number m_btcAmount;        // checked for final payment
     ZR::ZR_Number m_price;
     std::string m_currencySym;
     Party m_party;
     std::string m_counterParty;
+    bool m_activated;
+    ZR::BitcoinAddress m_destAddress; // checked for final payment
 
 public:
     typedef std::vector< BtcContract* >::iterator ContractIterator;

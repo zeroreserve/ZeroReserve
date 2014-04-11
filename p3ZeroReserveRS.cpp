@@ -27,7 +27,6 @@
 
 #include "pqi/p3linkmgr.h"
 
-#include <QMessageBox>
 #include <iostream>
 
 // after getting data from 3 peers, we believe we're complete

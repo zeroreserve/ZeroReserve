@@ -61,7 +61,7 @@ public:
 
     virtual ZR::ZR_Number newBalance() const = 0;
     virtual int init( std::string &txPayload ) = 0;
-    virtual int commit( const ZR::TransactionId &txId, const std::string & payload = "" ) = 0;
+    virtual int commit() = 0;
 
     const std::string & getCounterparty(){ return m_credit.m_id; }
     void setCounterparty( const std::string & counterparty );
@@ -107,7 +107,7 @@ public:
 
     virtual ZR::ZR_Number newBalance() const;
     virtual int init(std::string &txPayload );
-    virtual int commit( const ZR::TransactionId &txId, const std::string & payload = "" );
+    virtual int commit();
 };
 
 
@@ -119,7 +119,7 @@ public:
 
     virtual ZR::ZR_Number newBalance() const;
     virtual int init( std::string &txPayload );
-    virtual int commit( const ZR::TransactionId &txId , const std::string & payload = "" );
+    virtual int commit();
 };
 
 

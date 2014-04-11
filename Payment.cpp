@@ -90,7 +90,7 @@ int PaymentReceiver::init( std::string & txPayload )
     }
 }
 
-int PaymentReceiver::commit( const ZR::TransactionId &txId, const std::string & payload )
+int PaymentReceiver::commit()
 {
     m_credit.loadPeer();
     m_credit.m_balance = newBalance();
@@ -132,7 +132,7 @@ int PaymentSpender::init( std::string &txPayload )
     return ZR::ZR_SUCCESS;
 }
 
-int PaymentSpender::commit( const ZR::TransactionId & txId, const std::string & payload )
+int PaymentSpender::commit()
 {
     m_credit.loadPeer();
     m_credit.m_balance = newBalance();
