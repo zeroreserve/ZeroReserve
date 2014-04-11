@@ -37,8 +37,10 @@ void BtcContract::loadContracts()
 void BtcContract::pollContracts()
 {
     for( ContractIterator it = contracts.begin(); it != contracts.end(); it++ ){
-        if( (*it)->poll() )
+        if( (*it)->poll() ){
             rmContract( *it );
+            it = contracts.begin();
+        }
     }
 }
 
