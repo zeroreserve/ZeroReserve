@@ -39,7 +39,7 @@ void BtcContract::pollContracts()
     for( ContractIterator it = contracts.begin(); it != contracts.end(); it++ ){
         if( (*it)->poll() ){
             rmContract( *it );
-            it = contracts.begin();
+            break; // TODO: This makes for bad performance. Remove all executed contracts in one go
         }
     }
 }
