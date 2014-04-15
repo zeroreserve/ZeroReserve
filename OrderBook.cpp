@@ -159,6 +159,7 @@ ZR::RetVal OrderBook::processOrder( Order* order )
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
     if( currentTime - order->m_timeStamp >  Order::timeout
             || order->m_timeStamp - currentTime > 3600000){  // or more than an hour in the future
+        std::cerr << "Zero Reserve: Order " << order->m_order_id << " has bad timestamp" << std::endl;
         return ZR::ZR_FAILURE;
     }
 

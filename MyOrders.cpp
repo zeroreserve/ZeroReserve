@@ -249,7 +249,6 @@ OrderBook::Order * MyOrders::startExecute( ZR::ZR_Number & in_out_fiatAmount , c
 
 int MyOrders::finishExecute( const std::string & orderId, const ZR::ZR_Number & btcAmount, const ZR::BitcoinTxHex & txHex )
 {
-    // TODO: sign 2/3 Bitcoin TX here
     std::cerr << "Zero Reserve: Finishing Order execution for " << orderId << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
@@ -282,7 +281,7 @@ int MyOrders::finishExecute( const std::string & orderId, const ZR::ZR_Number & 
 }
 
 
-ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress & txId )
+ZR::RetVal MyOrders::updateOrders( const ZR::ZR_Number & btcAmount, const ZR::VirtualAddress & txId )
 {
     std::cerr << "Zero Reserve: Updating order " << txId << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
@@ -298,23 +297,23 @@ ZR::RetVal MyOrders::updateOrders( Payment * payment, const ZR::VirtualAddress &
     Order * order = *orderIt;
     const Order & other = (*refIt).second.second;
 
-
-    ZR::ZR_Number fiatAmount = order->m_amount * other.m_price;
-    if( fiatAmount > payment->getAmount() ){
+    if( order->m_amount > btcAmount ){
         beginResetModel();
         m_bids->beginReset();
-        order->m_amount -= payment->getAmount() / other.m_price;
+        order->m_amount -= btcAmount;
         order->m_purpose = Order::PARTLY_FILLED;
         ZrDB::Instance()->updateOrder( order );
         m_bids->endReset();
         endResetModel();
+        p3zr->publishOrder( order );
     }
     else{
         m_bids->remove( order );
         remove( order );
         order->m_purpose = Order::FILLED;
+        p3zr->publishOrder( order );
+        delete order;
     }
-    p3zr->publishOrder( order );
 
     m_CurrentTxOrders.erase( refIt );
 

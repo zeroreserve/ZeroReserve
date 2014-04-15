@@ -107,14 +107,18 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
     resendItem->setPayload( "" );
     resendItem->PeerId( m_payer->getCounterParty() );
     m_payer->activate();
+    m_payer->persist();
+    MyOrders::Instance()->updateOrders( m_payer->getBtcAmount(), m_TxId );
+
     p3zr->sendItem( resendItem );
 
-    return ZR::ZR_SUCCESS;
+    return ZR::ZR_FINISH;
 }
 
 void TmContractCoordinator::rollback()
 {
     BtcContract::rmContract( m_payer );
+    // TODO: Remove a BID completely that caused a failed TX
 }
 
 
@@ -197,7 +201,12 @@ ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
 {
     std::cerr << "Zero Reserve: TmContractCohortePayee: Received COMMIT" << std::endl;
 
+    if( m_Phase != QUERY || item == NULL )
+        return abortTx( item );
+    m_Phase = COMMIT;
+
     m_payee->activate();
+    m_payee->persist();
     MyOrders::Instance()->finishExecute( item->getAddress(), m_payee->getBtcAmount(), m_txHex );
 
     return ZR::ZR_FINISH;
@@ -227,6 +236,7 @@ ZR::RetVal TmContractCohortePayee::abortTx( RSZRRemoteTxItem *item )
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( item->getAddress(), ABORT_REQUEST, Router::CLIENT, item->getPayerId() );
     resendItem->PeerId( item->PeerId() );
     p3zr->sendItem( resendItem );
+    return ZR::ZR_SUCCESS;
 }
 
 void TmContractCohortePayee::rollback()
@@ -294,13 +304,18 @@ ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
 ZR::RetVal TmContractCohorteHop::doCommit( RSZRRemoteTxItem * item )
 {
     std::cerr << "Zero Reserve: TX Cohorte: Passing on COMMIT" << std::endl;
-    std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
+
+    if( m_Phase != QUERY || item == NULL )
+        return abortTx( item );
+    m_Phase = COMMIT;
 
     m_payer->activate();
     m_payee->activate();
+    m_payer->persist();
+    m_payee->persist();
 
     forwardItem( item );
-    return ZR::ZR_SUCCESS;
+    return ZR::ZR_FINISH;
 }
 
 ZR::RetVal TmContractCohorteHop::doVote( RSZRRemoteTxItem * item )

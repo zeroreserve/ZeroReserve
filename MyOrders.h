@@ -48,7 +48,7 @@ public:
      * a new order, finish Bitcoin payment
      */
     int finishExecute( const std::string & orderId , const ZR::ZR_Number & btcAmount, const ZR::BitcoinTxHex & txHex );
-    ZR::RetVal updateOrders( Payment * payment , const ZR::VirtualAddress &txId );
+    ZR::RetVal updateOrders( const ZR::ZR_Number & btcAmount, const ZR::VirtualAddress &txId );
     void rollback( PaymentReceiver *payment );
     void rollback( PaymentSpender *payment, const ZR::VirtualAddress & txId );
 
