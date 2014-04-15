@@ -312,7 +312,6 @@ ZR::RetVal MyOrders::updateOrders( const ZR::ZR_Number & btcAmount, const ZR::Vi
         remove( order );
         order->m_purpose = Order::FILLED;
         p3zr->publishOrder( order );
-        delete order;
     }
 
     m_CurrentTxOrders.erase( refIt );
