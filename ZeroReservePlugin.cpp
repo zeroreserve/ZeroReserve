@@ -32,13 +32,12 @@
 
 
 ZeroReservePlugin * g_ZeroReservePlugin;
-RsMutex ZeroReservePlugin::widget_creation_mutex("widget_creation_mutex");
+ZeroReservePlugin __ZeroReservePlugin;
 
 
 extern "C" {
 	void *RETROSHARE_PLUGIN_provide()
 	{
-        g_ZeroReservePlugin = new ZeroReservePlugin() ;
         return (void*) g_ZeroReservePlugin;
 	}
 	// This symbol contains the svn revision number grabbed from the executable. 
@@ -65,14 +64,15 @@ void ZeroReservePlugin::getPluginVersion(int& major,int& minor,int& svn_rev) con
 
 ZeroReservePlugin::ZeroReservePlugin()
 {
-	mainpage = NULL ;
-        mIcon = NULL ;
-        mPlugInHandler = NULL;
-        m_ZeroReserve = NULL;
-        m_peers = NULL;
+    g_ZeroReservePlugin = this;
+    mIcon = NULL ;
+    mPlugInHandler = NULL;
+    m_ZeroReserve = NULL;
+    m_peers = NULL;
 
-        m_asks = new OrderBook();
-        m_bids = new OrderBook();
+    m_asks = new OrderBook();
+    m_bids = new OrderBook();
+    mainpage = new ZeroReserveDialog( m_bids, m_asks );
 }
 
 void ZeroReservePlugin::setInterfaces(RsPlugInInterfaces &interfaces)
@@ -82,11 +82,6 @@ void ZeroReservePlugin::setInterfaces(RsPlugInInterfaces &interfaces)
 
 MainPage *ZeroReservePlugin::qt_page() const
 {
-    RsStackMutex widgetCreationMutex( widget_creation_mutex );
-    if(mainpage == NULL){
-        mainpage = new ZeroReserveDialog( m_bids, m_asks );
-    }
-
     return mainpage ;
 }
 
@@ -112,6 +107,7 @@ RsPQIService * ZeroReservePlugin::rs_pqi_service() const
 {
     if(m_ZeroReserve == NULL){
         m_ZeroReserve = new p3ZeroReserveRS(mPlugInHandler, m_bids, m_asks, m_peers );
+        mainpage->init( m_bids, m_asks );
         ZR::Bitcoin::Instance()->start();
     }
 

@@ -26,6 +26,7 @@
 class OrderBook;
 class p3ZeroReserveRS;
 class ConfigPage;
+class ZeroReserveDialog;
 
 class ZeroReservePlugin: public RsPlugin
 {
@@ -51,7 +52,7 @@ public:
     virtual void setInterfaces(RsPlugInInterfaces& interfaces);
 private:
     mutable RsPluginHandler *mPlugInHandler;
-    mutable MainPage* mainpage ;
+    mutable ZeroReserveDialog* mainpage ;
     mutable QIcon* mIcon ;
     mutable RsPeers* m_peers;
     OrderBook * m_asks;
@@ -62,6 +63,7 @@ private:
 };
 
 extern ZeroReservePlugin * g_ZeroReservePlugin;
+extern ZeroReservePlugin __ZeroReservePlugin;
 
 
 #endif

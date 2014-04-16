@@ -69,7 +69,6 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.bid_price->setValidator( new QDoubleValidator(0) );
     ui.bid_amount->setValidator( new QDoubleValidator(0) );
 
-    MyOrders * myOrders = new MyOrders( bids, asks );
 
     connect( ui.friendSelectionWidget, SIGNAL( customContextMenuRequested(QPoint) ), this, SLOT(contextMenuFriendList(QPoint) ) );
     connect( ui.friendSelectionWidget, SIGNAL( doubleClicked(int,QString) ), this, SLOT( friendDetails() ) );
@@ -78,7 +77,6 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     connect( ui.currencySelector2, SIGNAL( currentIndexChanged(QString) ), this, SLOT( loadGrandTotal() ) );
     connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), bids, SLOT( setCurrency(QString) ) );
     connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), asks, SLOT( setCurrency(QString) ) );
-    connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), myOrders, SLOT( setCurrency(QString) ) );
     connect( ui.paymentHistoryList, SIGNAL( currentItemChanged(QListWidgetItem*,QListWidgetItem*) ), this, SLOT( loadGrandTotal() ) );
 
     ui.myOrders->setContextMenuPolicy( Qt::CustomContextMenu );
@@ -88,18 +86,12 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     ui.asksTableView->setModel( asks );
     ui.bidsTableView->setModel( bids );
-    ui.myOrders->setModel( myOrders );
 
     bids->setCurrency( ui.currencySelector2->currentText() );
     asks->setCurrency( ui.currencySelector2->currentText() );
-    myOrders->setCurrency( ui.currencySelector2->currentText() );
 
 
-    /* initialize friends list */
-    ui.friendSelectionWidget->setHeaderText(tr("Friend List:"));
-    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
-    ui.friendSelectionWidget->setShowType(FriendSelectionWidget::SHOW_GROUP | FriendSelectionWidget::SHOW_SSL);
-    ui.friendSelectionWidget->start();
+
 
 #if 0 // Bitcoin Wallet stuff
     ui.MyAddresses->setContextMenuPolicy( Qt::CustomContextMenu );
@@ -118,14 +110,31 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.MyAddresses->setModel( myWallets );
     ui.PeerAddresses->setModel( peerAddrs );
 #endif
-    loadGrandTotal();
-    loadTxLog();
+
 
 #if 0 // Bitcoin Wallet stuff
     refreshWallet();
 #endif
 }
 
+void ZeroReserveDialog::init( OrderBook * bids, OrderBook * asks )
+{
+    MyOrders * myOrders = new MyOrders( bids, asks );
+    myOrders->setCurrency( ui.currencySelector2->currentText() );
+    connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), myOrders, SLOT( setCurrency(QString) ) );
+    ui.myOrders->setModel( myOrders );
+
+#if 0
+    /* initialize friends list */
+    ui.friendSelectionWidget->setHeaderText(tr("Friend List:"));
+    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
+    ui.friendSelectionWidget->setShowType(FriendSelectionWidget::SHOW_GROUP | FriendSelectionWidget::SHOW_SSL);
+    ui.friendSelectionWidget->start();
+#endif
+
+    loadGrandTotal();
+    loadTxLog();
+}
 
 void ZeroReserveDialog::loadTxLog()
 {
