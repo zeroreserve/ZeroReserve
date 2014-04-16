@@ -125,7 +125,7 @@ void TmContractCoordinator::rollback()
 ZR::RetVal TmContractCoordinator::abortTx( RSZRRemoteTxItem *item )
 {
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_Destination, COMMIT, Router::SERVER, m_myId );
+    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_Destination, ABORT, Router::SERVER, m_myId );
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
     if( addr.empty() )
         return ZR::ZR_FAILURE;
@@ -156,7 +156,6 @@ ZR::RetVal TmContractCohortePayee::init()
 ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
 {
     std::cerr << "Zero Reserve: TmContractCohortePayee: Received QUERY" << std::endl;
-    std::cerr << "Zero Reserve: Payload: " << item->getPayload() << std::endl;
 
     if( m_Phase != INIT || item == NULL )
         return abortTx( item );
@@ -199,7 +198,7 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
 
 ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
 {
-    std::cerr << "Zero Reserve: TmContractCohortePayee: Received COMMIT" << std::endl;
+    std::cerr << "Zero Reserve: TmContractCohortePayee: Received COMMIT for " << m_TxId << std::endl;
 
     if( m_Phase != QUERY || item == NULL )
         return abortTx( item );
@@ -232,6 +231,7 @@ ZR::RetVal TmContractCohortePayee::processItem( RSZRRemoteTxItem * item )
 
 ZR::RetVal TmContractCohortePayee::abortTx( RSZRRemoteTxItem *item )
 {
+    std::cerr << "Zero Reserve: TmContractCohortePayee: Requesting ABORT for " << m_TxId << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( item->getAddress(), ABORT_REQUEST, Router::CLIENT, item->getPayerId() );
     resendItem->PeerId( item->PeerId() );
@@ -305,7 +305,7 @@ ZR::RetVal TmContractCohorteHop::doCommit( RSZRRemoteTxItem * item )
 {
     std::cerr << "Zero Reserve: TX Cohorte: Passing on COMMIT" << std::endl;
 
-    if( m_Phase != QUERY || item == NULL )
+    if( m_Phase != VOTE_YES || item == NULL )
         return abortTx( item );
     m_Phase = COMMIT;
 
