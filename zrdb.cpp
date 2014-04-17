@@ -42,6 +42,23 @@ ZrDB * ZrDB::instance = 0;
 RsMutex ZrDB::creation_mutex("creation_mutex");
 
 
+static int btccontracts_callback(void * db, int argc, char ** argv, char ** )
+{
+    if( argc != 7 ) return SQLITE_ERROR;
+
+    ZR::ZR_Number btcAmount = ZR::ZR_Number::fromDecimalString( std::string( argv[ 1 ] ) );
+    ZR::ZR_Number price = ZR::ZR_Number::fromDecimalString( std::string( argv[ 2 ] ) );
+    std::string currencySym = argv[ 3 ];
+    BtcContract::Party party = (BtcContract::Party)atoi( argv[ 4 ] );
+    std::string counterParty = argv[ 5 ];
+
+    BtcContract * contract = new BtcContract(btcAmount, price, currencySym, party, counterParty );
+    contract->setBtcTxId( argv[ 0 ] );
+    contract->setBtcAddress( argv[ 6 ] );
+
+    BtcContract::contracts.push_back( contract );
+    return SQLITE_OK;
+}
 
 static int mywallets_callback(void * db, int argc, char ** argv, char ** )
 {
@@ -590,7 +607,16 @@ void ZrDB::rmBtcContract( const ZR::TransactionId & btcTxId )
 
 void ZrDB::loadBtcContracts()
 {
-
+    char *zErrMsg = 0;
+    std::ostringstream select;
+    select << "select btcTxId, btcAmount, price, currency, party, counterparty, destAddress from btccontracts";
+    std::string selectstr = select.str();
+    int rc = sqlite3_exec(m_db, selectstr.c_str(), btccontracts_callback, this, &zErrMsg);
+    if( rc!=SQLITE_OK ){
+        std::cerr << "SQL error: " << zErrMsg << std::endl;
+        sqlite3_free(zErrMsg);
+        throw std::runtime_error( "SQL Error: Cannot load contract data" );
+    }
 }
 
 
