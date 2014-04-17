@@ -20,6 +20,7 @@
 
 #include "zrtypes.h"
 #include "Currency.h"
+#include "zrdb.h"
 
 #include <vector>
 
@@ -38,6 +39,7 @@
 
 class BtcContract
 {
+    friend class ZrDB;
 public:    
     /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
     enum Party { RECEIVER, SENDER };
@@ -81,6 +83,7 @@ public:
     typedef std::vector< BtcContract* >::iterator ContractIterator;
     /** container for all active btcContracts */
     static std::vector< BtcContract* > contracts;
+
     static void loadContracts();
     static void pollContracts();
     static void rmContract( BtcContract * contract );

@@ -33,6 +33,8 @@
 #include <stdlib.h>
 
 
+class BtcContract;
+
 /**
   Database class to save and load friend data and payment info. Uses sqlite3
   */
@@ -108,6 +110,10 @@ public:
     ZR::RetVal addPeerWallet( const ZR::BitcoinAddress & address, const std::string & nick );
     void loadMyWallets( std::vector< MyWallet > & wallets );
     void addMyWallet( MyWallet & wallet );
+
+    void addBtcContract( BtcContract * contract );
+    void rmBtcContract( const ZR::TransactionId & btcTxId );
+    void loadBtcContracts();
 
 private:
     void setConfig( const std::string & key, const std::string & value );

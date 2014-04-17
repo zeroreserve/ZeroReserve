@@ -124,6 +124,8 @@ void TmContractCoordinator::rollback()
 
 ZR::RetVal TmContractCoordinator::abortTx( RSZRRemoteTxItem *item )
 {
+    std::cerr << "Zero Reserve: TmContractCoordinator: Commanding ABORT of " << m_TxId << std::endl;
+
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_Destination, ABORT, Router::SERVER, m_myId );
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );

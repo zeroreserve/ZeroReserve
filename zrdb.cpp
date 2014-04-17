@@ -18,6 +18,7 @@
 #include "zrdb.h"
 #include "ZeroReservePlugin.h"
 #include "p3ZeroReserverRS.h"
+#include "BtcContract.h"
 
 #include "retroshare/rsinit.h"
 
@@ -553,9 +554,43 @@ void ZrDB::loadMyWallets( std::vector< MyWallet > & wallets )
     }
 }
 
+
 void ZrDB::addMyWallet( MyWallet &wallet )
 {
     m_wallets->push_back( wallet );
+}
+
+
+/////////////////////////// Contracts /////////////////////////////////////
+
+
+void ZrDB::addBtcContract( BtcContract * contract )
+{
+    std::cerr << "Zero Reserve: Inserting contract " << std::endl;
+    std::ostringstream insert;
+    insert << "insert into btccontracts values( '"
+           << contract->m_btcTxId << "', "
+           << contract->m_btcAmount.toDecimalStdString() << ", "
+           << contract->m_price.toDecimalStdString() << ", '"
+           << contract->m_currencySym << "', "
+           << (int)contract->m_party << ", '"
+           << contract->m_counterParty << "', '"
+           << contract->m_destAddress << "' )";
+
+    runQuery( insert.str() );
+}
+
+void ZrDB::rmBtcContract( const ZR::TransactionId & btcTxId )
+{
+    std::cerr << "Zero Reserve: Deleting Contract " << btcTxId << std::endl;
+    std::ostringstream rmc;
+    rmc << "delete from  btccontracts where btcTxId = '" << btcTxId << "'";
+    runQuery( rmc.str() );
+}
+
+void ZrDB::loadBtcContracts()
+{
+
 }
 
 

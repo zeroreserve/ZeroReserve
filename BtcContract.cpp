@@ -19,6 +19,7 @@
 #include "BtcContract.h"
 #include "ZRBitcoin.h"
 #include "Payment.h"
+#include "zrdb.h"
 
 #ifdef ZR_TESTNET
 const unsigned int BtcContract::reqConfirmations = 2;
@@ -104,7 +105,7 @@ bool BtcContract::poll()
 
 void BtcContract::persist()
 {
-    // TODO:
+    ZrDB::Instance()->addBtcContract( this );
 }
 
 void BtcContract::execute()
@@ -118,6 +119,7 @@ void BtcContract::execute()
         PaymentReceiver p( m_counterParty, m_btcAmount * m_price, m_currencySym, Payment::PAYMENT );
         p.commit();
     }
+    ZrDB::Instance()->rmBtcContract( m_btcTxId );
 }
 
 
