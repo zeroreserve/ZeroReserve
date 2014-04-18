@@ -55,6 +55,11 @@ ZR::RetVal ZrSatoshiBitcoin::getinfo( BtcInfo & infoOut )
         std::cerr << "Zero Reserve: getinfo: Exception caught: " << e.what() << std::endl;
         return ZR::ZR_FAILURE;
     }
+    catch( ... ){
+        std::cerr << "Zero Reserve: getinfo: Unknown Exception caught" << std::endl;
+        return ZR::ZR_FAILURE;
+    }
+
     return ZR::ZR_SUCCESS;
 }
 
