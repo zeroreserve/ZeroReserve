@@ -155,7 +155,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(janitor()));
-    timer->start(1000);
+    timer->start( 10000 );
 }
 
 
@@ -289,7 +289,8 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
 
 void ZeroReserveDialog::updateFriendList()
 {
- //   ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_SINGLE );
+    // TODO: This removes a selection which can cause the user to get the wrong friend
+    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_SINGLE );
 }
 
 ///////////////////////// My Addresses //////////////////////////
