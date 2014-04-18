@@ -407,6 +407,13 @@
           <widget class="QComboBox" name="currencySelector2"/>
          </item>
          <item>
+          <widget class="QPushButton" name="currentTx">
+           <property name="text">
+            <string>Current Contracts...</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>

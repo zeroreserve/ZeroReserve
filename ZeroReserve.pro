@@ -39,7 +39,8 @@ SOURCES = ZeroReserveDialog.cpp \
     BitcoinAddressList.cpp \
     PeerAddressDialog.cpp \
     BtcContract.cpp \
-    TmContract.cpp
+    TmContract.cpp \
+    CurrentTxList.cpp
 
 LIBS += -lsqlite3
 
@@ -74,7 +75,8 @@ HEADERS = ZeroReserveDialog.h \
     BitcoinAddressList.h \
     PeerAddressDialog.h \
     BtcContract.h \
-    TmContract.h
+    TmContract.h \
+    CurrentTxList.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
@@ -83,7 +85,8 @@ FORMS = ZeroReserveDialog.ui \
     RemotePaymentDialog.ui \
     RemotePaymentRequestDialog.ui \
     NewWallet.ui \
-    PeerAddressDialog.ui
+    PeerAddressDialog.ui \
+    CurrentTxList.ui
 
 TARGET = ZeroReserve
 

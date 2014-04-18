@@ -40,7 +40,8 @@
 class BtcContract
 {
     friend class ZrDB;
-public:    
+
+public:
     /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
     enum Party { RECEIVER, SENDER };
 
@@ -88,7 +89,6 @@ public:
     static void pollContracts();
     static void rmContract( BtcContract * contract );
     static void rmContract( const ZR::TransactionId &id );
-
 
     static const unsigned int reqConfirmations;
 };

@@ -49,6 +49,7 @@ private slots:
     void cancelOrder();
     void contextMenuMyOrders(const QPoint & );
     void janitor();
+    void showCurrentTx();
 
 // Bitcoin Wallet
 #if 0

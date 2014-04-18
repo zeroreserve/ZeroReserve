@@ -28,6 +28,7 @@
 #include "NewWallet.h"
 #include "BitcoinAddressList.h"
 #include "PeerAddressDialog.h"
+#include "CurrentTxList.h"
 
 #include <QMenu>
 #include <QTimer>
@@ -81,6 +82,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), asks, SLOT( setCurrency(QString) ) );
     connect( ui.currencySelector1, SIGNAL( currentIndexChanged(QString) ), myOrders, SLOT( setCurrency(QString) ) );
     connect( ui.paymentHistoryList, SIGNAL( currentItemChanged(QListWidgetItem*,QListWidgetItem*) ), this, SLOT( loadGrandTotal() ) );
+    connect( ui.currentTx, SIGNAL( clicked() ), this, SLOT( showCurrentTx() ) );
 
     ui.myOrders->setContextMenuPolicy( Qt::CustomContextMenu );
     ui.myOrders->setSelectionBehavior( QAbstractItemView::SelectRows );
@@ -133,7 +135,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
 void ZeroReserveDialog::janitor()
 {
-    updateFriendList();
+//    updateFriendList();
 }
 
 void ZeroReserveDialog::loadTxLog()
@@ -152,6 +154,12 @@ void ZeroReserveDialog::loadTxLog()
         txStringList.append( item.timestamp.toString() + " : " + item.currency + " : " + item.m_amount.toDecimalQString() );
     }
     ui.paymentHistoryList->insertItems( 0, txStringList );
+}
+
+void ZeroReserveDialog::showCurrentTx()
+{
+    CurrentTxList ctx;
+    ctx.exec();
 }
 
 
