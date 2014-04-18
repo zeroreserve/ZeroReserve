@@ -66,8 +66,6 @@ void p3ZeroReserveRS::statusChange(const std::list< pqipeer > &plist)
             }
         }
     }
-    ZeroReserveDialog * mainWin = static_cast< ZeroReserveDialog * >( g_ZeroReservePlugin->qt_page() );
-    mainWin->updateFriendList();
 }
 
 

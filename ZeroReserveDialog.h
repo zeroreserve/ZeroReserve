@@ -48,6 +48,7 @@ private slots:
     void loadGrandTotal();
     void cancelOrder();
     void contextMenuMyOrders(const QPoint & );
+    void janitor();
 
 // Bitcoin Wallet
 #if 0

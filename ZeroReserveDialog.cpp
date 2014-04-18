@@ -30,6 +30,7 @@
 #include "PeerAddressDialog.h"
 
 #include <QMenu>
+#include <QTimer>
 #include <QStandardItem>
 #include <QMessageBox>
 #include <QInputDialog>
@@ -124,8 +125,16 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 #if 0 // Bitcoin Wallet stuff
     refreshWallet();
 #endif
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(janitor()));
+    timer->start(1000);
 }
 
+
+void ZeroReserveDialog::janitor()
+{
+    updateFriendList();
+}
 
 void ZeroReserveDialog::loadTxLog()
 {
@@ -246,7 +255,7 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
 
 void ZeroReserveDialog::updateFriendList()
 {
-// FIXME:    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
+    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
 }
 
 ///////////////////////// My Addresses //////////////////////////
