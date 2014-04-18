@@ -127,6 +127,32 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 #if 0 // Bitcoin Wallet stuff
     refreshWallet();
 #endif
+
+    ZR::Bitcoin::BtcInfo btcInfo;
+    if( ZR::ZR_SUCCESS == ZR::Bitcoin::Instance()->getinfo( btcInfo ) ){
+        QString testNet;
+        if( btcInfo.testnet ){
+#ifdef ZR_TESTNET
+            QMessageBox::information( this, "Bitcoin Connection", QString( "Connected to Bitcoin Client version " ) + QString::number( btcInfo.version ) + " TESTNET" );
+#else
+            QMessageBox::critical( this, "Bitcoin Connection", "Zero Reserve is PRODNET, Bitcoin client is TESTNET. Exiting" );
+            exit( -1 );
+#endif
+        }
+        else {
+#ifndef ZR_TESTNET
+            QMessageBox::information( this, "Bitcoin Connection", QString( "Connected to Bitcoin Client version " ) + QString::number( btcInfo.version ) + " PRODNET" );
+#else
+            QMessageBox::critical( this, "Bitcoin Connection", "Zero Reserve is TESTNET, Bitcoin client is PRODNET. Exiting" );
+            exit( -1 );
+#endif
+        }
+    }
+    else {
+        QMessageBox::critical( this, "Bitcoin Connection", "Zero Reserve cannot connect to Bitcoin Client" );
+    }
+
+
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(janitor()));
     timer->start(1000);
@@ -135,7 +161,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
 void ZeroReserveDialog::janitor()
 {
-//    updateFriendList();
+    updateFriendList();
 }
 
 void ZeroReserveDialog::loadTxLog()

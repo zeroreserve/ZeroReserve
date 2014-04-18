@@ -42,6 +42,23 @@ ZR::RetVal ZrSatoshiBitcoin::stop()
     return ZR::ZR_SUCCESS;
 }
 
+ZR::RetVal ZrSatoshiBitcoin::getinfo( BtcInfo & infoOut )
+{
+    JsonRpc rpc( m_settings );
+    try{
+        JsonRpc::JsonData res = rpc.executeRpc ( "getinfo" );
+        infoOut.testnet = res[ "testnet" ].asBool();
+        infoOut.balance = res[ "balance" ].asDouble();
+        infoOut.version = res[ "version" ].asUInt();
+    }
+    catch( nmcrpc::JsonRpc::RpcError e ){
+        std::cerr << "Zero Reserve: getinfo: Exception caught: " << e.what() << std::endl;
+        return ZR::ZR_FAILURE;
+    }
+    return ZR::ZR_SUCCESS;
+}
+
+
 ZR::ZR_Number ZrSatoshiBitcoin::getBalance()
 {
 

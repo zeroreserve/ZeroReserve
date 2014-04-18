@@ -91,10 +91,18 @@ private:
 class Bitcoin
 {
 public:
+    typedef struct {
+        unsigned int version;
+        bool testnet;
+        ZR::ZR_Number balance;
+    } BtcInfo;
+
+
     virtual ZR::RetVal commit() = 0;
     virtual ZR::RetVal start() = 0;
     virtual ZR::RetVal stop() = 0;
     virtual ZR::ZR_Number getBalance() = 0;
+    virtual ZR::RetVal getinfo( BtcInfo & infoOut ) = 0;
 
     virtual MyWallet * mkWallet( MyWallet::WalletType wType ) = 0;
     virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets ) = 0;

@@ -32,6 +32,8 @@ public:
     virtual ZR::RetVal start();
     virtual ZR::RetVal stop();
     virtual ZR::ZR_Number getBalance();
+    virtual ZR::RetVal getinfo( BtcInfo & infoOut );
+
 
     virtual ZR::MyWallet * mkWallet( ZR::MyWallet::WalletType wType );
     virtual void loadWallets( std::vector< ZR::MyWallet *> & wallets );
