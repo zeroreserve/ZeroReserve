@@ -289,7 +289,7 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
 
 void ZeroReserveDialog::updateFriendList()
 {
-    ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_MULTI);
+ //   ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_SINGLE );
 }
 
 ///////////////////////// My Addresses //////////////////////////
