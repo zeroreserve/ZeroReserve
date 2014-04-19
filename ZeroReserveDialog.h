@@ -67,7 +67,7 @@ private:
     void loadTxLog();
 
     Ui::ZeroReserveDialog ui;
-
+    bool m_update;
 };
 
 #endif // ZERORESERVEDIALOG_H

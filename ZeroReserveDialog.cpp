@@ -46,6 +46,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 {
     std::cerr << "Zero Reserve: Setting up main dialog" << std::endl;
     ui.setupUi(this);
+    m_update = true;
 
     Payment::txLogView = ui.paymentHistoryList;
 
@@ -155,7 +156,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(janitor()));
-    timer->start( 10000 );
+    timer->start( 3000 );
 }
 
 
@@ -203,6 +204,7 @@ void ZeroReserveDialog::loadGrandTotal()
 
 void ZeroReserveDialog::contextMenuFriendList(QPoint)
 {
+    m_update = false; // updating friend list destroys selection. This protects from updating.
     QMenu contextMnu(this);
 
     int selectedCount = ui.friendSelectionWidget->selectedItemCount();
@@ -219,6 +221,7 @@ void ZeroReserveDialog::contextMenuFriendList(QPoint)
     action->setEnabled(selectedCount == 1 && idType == FriendSelectionWidget::IDTYPE_SSL);
 
     contextMnu.exec(QCursor::pos());
+    m_update = true;
 }
 
 void ZeroReserveDialog::friendDetails()
@@ -289,7 +292,7 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
 
 void ZeroReserveDialog::updateFriendList()
 {
-    // TODO: This removes a selection which can cause the user to get the wrong friend
+    if( !m_update )return;
     ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_SINGLE );
 }
 
