@@ -69,6 +69,11 @@
      <string>Price</string>
     </property>
    </column>
+   <column>
+    <property name="text">
+     <string>Party</string>
+    </property>
+   </column>
   </widget>
  </widget>
  <resources/>

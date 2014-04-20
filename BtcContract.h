@@ -55,10 +55,15 @@ public:
     bool isReceiver() const { return m_party == RECEIVER; }
     bool isSender() const { return m_party == SENDER; }
     bool isContract( const std::string & contractId ) const { return contractId == m_btcTxId; }
+
     const ZR::ZR_Number & getBtcAmount() const { return m_btcAmount; }
     const ZR::ZR_Number getFiatAmount() const { return m_btcAmount * m_price; }
     const std::string & getCurrencySym() const { return m_currencySym; }
     const std::string & getCounterParty() const { return m_counterParty; }
+    const std::string & getBtcTxId() const { return m_btcTxId; }
+    const Party getParty(){ return m_party; }
+    const ZR::ZR_Number & getPrice() { return m_price; }
+
     void activate( bool val = true ){ m_activated = val; }
     void setBtcAddress( const ZR::BitcoinAddress & addr ){ m_destAddress = addr; }
     const ZR::BitcoinAddress & getBtcAddress(){ return m_destAddress; }

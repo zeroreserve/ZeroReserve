@@ -29,11 +29,25 @@ CurrentTxList::CurrentTxList(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    int row = 0;
     for( BtcContract::ContractIterator it = BtcContract::contracts.begin(); it != BtcContract::contracts.end(); it++ ){
         BtcContract * contract = *it;
+        ui->txList->insertRow( 0 );
+
+        QString btcTxId = QString::fromStdString( contract->getBtcTxId() );
+        ui->txList->setItem( 0, 0, new QTableWidgetItem( btcTxId ) );
+
         QString counterparty = QString::fromStdString( contract->getCounterParty() );
-        ui->txList->setItem( row, 0, new QTableWidgetItem( counterparty ) );
+        ui->txList->setItem( 0, 1, new QTableWidgetItem( counterparty ) );
+
+        ui->txList->setItem( 0, 2, new QTableWidgetItem( contract->getFiatAmount().toDecimalQString() ) );
+
+        QString curr = QString::fromStdString( contract->getCurrencySym() );
+        ui->txList->setItem( 0, 3, new QTableWidgetItem( curr ) );
+
+        ui->txList->setItem( 0, 4, new QTableWidgetItem( contract->getPrice().toDecimalQString() ) );
+
+        QString party = ( BtcContract::SENDER == contract->getParty() )? "Payer" : "Payee";
+        ui->txList->setItem( 0, 5, new QTableWidgetItem( party ) );
     }
 }
 
