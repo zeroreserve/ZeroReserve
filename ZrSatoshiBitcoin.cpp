@@ -22,8 +22,13 @@ using namespace nmcrpc;
 
 ZrSatoshiBitcoin::ZrSatoshiBitcoin()
 {
+#ifdef WIN32
+    std::string home = getenv ("APPDATA");
+    m_settings.readConfig( home + "/bitcoin/bitcoin.conf" );
+#else
     std::string home = getenv ("HOME");
     m_settings.readConfig( home + "/.bitcoin/bitcoin.conf" );
+#endif
 }
 
 
