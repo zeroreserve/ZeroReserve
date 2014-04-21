@@ -51,17 +51,6 @@ private slots:
     void janitor();
     void showCurrentTx();
 
-// Bitcoin Wallet
-#if 0
-    void contextMenuMyAddresses( const QPoint & );
-    void newWallet();
-    void sendBTCTo();
-
-    void contextMenuPeerAddresses( const QPoint & );
-    void newPeerAddress();
-    void refreshWallet();
-#endif
-
 private:
     void doOrder(OrderBook * book, OrderBook::Order::OrderType type, ZR::ZR_Number price, ZR::ZR_Number amount );
     void loadTxLog();
