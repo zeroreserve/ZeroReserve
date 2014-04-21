@@ -51,6 +51,9 @@ void BtcContract::rmContract( BtcContract * contract )
     for( ContractIterator it = contracts.begin(); it != contracts.end(); it++){
         BtcContract * c = *it;
         if( c->m_counterParty == contract->m_counterParty && c->m_btcTxId == contract->m_btcTxId ){
+            if( !contract->m_btcTxId.empty() ){
+                ZrDB::Instance()->rmBtcContract( contract->m_btcTxId );
+            }
             contracts.erase( it );
             delete contract;
             break;
@@ -64,6 +67,9 @@ void BtcContract::rmContract( const ZR::TransactionId & id )
     for( ContractIterator it = contracts.begin(); it != contracts.end(); it++){
         if( (*it)->m_btcTxId == id ){
             BtcContract * contract = *it;
+            if( !contract->m_btcTxId.empty() ){
+                ZrDB::Instance()->rmBtcContract( contract->m_btcTxId );
+            }
             contracts.erase( it );
             delete contract;
             break;
