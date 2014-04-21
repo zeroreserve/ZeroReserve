@@ -26,7 +26,6 @@
 #include "Payment.h"
 #include "ZRBitcoin.h"
 #include "NewWallet.h"
-#include "BitcoinAddressList.h"
 #include "PeerAddressDialog.h"
 #include "CurrentTxList.h"
 
@@ -105,29 +104,9 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.friendSelectionWidget->setShowType(FriendSelectionWidget::SHOW_GROUP | FriendSelectionWidget::SHOW_SSL);
     ui.friendSelectionWidget->start();
 
-#if 0 // Bitcoin Wallet stuff
-    ui.MyAddresses->setContextMenuPolicy( Qt::CustomContextMenu );
-    ui.MyAddresses->setSelectionBehavior( QAbstractItemView::SelectRows );
-    ui.MyAddresses->setSelectionMode( QAbstractItemView::SingleSelection );
-    connect(ui.MyAddresses, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT( contextMenuMyAddresses( const QPoint &) ) );
-
-    ui.PeerAddresses->setContextMenuPolicy( Qt::CustomContextMenu );
-    ui.PeerAddresses->setSelectionBehavior( QAbstractItemView::SelectRows );
-    ui.PeerAddresses->setSelectionMode( QAbstractItemView::SingleSelection );
-    connect(ui.PeerAddresses, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT( contextMenuPeerAddresses( const QPoint &) ) );
-
-    BitcoinAddressList * myWallets = new BitcoinAddressList();
-    BitcoinAddressList * peerAddrs = new BitcoinAddressList();
-
-    ui.MyAddresses->setModel( myWallets );
-    ui.PeerAddresses->setModel( peerAddrs );
-#endif
     loadGrandTotal();
     loadTxLog();
-
-#if 0 // Bitcoin Wallet stuff
-    refreshWallet();
-#endif
+    ZrDB::Instance()->loadBtcContracts();
 
     ZR::Bitcoin::BtcInfo btcInfo;
     if( ZR::ZR_SUCCESS == ZR::Bitcoin::Instance()->getinfo( btcInfo ) ){
@@ -296,84 +275,3 @@ void ZeroReserveDialog::updateFriendList()
     ui.friendSelectionWidget->setModus(FriendSelectionWidget::MODUS_SINGLE );
 }
 
-///////////////////////// My Addresses //////////////////////////
-
-#if 0 // Bitcoin Wallet
-
-void ZeroReserveDialog::contextMenuMyAddresses( const QPoint & )
-{
-
-}
-
-void ZeroReserveDialog::newWallet()
-{
-    NewWallet d( this );
-    if( d.exec() == 0 )
-        return;
-    ZR::MyWallet * wallet = ZR::Bitcoin::Instance()->mkWallet( d.m_walletType );
-    wallet->setSeed( d.m_seed.toStdString() );
-    BitcoinAddressList * addrs = static_cast< BitcoinAddressList* >( ui.MyAddresses->model() );
-    wallet->persist();
-    addrs->addWallet( wallet );
-}
-
-///////////////////////// Peer Addresses //////////////////////////
-
-void ZeroReserveDialog::contextMenuPeerAddresses( const QPoint & )
-{
-    QMenu contextMnu(this);
-    QAction *action = contextMnu.addAction(QIcon(), tr("New Peer Address"), this, SLOT( newPeerAddress() ) );
-    action->setEnabled(true);
-    action = contextMnu.addAction(QIcon(), tr("Send to..."), this, SLOT( sendBTCTo() ) );
-    action->setEnabled(true);
-
-    contextMnu.exec(QCursor::pos());
-}
-
-
-void ZeroReserveDialog::sendBTCTo()
-{
-    QModelIndexList indexes = ui.PeerAddresses->selectionModel()->selection().indexes();
-    const QString address = ( indexes.empty() )? "" : indexes.at( 0 ).data().toString();
-
-    const double amount_d = QInputDialog::getDouble( 0, "Pay To", address + "\nAmount:", 0, 0, 1000., 4 );
-    QString amount_s = QString::number( amount_d );
-    const ZR::ZR_Number amount = ZR::ZR_Number::fromDecimalString( amount_s );
-
-    ZR::Bitcoin::Instance()->send( address.toStdString(), amount );
-}
-
-
-void ZeroReserveDialog::newPeerAddress()
-{
-    PeerAddressDialog d( this );
-    if( d.exec() == 0 )
-        return;
-    ZR::PeerWallet * wallet = new ZR::PeerWallet( d.m_address );
-    wallet->setNick( d.m_nick );
-    BitcoinAddressList * addrs = static_cast< BitcoinAddressList* >( ui.PeerAddresses->model() );
-    wallet->persist();
-    addrs->addWallet( wallet );
-}
-
-void ZeroReserveDialog::refreshWallet()
-{
-    ZR::ZR_Number balance( 0 );
-    while( true ){
-        try{
-            balance = ZR::Bitcoin::Instance()->getBalance();
-            break;
-        }
-        catch( ... ){
-            QMessageBox::StandardButton pressed = QMessageBox::critical( NULL, "JSON Error", "Can't connect to Satoshi Client", QMessageBox::Retry | QMessageBox::Abort );
-            if ( pressed == QMessageBox::Abort )
-                return;
-        }
-    }
-    ui.btcBalance->display( balance.toQString() );
-
-    BitcoinAddressList * myWallets = dynamic_cast< BitcoinAddressList * >( ui.MyAddresses->model() );
-    myWallets->loadWallets();
-}
-
-#endif
