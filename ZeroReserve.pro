@@ -36,7 +36,6 @@ SOURCES = ZeroReserveDialog.cpp \
     TmLocalCoordinator.cpp \
     TmLocalCohorte.cpp \
     NewWallet.cpp \
-    BitcoinAddressList.cpp \
     PeerAddressDialog.cpp \
     BtcContract.cpp \
     TmContract.cpp \
@@ -72,7 +71,6 @@ HEADERS = ZeroReserveDialog.h \
     ZRBitcoin.h \
     ZrLibBitcoin.h \
     NewWallet.h \
-    BitcoinAddressList.h \
     PeerAddressDialog.h \
     BtcContract.h \
     TmContract.h \
