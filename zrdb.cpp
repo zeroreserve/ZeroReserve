@@ -44,15 +44,17 @@ RsMutex ZrDB::creation_mutex("creation_mutex");
 
 static int btccontracts_callback(void * db, int argc, char ** argv, char ** )
 {
-    if( argc != 7 ) return SQLITE_ERROR;
+    if( argc != 8 ) return SQLITE_ERROR;
 
     ZR::ZR_Number btcAmount = ZR::ZR_Number::fromDecimalString( std::string( argv[ 1 ] ) );
     ZR::ZR_Number price = ZR::ZR_Number::fromDecimalString( std::string( argv[ 2 ] ) );
     std::string currencySym = argv[ 3 ];
     BtcContract::Party party = (BtcContract::Party)atoi( argv[ 4 ] );
     std::string counterParty = argv[ 5 ];
+    qint64 creationtime = atoll( argv[7] );
 
-    BtcContract * contract = new BtcContract(btcAmount, price, currencySym, party, counterParty );
+
+    BtcContract * contract = new BtcContract(btcAmount, price, currencySym, party, counterParty, creationtime );
     contract->setBtcTxId( argv[ 0 ] );
     contract->setBtcAddress( argv[ 6 ] );
 
@@ -236,7 +238,7 @@ void ZrDB::init()
         tables.push_back( "create table if not exists myorders ( orderid varchar(32), ordertype int, amount decimal(12,8), price decimal(12,8), currency varchar(3), creationtime int, purpose int )");
         tables.push_back( "create table if not exists mywallet ( secret varchar(64), type int, nick varchar(64) )");
         tables.push_back( "create table if not exists peerwallet ( address varchar(34), nick varchar(64) )");
-        tables.push_back( "create table if not exists btccontracts ( btcTxId varchar(64), btcAmount decimal(12,8), price decimal(12,8), currency varchar(3), party int, counterparty varchar(32), destAddress varchar(36) )");
+        tables.push_back( "create table if not exists btccontracts ( btcTxId varchar(64), btcAmount decimal(12,8), price decimal(12,8), currency varchar(3), party int, counterparty varchar(32), destAddress varchar(36), creationtime int )");
         tables.push_back( "create unique index if not exists id_curr on peers ( id, currency)");
         for(std::vector < std::string >::const_iterator it = tables.begin(); it != tables.end(); it++ ){
             rc = sqlite3_exec(m_db, (*it).c_str(), noop_callback, this, &zErrMsg);
@@ -592,7 +594,8 @@ void ZrDB::addBtcContract( BtcContract * contract )
            << contract->m_currencySym << "', "
            << (int)contract->m_party << ", '"
            << contract->m_counterParty << "', '"
-           << contract->m_destAddress << "' )";
+           << contract->m_destAddress << "', "
+           << contract->m_creationtime << " )";
 
     runQuery( insert.str() );
 }
@@ -609,7 +612,7 @@ void ZrDB::loadBtcContracts()
 {
     char *zErrMsg = 0;
     std::ostringstream select;
-    select << "select btcTxId, btcAmount, price, currency, party, counterparty, destAddress from btccontracts";
+    select << "select btcTxId, btcAmount, price, currency, party, counterparty, destAddress, creationtime from btccontracts order by creationtime desc";
     std::string selectstr = select.str();
     int rc = sqlite3_exec(m_db, selectstr.c_str(), btccontracts_callback, this, &zErrMsg);
     if( rc!=SQLITE_OK ){

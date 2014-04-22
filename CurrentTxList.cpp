@@ -48,6 +48,9 @@ CurrentTxList::CurrentTxList(QWidget *parent) :
 
         QString party = ( BtcContract::SENDER == contract->getParty() )? "Payer" : "Payee";
         ui->txList->setItem( 0, 5, new QTableWidgetItem( party ) );
+
+        QDateTime creationTime = QDateTime::fromMSecsSinceEpoch( contract->getCreationTime() );
+        ui->txList->setItem( 0, 6, new QTableWidgetItem( creationTime.toString() ) );
     }
 }
 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>765</width>
+    <width>857</width>
     <height>300</height>
    </rect>
   </property>
@@ -34,7 +34,7 @@
     <rect>
      <x>20</x>
      <y>10</y>
-     <width>721</width>
+     <width>821</width>
      <height>221</height>
     </rect>
    </property>
@@ -72,6 +72,11 @@
    <column>
     <property name="text">
      <string>Party</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Creation Time</string>
     </property>
    </column>
   </widget>

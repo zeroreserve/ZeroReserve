@@ -30,10 +30,6 @@ const unsigned int BtcContract::reqConfirmations = 6;
 std::vector< BtcContract* > BtcContract::contracts;
 
 
-void BtcContract::loadContracts()
-{
-// TODO:
-}
 
 void BtcContract::pollContracts()
 {
@@ -80,7 +76,7 @@ void BtcContract::rmContract( const ZR::TransactionId & id )
 ///// End static functions
 
 
-BtcContract::BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price , const std::string & currencySym , Party party, const std::string & counterParty ):
+BtcContract::BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price , const std::string & currencySym , Party party, const std::string & counterParty, const qint64 creationtime ):
     m_btcAmount( btcAmount ),
     m_price( price ),
     m_currencySym( currencySym ),
@@ -88,6 +84,12 @@ BtcContract::BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number &
     m_counterParty( counterParty ),
     m_activated( false )
 {
+    if( creationtime == 0 ){
+        m_creationtime = QDateTime::currentMSecsSinceEpoch();  // newly created contract gets a current timestamp
+    }
+    else{
+        m_creationtime = creationtime;  // contract loaded from DB
+    }
     contracts.push_back( this );
 }
 
@@ -113,6 +115,7 @@ void BtcContract::persist()
 {
     ZrDB::Instance()->addBtcContract( this );
 }
+
 
 void BtcContract::execute()
 {

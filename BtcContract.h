@@ -45,7 +45,7 @@ public:
     /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
     enum Party { RECEIVER, SENDER };
 
-    BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price, const std::string & currencySym, Party party, const std::string & counterParty );
+    BtcContract(const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price, const std::string & currencySym, Party party, const std::string & counterParty , const qint64 creationtime = 0 );
 
     /** make sure we survive a crash or a shutdown once we're committed */
     void persist();
@@ -61,8 +61,9 @@ public:
     const std::string & getCurrencySym() const { return m_currencySym; }
     const std::string & getCounterParty() const { return m_counterParty; }
     const std::string & getBtcTxId() const { return m_btcTxId; }
-    const Party getParty(){ return m_party; }
+    Party getParty(){ return m_party; }
     const ZR::ZR_Number & getPrice() { return m_price; }
+    const qint64 & getCreationTime(){ return m_creationtime; }
 
     void activate( bool val = true ){ m_activated = val; }
     void setBtcAddress( const ZR::BitcoinAddress & addr ){ m_destAddress = addr; }
@@ -84,13 +85,13 @@ private:
     std::string m_counterParty;
     bool m_activated;
     ZR::BitcoinAddress m_destAddress; // checked for final payment
+    qint64 m_creationtime;
 
 public:
     typedef std::vector< BtcContract* >::iterator ContractIterator;
     /** container for all active btcContracts */
     static std::vector< BtcContract* > contracts;
 
-    static void loadContracts();
     static void pollContracts();
     static void rmContract( BtcContract * contract );
     static void rmContract( const ZR::TransactionId &id );
