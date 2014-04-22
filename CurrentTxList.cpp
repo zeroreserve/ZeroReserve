@@ -20,6 +20,9 @@
 
 #include "BtcContract.h"
 
+#include "retroshare/rspeers.h"
+
+
 #include <QTableWidgetItem>
 
 
@@ -36,7 +39,7 @@ CurrentTxList::CurrentTxList(QWidget *parent) :
         QString btcTxId = QString::fromStdString( contract->getBtcTxId() );
         ui->txList->setItem( 0, 0, new QTableWidgetItem( btcTxId ) );
 
-        QString counterparty = QString::fromStdString( contract->getCounterParty() );
+        QString counterparty = QString::fromStdString( rsPeers->getPeerName( contract->getCounterParty() ) );
         ui->txList->setItem( 0, 1, new QTableWidgetItem( counterparty ) );
 
         ui->txList->setItem( 0, 2, new QTableWidgetItem( contract->getFiatAmount().toDecimalQString() ) );
