@@ -35,6 +35,8 @@
 
 const char * const ZrDB::TXLOGPATH        = "TXLOGPATH";
 const char * const ZrDB::DB_VERSION       = "DB_VERSION";
+const char * const ZrDB::MINIMUM_FEE      = "MINIMUM_FEE";
+const char * const ZrDB::PERCENTAGE_FEE   = "PERCENTAGE_FEE";
 
 
 
@@ -250,6 +252,8 @@ void ZrDB::init()
         }
         setConfig( TXLOGPATH, pathname + "/zeroreserve.tx" );
         setConfig( DB_VERSION, "0" );
+        setConfig( MINIMUM_FEE, "0/1" );
+        setConfig( PERCENTAGE_FEE, "0/1" );
     }
     openTxLog();
 }

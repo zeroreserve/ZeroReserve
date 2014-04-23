@@ -144,6 +144,8 @@ private:
 public: // config parameters
     static const char * const TXLOGPATH;
     static const char * const DB_VERSION;       // integer
+    static const char * const MINIMUM_FEE;
+    static const char * const PERCENTAGE_FEE;
 };
 
 #endif // ZRDB_H
