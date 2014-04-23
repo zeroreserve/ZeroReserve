@@ -16,14 +16,18 @@
 */
 
 #include "helpers.h"
+
+#ifndef WIN32
 #include <execinfo.h>
+#endif
+
 #include <stdlib.h>
 #include <iostream>
 
 
 void print_stacktrace()
 {
-
+#ifndef WIN32
     int j, nptrs;
 #define SIZE 100
     void *buffer[ SIZE ];
@@ -41,4 +45,5 @@ void print_stacktrace()
         std::cerr << "Zero Reserve: " << strings[j] << std::endl;
 
     free(strings);
+#endif
 }
