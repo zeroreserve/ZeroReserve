@@ -119,8 +119,7 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
 void TmContractCoordinator::rollback()
 {
     BtcContract::rmContract( m_payer );
-
-    MyOrders::Instance()->rollback( m_TxId );
+    MyOrders::Instance()->rollbackBuyer( m_TxId );
 }
 
 

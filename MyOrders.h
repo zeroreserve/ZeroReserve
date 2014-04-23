@@ -49,10 +49,12 @@ public:
      */
     int finishExecute( const std::string & orderId , const ZR::ZR_Number & btcAmount, const ZR::BitcoinTxHex & txHex );
     ZR::RetVal updateOrders( const ZR::ZR_Number & btcAmount, const ZR::VirtualAddress &txId );
-    void rollback( PaymentReceiver *payment );
+
+    /** De-allocate funds from an ASK that failed */
+    void rollbackSeller( const ZR::VirtualAddress & txId );
 
     /** Remove a BID completely that caused a failed TX */
-    void rollback( const ZR::VirtualAddress & txId );
+    void rollbackBuyer( const ZR::VirtualAddress & txId );
 
     void cancelOrder( int index );
 

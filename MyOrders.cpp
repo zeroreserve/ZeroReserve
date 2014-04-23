@@ -316,17 +316,12 @@ void MyOrders::cancelOrder( int index )
 }
 
 
-void MyOrders::rollback( PaymentReceiver *payment )
+void MyOrders::rollbackSeller( const ZR::VirtualAddress & txId )
 {
-    OrderIterator it = find( payment->referrerId() );
-    if( it != end() ){
-        Order * oldOrder = *it;
-        ZR::ZR_Number btcAmount = payment->getAmount() / oldOrder->m_price;
-        oldOrder->m_commitment -= btcAmount;
-    }
+
 }
 
-void MyOrders::rollback( const ZR::VirtualAddress & txId )
+void MyOrders::rollbackBuyer( const ZR::VirtualAddress & txId )
 {
     std::cerr << "Zero Reserve: Rolling back " << txId << std::endl;
 
