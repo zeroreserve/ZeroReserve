@@ -22,13 +22,18 @@ using namespace nmcrpc;
 
 ZrSatoshiBitcoin::ZrSatoshiBitcoin()
 {
+    try {
 #ifdef WIN32
-    std::string home = getenv ("APPDATA");
-    m_settings.readConfig( home + "/bitcoin/bitcoin.conf" );
+        std::string home = getenv ("APPDATA");
+        m_settings.readConfig( home + "/bitcoin/bitcoin.conf" );
 #else
-    std::string home = getenv ("HOME");
-    m_settings.readConfig( home + "/.bitcoin/bitcoin.conf" );
+        std::string home = getenv ("HOME");
+        m_settings.readConfig( home + "/.bitcoin/bitcoin.conf" );
 #endif
+    }
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+    }
 }
 
 
@@ -56,12 +61,8 @@ ZR::RetVal ZrSatoshiBitcoin::getinfo( BtcInfo & infoOut )
         infoOut.balance = res[ "balance" ].asDouble();
         infoOut.version = res[ "version" ].asUInt();
     }
-    catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: getinfo: Exception caught: " << e.what() << std::endl;
-        return ZR::ZR_FAILURE;
-    }
-    catch( ... ){
-        std::cerr << "Zero Reserve: getinfo: Unknown Exception caught" << std::endl;
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
         return ZR::ZR_FAILURE;
     }
 
@@ -90,8 +91,8 @@ ZR::MyWallet * ZrSatoshiBitcoin::mkWallet( ZR::MyWallet::WalletType wType )
             return new SatoshiWallet( address, 0 );
         }
     }
-    catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: loadWallets: Exception caught: " << e.what() << std::endl;
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
     }
     return NULL;
 }
@@ -116,8 +117,8 @@ void ZrSatoshiBitcoin::loadWallets( std::vector< ZR::MyWallet *> & wallets )
             }
         }
     }
-    catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: loadWallets: Exception caught: " << e.what() << std::endl;
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
     }
 }
 
@@ -128,8 +129,8 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
     try{
         JsonRpc::JsonData res = rpc.executeRpc ("sendtoaddress", dest, amount.toDouble() );
     }
-    catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: send: Exception caught: " << e.what() << std::endl;
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
     }
 }
 
@@ -162,8 +163,8 @@ ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, const ZR:
         JsonRpc::JsonData res3 = rpc.executeRpc ( "decoderawtransaction", outTx );
         outId = res3[ "txid" ].asString();
     }
-    catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: mkRawTx: Exception caught: " << e.what() << std::endl;
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
         return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;
@@ -194,8 +195,8 @@ ZR::BitcoinAddress ZrSatoshiBitcoin::mkOrderAddress( const ZR::ZR_Number & amoun
         lockObjArray.append( lockObj );
         JsonRpc::JsonData res1 = rpc.executeRpc ( "lockunspent", true, lockObjArray );
     }
-    catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: mkOrderAddress: Exception caught: " << e.what() << std::endl;
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
         return "";
     }
     return addr;
@@ -208,8 +209,8 @@ ZR::RetVal ZrSatoshiBitcoin::sendRaw( const ZR::BitcoinTxHex & txHex )
         JsonRpc rpc( m_settings );
         JsonRpc::JsonData res1 = rpc.executeRpc ( "sendrawtransaction", txHex );
     }
-    catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: Exception caught: " << e.what() << std::endl;
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
         return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;
@@ -224,8 +225,8 @@ const ZR::BitcoinAddress ZrSatoshiBitcoin::newAddress() const
         JsonRpc::JsonData resAddr = rpc.executeRpc ( "getnewaddress" );
         addr = resAddr.asString();
     }
-    catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: sendRaw: Exception caught: " << e.what() << std::endl;
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
     }
     return addr;
 }
@@ -239,8 +240,8 @@ unsigned int ZrSatoshiBitcoin::getConfirmations( const std::string & txId )
         unsigned int confirmations = res[ "confirmations" ].asUInt();
         return confirmations;
     }
-    catch( nmcrpc::JsonRpc::RpcError e ){
-        std::cerr << "Zero Reserve: getConfirmations: Exception caught: " << e.what() << std::endl;
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
     }
     return 0;
 }
