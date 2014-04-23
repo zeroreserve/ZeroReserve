@@ -39,9 +39,11 @@ SOURCES = ZeroReserveDialog.cpp \
     PeerAddressDialog.cpp \
     BtcContract.cpp \
     TmContract.cpp \
-    CurrentTxList.cpp
+    CurrentTxList.cpp \
+    helpers.cpp
 
 LIBS += -lsqlite3
+QMAKE_CXXFLAGS += -rdynamic -fPIC
 
 win32 {
     INCLUDEPATH += ../../../libsqlite ../../../boost
@@ -74,7 +76,8 @@ HEADERS = ZeroReserveDialog.h \
     PeerAddressDialog.h \
     BtcContract.h \
     TmContract.h \
-    CurrentTxList.h
+    CurrentTxList.h \
+    helpers.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \

@@ -17,6 +17,8 @@
 
 #include "ZrSatoshiBitcoin.h"
 
+#include "helpers.h"
+
 
 using namespace nmcrpc;
 
@@ -33,6 +35,7 @@ ZrSatoshiBitcoin::ZrSatoshiBitcoin()
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        print_stacktrace();
     }
 }
 
@@ -63,6 +66,7 @@ ZR::RetVal ZrSatoshiBitcoin::getinfo( BtcInfo & infoOut )
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        print_stacktrace();
         return ZR::ZR_FAILURE;
     }
 
@@ -93,6 +97,7 @@ ZR::MyWallet * ZrSatoshiBitcoin::mkWallet( ZR::MyWallet::WalletType wType )
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        print_stacktrace();
     }
     return NULL;
 }
@@ -119,6 +124,7 @@ void ZrSatoshiBitcoin::loadWallets( std::vector< ZR::MyWallet *> & wallets )
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        print_stacktrace();
     }
 }
 
@@ -131,6 +137,7 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        print_stacktrace();
     }
 }
 
@@ -165,6 +172,7 @@ ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, const ZR:
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        print_stacktrace();
         return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;
@@ -197,6 +205,7 @@ ZR::BitcoinAddress ZrSatoshiBitcoin::mkOrderAddress( const ZR::ZR_Number & amoun
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        print_stacktrace();
         return "";
     }
     return addr;
@@ -211,6 +220,7 @@ ZR::RetVal ZrSatoshiBitcoin::sendRaw( const ZR::BitcoinTxHex & txHex )
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        print_stacktrace();
         return ZR::ZR_FAILURE;
     }
     return ZR::ZR_SUCCESS;
@@ -227,6 +237,7 @@ const ZR::BitcoinAddress ZrSatoshiBitcoin::newAddress() const
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        print_stacktrace();
     }
     return addr;
 }
@@ -242,6 +253,7 @@ unsigned int ZrSatoshiBitcoin::getConfirmations( const std::string & txId )
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        print_stacktrace();
     }
     return 0;
 }
