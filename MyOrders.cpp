@@ -161,30 +161,6 @@ ZR::RetVal MyOrders::matchOther( Order * other )
 }
 
 
-
-ZR::RetVal MyOrders::matchAsk( Order * order )
-{
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-
-    ZR::ZR_Number amountBtc = order->m_amount;
-    OrderList bids;
-    m_bids->filterOrders( bids, order->m_currency );
-    for( OrderIterator bidIt = bids.begin(); bidIt != bids.end(); bidIt++ ){
-        Order * other = *bidIt;
-        if( other->m_isMyOrder ) continue; // don't fill own orders
-        if( order->m_price > other->m_price ) break;    // no need to try and find matches beyond
-        std::cerr << "Zero Reserve: Match at bid price " << other->m_price.toStdString() << std::endl;
-        if( amountBtc > other->m_amount ){
-            p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, other->m_amount );
-        }
-        else {
-            p3zr->sendBuyMsg( order->m_order_id, other->m_order_id, amountBtc );
-            return ZR::ZR_SUCCESS;
-        }
-    }
-    return ZR::ZR_SUCCESS;
-}
-
 ZR::RetVal MyOrders::match( Order * order )
 {
     OrderList asks;
@@ -350,8 +326,17 @@ void MyOrders::rollback( PaymentReceiver *payment )
     }
 }
 
-void MyOrders::rollback( PaymentSpender *payment, const ZR::VirtualAddress & txId )
+void MyOrders::rollback( const ZR::VirtualAddress & txId )
 {
     std::cerr << "Zero Reserve: Rolling back " << txId << std::endl;
+
+    std::map< ZR::TransactionId, std::pair< Order, Order > >::iterator refIt = m_CurrentTxOrders.find( txId );
+    if( refIt == m_CurrentTxOrders.end() ){
+        std::cerr << "Zero Reserve: Could not find Reference " << txId << std::endl;
+        return;
+    }
+    Order & other = (*refIt).second.second;
+    m_asks->remove( &other );
+
     m_CurrentTxOrders.erase( txId );
 }

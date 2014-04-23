@@ -126,7 +126,6 @@ protected:
 protected:
     /** Matches our new order with all others  */
     virtual ZR::RetVal match( Order * ){ return ZR::ZR_FAILURE; }
-    virtual ZR::RetVal matchAsk( Order * ){ return ZR::ZR_FAILURE; }
     /** Matches incoming new order with ours */
     virtual ZR::RetVal matchOther( Order * ){ return ZR::ZR_FAILURE; }
 signals:

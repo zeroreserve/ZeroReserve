@@ -40,8 +40,6 @@ public:
 
     virtual int tick();
 
-    /** send a message to buy to a buyer */
-    ZR::RetVal sendBuyMsg( const ZR::VirtualAddress & ourAddress, const ZR::VirtualAddress & theirAddress, const ZR::ZR_Number & amount );
     bool sendOrder( const std::string& peer_id, OrderBook::Order * order );
     bool sendCredit( Credit * credit );
     void publishOrder( OrderBook::Order * order );
@@ -60,8 +58,6 @@ private:
     void handleCredit( RsZeroReserveCreditItem *item );
     void handleMessage( RsZeroReserveMsgItem *item );
     void handlePaymentRequest( RSZRPayRequestItem * item );
-    void handleBuyRequest( RSZRBuyRequestItem * item );
-
 
 
     /** help our friends to bootstrap the order book */

@@ -50,7 +50,9 @@ public:
     int finishExecute( const std::string & orderId , const ZR::ZR_Number & btcAmount, const ZR::BitcoinTxHex & txHex );
     ZR::RetVal updateOrders( const ZR::ZR_Number & btcAmount, const ZR::VirtualAddress &txId );
     void rollback( PaymentReceiver *payment );
-    void rollback( PaymentSpender *payment, const ZR::VirtualAddress & txId );
+
+    /** Remove a BID completely that caused a failed TX */
+    void rollback( const ZR::VirtualAddress & txId );
 
     void cancelOrder( int index );
 
@@ -59,7 +61,6 @@ public:
 protected:
     /** Matches our new order with all others  */
     virtual ZR::RetVal match(Order *order);
-    virtual ZR::RetVal matchAsk(Order *order);
 
     /** Matches incoming new order with ours */
     virtual ZR::RetVal matchOther( Order * other );

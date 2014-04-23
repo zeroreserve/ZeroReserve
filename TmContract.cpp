@@ -77,6 +77,7 @@ ZR::RetVal TmContractCoordinator::processItem( RSZRRemoteTxItem * item )
     switch( item->getTxPhase() )
     {
     case VOTE_NO:
+        rollback();
         return abortTx( item );
     case VOTE_YES:
         return doTx( item );
@@ -118,7 +119,8 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
 void TmContractCoordinator::rollback()
 {
     BtcContract::rmContract( m_payer );
-    // TODO: Remove a BID completely that caused a failed TX
+
+    MyOrders::Instance()->rollback( m_TxId );
 }
 
 

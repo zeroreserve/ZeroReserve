@@ -141,36 +141,4 @@ protected:
 };
 
 
-
-/**
- * @brief route a buy request along an existing route to an order
- *
- */
-
-class RSZRBuyRequestItem : public RSZRRemoteItem
-{
-    RSZRBuyRequestItem();
-public:
-
-    RSZRBuyRequestItem(void *data,uint32_t size);
-    /**
-     * @brief RSZRBuyRequestItem
-     * @param sellerAddr    our order ID and also the route to be set pointing to us
-     * @param buyerAddr     their order ID / buyer address
-     * @param amount
-     */
-    RSZRBuyRequestItem( const ZR::VirtualAddress & sellerAddr, const ZR::VirtualAddress & buyerAddr, const ZR::ZR_Number &amount );
-
-    virtual bool serialise(void *data,uint32_t& size) ;
-    virtual uint32_t serial_size() const ;
-    virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
-
-    const ZR::VirtualAddress & getOurAddress(){ return m_SellerAddress; }
-    const ZR::ZR_Number & getAmount(){ return m_Amount; }
-
-private:
-    ZR::ZR_Number m_Amount;
-    ZR::VirtualAddress m_SellerAddress;
-};
-
 #endif // RSZRREMOTEITEMS_H
