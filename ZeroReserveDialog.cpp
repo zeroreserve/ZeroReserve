@@ -113,7 +113,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
         QString testNet;
         if( btcInfo.testnet ){
 #ifdef ZR_TESTNET
-            QMessageBox::information( this, "Bitcoin Connection", QString( "Connected to Bitcoin Client version " ) + QString::number( btcInfo.version ) + " TESTNET" );
+            std::cerr << "Zero Reserve: Connected to Bitcoin Client version " <<  btcInfo.version  << " TESTNET" << std::endl;
 #else
             QMessageBox::critical( this, "Bitcoin Connection", "Zero Reserve is PRODNET, Bitcoin client is TESTNET. Exiting" );
             exit( -1 );
@@ -121,7 +121,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
         }
         else {
 #ifndef ZR_TESTNET
-            QMessageBox::information( this, "Bitcoin Connection", QString( "Connected to Bitcoin Client version " ) + QString::number( btcInfo.version ) + " PRODNET" );
+            std::cerr << "Zero Reserve: Connected to Bitcoin Client version " <<  btcInfo.version  << " PRODNET" << std::endl;
 #else
             QMessageBox::critical( this, "Bitcoin Connection", "Zero Reserve is TESTNET, Bitcoin client is PRODNET. Exiting" );
             exit( -1 );
