@@ -28,6 +28,7 @@ const unsigned int BtcContract::reqConfirmations = 6;
 #endif
 
 std::vector< BtcContract* > BtcContract::contracts;
+RsMutex BtcContract::m_contractMutex("ContractMutex");
 
 
 
@@ -43,13 +44,13 @@ void BtcContract::pollContracts()
 
 void BtcContract::rmContract( BtcContract * contract )
 {
-    // TODO: Remove contract from DB
     for( ContractIterator it = contracts.begin(); it != contracts.end(); it++){
         BtcContract * c = *it;
         if( c->m_counterParty == contract->m_counterParty && c->m_btcTxId == contract->m_btcTxId ){
             if( !contract->m_btcTxId.empty() ){
                 ZrDB::Instance()->rmBtcContract( contract->m_btcTxId );
             }
+            RsStackMutex contractMutex( m_contractMutex );
             contracts.erase( it );
             delete contract;
             break;
@@ -59,13 +60,13 @@ void BtcContract::rmContract( BtcContract * contract )
 
 void BtcContract::rmContract( const ZR::TransactionId & id )
 {
-    // TODO: Remove contract from DB
     for( ContractIterator it = contracts.begin(); it != contracts.end(); it++){
         if( (*it)->m_btcTxId == id ){
             BtcContract * contract = *it;
             if( !contract->m_btcTxId.empty() ){
                 ZrDB::Instance()->rmBtcContract( contract->m_btcTxId );
             }
+            RsStackMutex contractMutex( m_contractMutex );
             contracts.erase( it );
             delete contract;
             break;
@@ -90,6 +91,7 @@ BtcContract::BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number &
     else{
         m_creationtime = creationtime;  // contract loaded from DB
     }
+    RsStackMutex contractMutex( m_contractMutex );
     contracts.push_back( this );
 }
 

@@ -91,6 +91,7 @@ public:
     typedef std::vector< BtcContract* >::iterator ContractIterator;
     /** container for all active btcContracts */
     static std::vector< BtcContract* > contracts;
+    static RsMutex m_contractMutex;
 
     static void pollContracts();
     static void rmContract( BtcContract * contract );
