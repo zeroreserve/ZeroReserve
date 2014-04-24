@@ -44,7 +44,7 @@ ZrDB * ZrDB::instance = 0;
 RsMutex ZrDB::creation_mutex("creation_mutex");
 
 
-static int btccontracts_callback(void * db, int argc, char ** argv, char ** )
+static int btccontracts_callback(void * , int argc, char ** argv, char ** )
 {
     if( argc != 8 ) return SQLITE_ERROR;
 

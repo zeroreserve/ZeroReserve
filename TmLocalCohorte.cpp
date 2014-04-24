@@ -75,8 +75,11 @@ ZR::RetVal TmLocalCohorte::init()
 
 
 
-ZR::RetVal TmLocalCohorte::processItem( RsZeroReserveTxItem * item )
+ZR::RetVal TmLocalCohorte::processItem( RsZeroReserveItem * baseItem )
 {
+    RsZeroReserveTxItem * item = dynamic_cast< RsZeroReserveTxItem * >( baseItem );
+    if( !item ) throw std::runtime_error( "TmLocalCoordinator::processItem: Unknown Item Type");
+
     RsZeroReserveTxItem * reply;
     p3ZeroReserveRS * p3zs;
 

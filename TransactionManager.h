@@ -25,8 +25,8 @@
 #include <string>
 #include <vector>
 
+class RsZeroReserveItem;
 class RsZeroReserveTxItem;
-class RsZeroReserveInitTxItem;
 class RSZRRemoteTxItem;
 
 /**
@@ -70,10 +70,7 @@ public:
 
 protected:
 
-    virtual ZR::RetVal processItem( RsZeroReserveTxItem * item ){ return ZR::ZR_FAILURE; }
-    virtual ZR::RetVal processItem( RSZRRemoteTxItem * item ){ return ZR::ZR_FAILURE; }
-    virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item ){ return ZR::ZR_FAILURE; }
-    virtual ZR::RetVal abortTx( RSZRRemoteTxItem * item ){ return ZR::ZR_FAILURE; }
+    virtual ZR::RetVal processItem( RsZeroReserveItem * item ) = 0;
 
     virtual void rollback() = 0;
     virtual bool isTimedOut();

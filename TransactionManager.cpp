@@ -41,11 +41,10 @@ TransactionManager::TxManagers TransactionManager::currentTX;
  * @return
  */
 
-int TransactionManager::handleTxItem( RSZRRemoteTxItem * item )
+int TransactionManager::handleTxItem( RSZRRemoteTxItem *item )
 {
     ZR::RetVal retVal;
     std::cerr << "Zero Reserve: TX Manger handling incoming item - Destination: " << item->getAddress() << std::endl;
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
     ZR::VirtualAddress addr = item->getAddress();
     ZR::TransactionId txId = addr + ":" + item->getPayerId();

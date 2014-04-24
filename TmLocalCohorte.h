@@ -34,7 +34,7 @@ public:
     virtual ZR::RetVal init();
 
 protected:
-    virtual ZR::RetVal processItem( RsZeroReserveTxItem * item );
+    virtual ZR::RetVal processItem( RsZeroReserveItem * baseItem );
     virtual ZR::RetVal abortTx( RsZeroReserveTxItem * item );
 
     virtual void rollback();

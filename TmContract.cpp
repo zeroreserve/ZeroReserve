@@ -72,8 +72,11 @@ ZR::RetVal TmContractCoordinator::init()
 }
 
 
-ZR::RetVal TmContractCoordinator::processItem( RSZRRemoteTxItem * item )
+ZR::RetVal TmContractCoordinator::processItem( RsZeroReserveItem * baseItem )
 {
+    RSZRRemoteTxItem * item = dynamic_cast< RSZRRemoteTxItem * >( baseItem );
+    if( !item ) throw std::runtime_error( "TmContractCoordinator::processItem: Unknown Item Type");
+
     switch( item->getTxPhase() )
     {
     case VOTE_NO:
@@ -123,7 +126,7 @@ void TmContractCoordinator::rollback()
 }
 
 
-ZR::RetVal TmContractCoordinator::abortTx( RSZRRemoteTxItem *item )
+ZR::RetVal TmContractCoordinator::abortTx( RSZRRemoteTxItem * )
 {
     std::cerr << "Zero Reserve: TmContractCoordinator: Commanding ABORT of " << m_TxId << std::endl;
 
@@ -163,6 +166,7 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
     if( m_Phase != INIT || item == NULL )
         return abortTx( item );
     m_Phase = QUERY;
+    TxPhase vote = VOTE_YES;
 
     std::vector< std::string > v_payload;
     split( item->getPayload(), v_payload );
@@ -181,13 +185,13 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
 
     if( order == NULL ) return abortTx( item );
     if( Currency::currencySymbols[ order->m_currency ] != currencySym ) return abortTx( item );
+    if( fiatAmount / btcAmount < order->m_price ) vote = VOTE_NO;
 
     m_payee = new BtcContract( fiatAmount / order->m_price, order->m_price, currencySym, BtcContract::RECEIVER, item->PeerId() );
     m_payee->setBtcAddress( destinationBtcAddr );
     m_payee->setBtcTxId( outTxId );
 
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    TxPhase vote = VOTE_YES; // TODO: A vote is not limited to saying YES!!!
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( item->getAddress(), vote, Router::CLIENT, item->getPayerId() );
 
     // return the final Bitcoin amount and the TX ID of the signed TX to the Hops and the payers. They already have the receiving address.
@@ -215,8 +219,11 @@ ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
 }
 
 
-ZR::RetVal TmContractCohortePayee::processItem( RSZRRemoteTxItem * item )
+ZR::RetVal TmContractCohortePayee::processItem( RsZeroReserveItem * baseItem )
 {
+    RSZRRemoteTxItem * item = dynamic_cast< RSZRRemoteTxItem * >( baseItem );
+    if( !item ) throw std::runtime_error( "TmContractCohortePayee::processItem: Unknown Item Type");
+
     switch( item->getTxPhase() )
     {
     case QUERY:
@@ -345,8 +352,11 @@ ZR::RetVal TmContractCohorteHop::doVote( RSZRRemoteTxItem * item )
     return ZR::ZR_SUCCESS;
 }
 
-ZR::RetVal TmContractCohorteHop::processItem( RSZRRemoteTxItem * item )
+ZR::RetVal TmContractCohorteHop::processItem( RsZeroReserveItem * baseItem )
 {
+    RSZRRemoteTxItem * item = dynamic_cast< RSZRRemoteTxItem * >( baseItem );
+    if( !item ) throw std::runtime_error( "TmContractCohorteHop::processItem: Unknown Item Type");
+
     switch( item->getTxPhase() )
     {
     case QUERY:
@@ -409,4 +419,5 @@ ZR::RetVal TmContractCohorteHop::abortTx( RSZRRemoteTxItem *item )
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( item->getAddress(), ABORT_REQUEST, Router::CLIENT, item->getPayerId() );
     resendItem->PeerId( item->PeerId() );
     p3zr->sendItem( resendItem );
+    return ZR::ZR_SUCCESS;
 }

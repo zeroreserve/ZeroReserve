@@ -75,14 +75,14 @@ public:
 
     virtual ZR::RetVal init();
     virtual void rollback();
-    virtual ZR::RetVal processItem( RSZRRemoteTxItem * item );
+    virtual ZR::RetVal processItem( RsZeroReserveItem *item );
 
 
 private:
     ZR::RetVal doTx( RSZRRemoteTxItem * item );
 
     // unlike the other TM, which request an abort on calling this function, a coordinator aborts.
-    ZR::RetVal abortTx( RSZRRemoteTxItem *item );
+    ZR::RetVal abortTx( RSZRRemoteTxItem * );
 
     ZR::VirtualAddress m_Destination;
     std::string m_myId;
@@ -96,7 +96,7 @@ public:
     TmContractCohortePayee( const ZR::VirtualAddress & addr, const std::string & myId );
     virtual ~TmContractCohortePayee(){}
 
-    virtual ZR::RetVal processItem( RSZRRemoteTxItem *item );
+    virtual ZR::RetVal processItem( RsZeroReserveItem * baseItem );
     virtual ZR::RetVal init();
     virtual void rollback();
 
@@ -118,7 +118,7 @@ public:
     TmContractCohorteHop( const ZR::VirtualAddress & addr, const std::string & myId );
     virtual ~TmContractCohorteHop(){}
 
-    virtual ZR::RetVal processItem( RSZRRemoteTxItem *item );
+    virtual ZR::RetVal processItem( RsZeroReserveItem * baseItem );
     virtual ZR::RetVal init();
     virtual void rollback();
 
