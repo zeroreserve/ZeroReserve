@@ -194,7 +194,7 @@ void MyOrders::buy( Order * order, ZR::ZR_Number amount, const Order::ID & myId 
 }
 
 
-OrderBook::Order * MyOrders::startExecute( ZR::ZR_Number & in_out_fiatAmount , const std::string &orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex, ZR::TransactionId & outId )
+OrderBook::Order * MyOrders::startExecute( ZR::ZR_Number & in_out_btcAmount , const std::string &orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex, ZR::TransactionId & outId )
 {
     std::cerr << "Zero Reserve: Starting Order execution for " << orderId << std::endl;
 
@@ -205,16 +205,15 @@ OrderBook::Order * MyOrders::startExecute( ZR::ZR_Number & in_out_fiatAmount , c
     ZR::ZR_Number leftover = order->m_amount - order->m_commitment;
     if( leftover == 0 )return NULL; // nothing left in this order
 
-    ZR::ZR_Number btcAmount = in_out_fiatAmount / order->m_price;
-    if( btcAmount > leftover ){
+    if( in_out_btcAmount > leftover ){
         order->m_commitment = order->m_amount;
-        in_out_fiatAmount = leftover * order->m_price;
+        in_out_btcAmount = leftover;
     }
     else {
-        order->m_commitment += btcAmount;
+        order->m_commitment += in_out_btcAmount;
     }
 
-    if( ZR::Bitcoin::Instance()->mkRawTx( btcAmount, order->m_btcAddr, recvAddr, out_txHex, outId ) != ZR::ZR_SUCCESS )
+    if( ZR::Bitcoin::Instance()->mkRawTx( in_out_btcAmount, order->m_btcAddr, recvAddr, out_txHex, outId ) != ZR::ZR_SUCCESS )
         return NULL;
 
     std::cerr << "Zero Reserve: Order execution; TX: " << out_txHex << std::endl;

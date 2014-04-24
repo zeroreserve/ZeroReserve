@@ -42,7 +42,7 @@ public:
 
 
     /** Seller side: start executing the deal - initiate Bitcoin payment */
-    OrderBook::Order * startExecute( ZR::ZR_Number & in_out_fiatAmount, const std::string & orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex , ZR::TransactionId & outId );
+    OrderBook::Order * startExecute( ZR::ZR_Number & in_out_btcAmount, const std::string & orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex , ZR::TransactionId & outId );
 
     /** Seller side: remove Order from the book, if partly filled, publish
      * a new order, finish Bitcoin payment

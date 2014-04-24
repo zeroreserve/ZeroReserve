@@ -181,13 +181,14 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
     ZR::ZR_Number btcAmount = ZR::ZR_Number::fromFractionString( v_payload[3] );
 
     std::string outTxId;
-    OrderBook::Order * order = MyOrders::Instance()->startExecute( fiatAmount, item->getAddress(), destinationBtcAddr, m_txHex, outTxId );
+    OrderBook::Order * order = MyOrders::Instance()->startExecute( btcAmount, item->getAddress(), destinationBtcAddr, m_txHex, outTxId );
 
     if( order == NULL ) return abortTx( item );
     if( Currency::currencySymbols[ order->m_currency ] != currencySym ) return abortTx( item );
-    if( fiatAmount / btcAmount < order->m_price ) vote = VOTE_NO; // Do they want to cheat us?
+    ZR::ZR_Number price = fiatAmount / btcAmount;
+    if( price < order->m_price ) vote = VOTE_NO; // Do they want to cheat us?
 
-    m_payee = new BtcContract( fiatAmount / order->m_price, order->m_price, currencySym, BtcContract::RECEIVER, item->PeerId() );
+    m_payee = new BtcContract( btcAmount, price, currencySym, BtcContract::RECEIVER, item->PeerId() );
     m_payee->setBtcAddress( destinationBtcAddr );
     m_payee->setBtcTxId( outTxId );
 
