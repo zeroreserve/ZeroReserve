@@ -136,8 +136,8 @@ static int store_peer_callback(void * db, int, char **, char **)
 static int peer_credit_callback(void * db, int argc, char ** argv, char ** )
 {
     ZrDB * zrdb = static_cast< ZrDB * >( db );
-    if(argc == 3){
-        zrdb->setPeerCredit( argv[0], argv[1], argv[2] );
+    if( argc == 4 ){
+        zrdb->setPeerCredit( argv[0], argv[1], argv[2], argv[3] );
     }
     else {
         return SQLITE_ERROR;
@@ -234,7 +234,7 @@ void ZrDB::init()
     if( !db_exists ){
         std::cerr << "Populating " << db_name << std::endl;
         std::vector < std::string > tables;
-        tables.push_back( "create table if not exists peers ( id varchar(32), currency varchar(3), our_credit decimal(12,8), credit decimal(12,8), balance decimal(12,8) )");
+        tables.push_back( "create table if not exists peers ( id varchar(32), currency varchar(3), our_credit decimal(12,8), credit decimal(12,8), balance decimal(12,8), allocation decimal(12,8) )");
         tables.push_back( "create table if not exists config ( key varchar(32), value varchar(160) )");
         tables.push_back( "create table if not exists payments ( payee varchar(32), currency varchar(3), amount decimal(12,8) )");
         tables.push_back( "create table if not exists myorders ( orderid varchar(32), ordertype int, amount decimal(12,8), price decimal(12,8), currency varchar(3), creationtime int, purpose int )");
@@ -387,7 +387,7 @@ void ZrDB::loadPeer( Credit & peer_out )
     m_credit = &peer_out;
     char *zErrMsg = 0;
     std::ostringstream select;
-    select << "select credit, our_credit, balance from peers where id = '"
+    select << "select credit, our_credit, balance, allocation from peers where id = '"
            << peer_out.m_id << "' and currency = '" << peer_out.m_currency << "'";
     std::string selectstr = select.str();
     int rc = sqlite3_exec(m_db, selectstr.c_str(), peer_credit_callback, this, &zErrMsg);
@@ -415,11 +415,12 @@ void ZrDB::loadPeer( const std::string & id, Credit::CreditList & peer_out )
 }
 
 
-void ZrDB::setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance )
+void ZrDB::setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance, const std::string & allocation )
 {
     m_credit->m_credit = ZR::ZR_Number::fromDecimalString( credit );
     m_credit->m_our_credit = ZR::ZR_Number::fromDecimalString( our_credit );
     m_credit->m_balance = ZR::ZR_Number::fromDecimalString( balance );
+    m_credit->m_allocated = ZR::ZR_Number::fromDecimalString( allocation );
 }
 
 void ZrDB::addPeerCredit( Credit * credit )

@@ -37,10 +37,12 @@ public:
     void publish();
     void updateOurCredit();
     void updateBalance();
+    void allocate( const ZR::ZR_Number & amount);
+    void deallocate( const ZR::ZR_Number & amount);
 
     static void getCreditList( CreditList & outList, const std::string & id );
 
-    ZR::ZR_Number getPeerAvailable(){ return m_credit - m_balance; }
+    ZR::ZR_Number getPeerAvailable(){ return m_credit - m_balance - m_allocated; }
     ZR::ZR_Number getMyAvailable(){ return m_our_credit + m_balance; }
 
 public:
@@ -49,6 +51,7 @@ public:
     ZR::ZR_Number m_our_credit; // our credit with peer
     ZR::ZR_Number m_credit;     // their credit with us
     ZR::ZR_Number m_balance;    // negative means we owe them money
+    ZR::ZR_Number m_allocated;  // funds allocated to ongoing contracts / TX. Always positive
 };
 
 #endif // CREDIT_H

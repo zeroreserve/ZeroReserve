@@ -60,11 +60,12 @@ ZR::RetVal TmContractCoordinator::init()
         return ZR::ZR_FAILURE;
     }
     m_payer->setBtcAddress( btcAddr );
+    ZR::ZR_Number fees = 0;
 
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * item = new RSZRRemoteTxItem( m_Destination, QUERY, Router::SERVER, m_myId );
     std::string payload = m_payer->getFiatAmount().toStdString() + ':' + m_payer->getCurrencySym() + ':' +
-            btcAddr + ':' + m_payer->getBtcAmount().toStdString();
+            btcAddr + ':' + m_payer->getBtcAmount().toStdString() + ':' + fees.toStdString();
     item->setPayload( payload );
     item->PeerId( m_payer->getCounterParty() );
     p3zr->sendItem( item );
@@ -289,7 +290,7 @@ ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
 
     std::vector< std::string > v_payload;
     split( item->getPayload(), v_payload );
-    if( v_payload.size() != 4 ){
+    if( v_payload.size() <= 5 ){
         std::cerr << "Zero Reserve: Payload ERROR: Protocol mismatch" << std::endl;
         return abortTx( item );
     }
@@ -297,9 +298,22 @@ ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
     std::string currencySym = v_payload[ 1 ];
     ZR::BitcoinAddress destinationBtcAddr = v_payload[ 2 ];
     ZR::ZR_Number btcAmount = ZR::ZR_Number::fromFractionString( v_payload[3] );
+    ZR::ZR_Number fee = ZR::ZR_Number::fromFractionString( v_payload[4] );
     ZR::ZR_Number price = fiatAmount / btcAmount;
 
-    // TODO: Check if fiat amount is within limits. If not, adjust. If 0, abort()
+    try{
+        Credit c( item->PeerId(), currencySym );
+        c.loadPeer();
+        if( c.getMyAvailable() <= fee )abortTx( item );
+        if( c.getMyAvailable() < fiatAmount + fee ){
+            fiatAmount = c.getPeerAvailable() - fee;
+        }
+        c.allocate( fiatAmount );
+    }
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        abortTx( item );
+    }
 
     std::pair< ZR::PeerAddress, ZR::PeerAddress > route;
     if( Router::Instance()->getTunnel( item->getAddress(), route ) == ZR::ZR_FAILURE )

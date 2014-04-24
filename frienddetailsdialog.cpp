@@ -58,6 +58,7 @@ void FriendDetailsDialog::loadPeer( QString )
     ui->creditSpinBox->setValue( peerCredit.m_credit.toDouble() );
     ui->yourCredit->display( peerCredit.m_our_credit.toDouble() );
     ui->balance->display( peerCredit.m_balance.toDouble() );
+    ui->balance->display( peerCredit.m_allocated.toDouble() );
 }
 
 FriendDetailsDialog::~FriendDetailsDialog()

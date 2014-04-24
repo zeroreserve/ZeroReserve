@@ -88,7 +88,7 @@ public:
     void close();
 
     void peerRecordExists(){ m_peer_record_exists = true; }
-    void setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance );
+    void setPeerCredit( const std::string & credit, const std::string & our_credit, const std::string & balance , const std::string & allocation );
     void addPeerCredit( Credit * credit );
     void setConfigValue( const std::string & val ) { m_config_value = val; }
     void addToGrandTotal( char ** cols );
