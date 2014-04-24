@@ -185,7 +185,7 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
 
     if( order == NULL ) return abortTx( item );
     if( Currency::currencySymbols[ order->m_currency ] != currencySym ) return abortTx( item );
-    if( fiatAmount / btcAmount < order->m_price ) vote = VOTE_NO;
+    if( fiatAmount / btcAmount < order->m_price ) vote = VOTE_NO; // Do they want to cheat us?
 
     m_payee = new BtcContract( fiatAmount / order->m_price, order->m_price, currencySym, BtcContract::RECEIVER, item->PeerId() );
     m_payee->setBtcAddress( destinationBtcAddr );
