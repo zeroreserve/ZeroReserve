@@ -315,9 +315,14 @@ void MyOrders::cancelOrder( int index )
 }
 
 
-void MyOrders::rollbackSeller( const ZR::VirtualAddress & txId )
+void MyOrders::rollbackSeller( const ZR::VirtualAddress & orderId, const ZR::ZR_Number & btcAmount )
 {
+    std::cerr << "Zero Reserve: Rolling buyer back " << orderId << std::endl;
+    OrderIterator it = find( orderId );
+    if( it == end() ) return;   // no such order
 
+    Order * order = *it;
+    order->m_commitment -= btcAmount;
 }
 
 void MyOrders::rollbackBuyer( const ZR::VirtualAddress & txId )

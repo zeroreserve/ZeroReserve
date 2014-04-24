@@ -109,6 +109,7 @@ private:
 
     BtcContract * m_payee;
     ZR::BitcoinTxHex m_txHex;
+    std::string m_myId;
 };
 
 

@@ -51,7 +51,7 @@ public:
     ZR::RetVal updateOrders( const ZR::ZR_Number & btcAmount, const ZR::VirtualAddress &txId );
 
     /** De-allocate funds from an ASK that failed */
-    void rollbackSeller( const ZR::VirtualAddress & txId );
+    void rollbackSeller( const ZR::VirtualAddress & orderId, const ZR::ZR_Number & btcAmount );
 
     /** Remove a BID completely that caused a failed TX */
     void rollbackBuyer( const ZR::VirtualAddress & txId );
