@@ -253,6 +253,11 @@ void ZeroReserveDialog::contextMenuMyOrders( const QPoint & )
 
 void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType type, ZR::ZR_Number price, ZR::ZR_Number amount )
 {
+    if( amount <= 0 || price <= 0 ){
+        QMessageBox::warning( this, "New Order", "Amount and Price must be greater than zero" );
+        return;
+    }
+
     OrderBook::Order * order = new OrderBook::Order();
     order->m_price = price;
     order->m_currency = Currency::getCurrencyByName( ui.currencySelector1->currentText().toStdString() );
