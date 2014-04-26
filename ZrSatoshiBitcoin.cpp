@@ -253,7 +253,6 @@ unsigned int ZrSatoshiBitcoin::getConfirmations( const std::string & txId )
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
-        print_stacktrace();
     }
     return 0;
 }

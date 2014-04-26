@@ -44,7 +44,7 @@ TmContractCoordinator::TmContractCoordinator( const OrderBook::Order * order, co
 {
     ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
     if( !addr.empty() ){
-        m_payer = new BtcContract( amount, order->m_price, Currency::currencySymbols[ order->m_currency ], BtcContract::SENDER, addr );
+        m_payer = new BtcContract( amount, 0, order->m_price, Currency::currencySymbols[ order->m_currency ], BtcContract::SENDER, addr );
     }
 }
 
@@ -172,7 +172,7 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
 
     std::vector< std::string > v_payload;
     split( item->getPayload(), v_payload );
-    if( v_payload.size() != 4 ){
+    if( v_payload.size() < 5 ){
         std::cerr << "Zero Reserve: Payload ERROR: Protocol mismatch" << std::endl;
         return abortTx( item );
     }
@@ -190,7 +190,7 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
     ZR::ZR_Number price = fiatAmount / btcAmount;
     if( price < order->m_price ) vote = VOTE_NO; // Do they want to cheat us?
 
-    m_payee = new BtcContract( btcAmount, price, currencySym, BtcContract::RECEIVER, item->PeerId() );
+    m_payee = new BtcContract( btcAmount, 0, price, currencySym, BtcContract::RECEIVER, item->PeerId() );
     m_payee->setBtcAddress( destinationBtcAddr );
     m_payee->setBtcTxId( outTxId );
 
@@ -254,6 +254,7 @@ ZR::RetVal TmContractCohortePayee::abortTx( RSZRRemoteTxItem *item )
 
 void TmContractCohortePayee::rollback()
 {
+    if( !m_payee )return; // abort too early - no contract yet
     MyOrders::Instance()->rollbackSeller( m_myId, m_payee->getBtcAmount() );
     BtcContract::rmContract( m_payee );
 }
@@ -290,7 +291,7 @@ ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
 
     std::vector< std::string > v_payload;
     split( item->getPayload(), v_payload );
-    if( v_payload.size() <= 5 ){
+    if( v_payload.size() < 5 ){
         std::cerr << "Zero Reserve: Payload ERROR: Protocol mismatch" << std::endl;
         return abortTx( item );
     }
@@ -301,25 +302,19 @@ ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
     ZR::ZR_Number fee = ZR::ZR_Number::fromFractionString( v_payload[4] );
     ZR::ZR_Number price = fiatAmount / btcAmount;
 
-    try{
-        Credit c( item->PeerId(), currencySym );
-        c.loadPeer();
-        if( c.getMyAvailable() <= fee )abortTx( item );
-        if( c.getMyAvailable() < fiatAmount + fee ){
-            fiatAmount = c.getPeerAvailable() - fee;
-        }
-        c.allocate( fiatAmount );
-    }
-    catch( std::runtime_error e ){
-        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
-        abortTx( item );
-    }
-
     std::pair< ZR::PeerAddress, ZR::PeerAddress > route;
     if( Router::Instance()->getTunnel( item->getAddress(), route ) == ZR::ZR_FAILURE )
         return ZR::ZR_FAILURE;
-    m_payee = new BtcContract( btcAmount, price, currencySym, BtcContract::RECEIVER, route.first );
-    m_payer = new BtcContract( btcAmount, price, currencySym, BtcContract::SENDER, route.second );
+
+    try{
+        m_payee = new BtcContract( btcAmount, fee, price, currencySym, BtcContract::RECEIVER, route.first );
+    }
+    catch( std::runtime_error e ){
+        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        delete m_payee;
+        abortTx( item );
+    }
+    m_payer = new BtcContract( btcAmount, fee, price, currencySym, BtcContract::SENDER, route.second );
 
     m_payee->setBtcAddress( destinationBtcAddr );
     m_payer->setBtcAddress( destinationBtcAddr );
@@ -432,6 +427,8 @@ ZR::RetVal TmContractCohorteHop::forwardItem( RSZRRemoteTxItem * item )
 
 ZR::RetVal TmContractCohorteHop::abortTx( RSZRRemoteTxItem *item )
 {
+    std::cerr << "Zero Reserve: TmContractCohorteHop: Requesting ABORT for " << m_TxId << std::endl;
+
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( item->getAddress(), ABORT_REQUEST, Router::CLIENT, item->getPayerId() );
     resendItem->PeerId( item->PeerId() );

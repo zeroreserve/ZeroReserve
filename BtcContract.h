@@ -45,7 +45,8 @@ public:
     /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
     enum Party { RECEIVER, SENDER };
 
-    BtcContract(const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & price, const std::string & currencySym, Party party, const std::string & counterParty , const qint64 creationtime = 0 );
+    BtcContract(const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & fee, const ZR::ZR_Number & price, const std::string & currencySym, Party party, const std::string & counterParty , const qint64 creationtime = 0 );
+    virtual ~BtcContract();
 
     /** make sure we survive a crash or a shutdown once we're committed */
     void persist();
@@ -74,7 +75,6 @@ private:
     /** check if our TX is in the blockchain and has sufficient confirmations */
     bool poll();
     void execute();
-    virtual ~BtcContract();
 
 private:
     std::string m_btcTxId;            // checked for final payment
@@ -86,6 +86,7 @@ private:
     bool m_activated;
     ZR::BitcoinAddress m_destAddress; // checked for final payment
     qint64 m_creationtime;
+    ZR::ZR_Number m_fee;
 
 public:
     typedef std::vector< BtcContract* >::iterator ContractIterator;

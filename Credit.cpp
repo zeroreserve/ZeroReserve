@@ -43,7 +43,18 @@ Credit::Credit( const std::string & id, const std::string & currencySym ) :
 }
 
 
-// TODO: Check for SQL injection
+void Credit::allocate( const ZR::ZR_Number & amount)
+{
+    m_allocated += amount;
+    ZrDB::Instance()->updatePeerCredit( *this, "allocation", m_allocated );
+}
+
+void Credit::deallocate( const ZR::ZR_Number & amount)
+{
+    m_allocated -= amount;
+    ZrDB::Instance()->updatePeerCredit( *this, "allocation", m_allocated );
+}
+
 
 void Credit::updateCredit()
 {

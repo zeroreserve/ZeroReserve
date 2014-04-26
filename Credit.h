@@ -52,6 +52,7 @@ public:
     ZR::ZR_Number m_credit;     // their credit with us
     ZR::ZR_Number m_balance;    // negative means we owe them money
     ZR::ZR_Number m_allocated;  // funds allocated to ongoing contracts / TX. Always positive
+    ZR::ZR_Number m_fee;
 };
 
 #endif // CREDIT_H
