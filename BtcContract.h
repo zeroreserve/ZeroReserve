@@ -89,9 +89,9 @@ private:
     ZR::ZR_Number m_fee;
 
 public:
-    typedef std::vector< BtcContract* >::iterator ContractIterator;
+    typedef std::list< BtcContract* >::iterator ContractIterator;
     /** container for all active btcContracts */
-    static std::vector< BtcContract* > contracts;
+    static std::list< BtcContract* > contracts;
     static RsMutex m_contractMutex;
 
     static void pollContracts();

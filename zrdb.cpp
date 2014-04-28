@@ -59,6 +59,7 @@ static int btccontracts_callback(void * , int argc, char ** argv, char ** )
     BtcContract * contract = new BtcContract(btcAmount, fee, price, currencySym, party, counterParty, creationtime );
     contract->setBtcTxId( argv[ 0 ] );
     contract->setBtcAddress( argv[ 6 ] );
+    contract->activate();
 
     BtcContract::contracts.push_back( contract );
     return SQLITE_OK;

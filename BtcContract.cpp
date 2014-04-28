@@ -27,7 +27,7 @@ const unsigned int BtcContract::reqConfirmations = 2;
 const unsigned int BtcContract::reqConfirmations = 6;
 #endif
 
-std::vector< BtcContract* > BtcContract::contracts;
+std::list< BtcContract* > BtcContract::contracts;
 RsMutex BtcContract::m_contractMutex("ContractMutex");
 
 
@@ -37,13 +37,14 @@ void BtcContract::pollContracts()
     for( ContractIterator it = contracts.begin(); it != contracts.end(); it++ ){
         if( (*it)->poll() ){
             rmContract( *it );
-            break; // TODO: This makes for bad performance. Remove all executed contracts in one go
         }
     }
 }
 
 void BtcContract::rmContract( BtcContract * contract )
 {
+    RsStackMutex contractMutex( m_contractMutex );
+
     for( ContractIterator it = contracts.begin(); it != contracts.end(); it++){
         BtcContract * c = *it;
         if( c->m_counterParty == contract->m_counterParty && c->m_btcTxId == contract->m_btcTxId ){
@@ -60,6 +61,8 @@ void BtcContract::rmContract( BtcContract * contract )
 
 void BtcContract::rmContract( const ZR::TransactionId & id )
 {
+    RsStackMutex contractMutex( m_contractMutex );
+
     for( ContractIterator it = contracts.begin(); it != contracts.end(); it++){
         if( (*it)->m_btcTxId == id ){
             BtcContract * contract = *it;
