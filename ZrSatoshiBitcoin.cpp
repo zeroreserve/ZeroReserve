@@ -144,15 +144,20 @@ void ZrSatoshiBitcoin::send( const std::string & dest, const ZR::ZR_Number & amo
 
 
 
-ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, const ZR::BitcoinAddress & sendAddr, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & outTx, ZR::TransactionId & outId ) const
+ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, ZR::BitcoinAddress & inoutSendAddr, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & outTx, ZR::TransactionId & outId ) const
 {
     try{
         JsonRpc rpc( m_settings );
         JsonRpc::JsonData addrArray( Json::arrayValue );
-        addrArray.append( sendAddr );
+        addrArray.append( inoutSendAddr );
         JsonRpc::JsonData res = rpc.executeRpc ( "listunspent", 0, 999999, addrArray );
         std::string txId = res[0u][ "txid" ].asString();
         unsigned int vout = res[0u][ "vout" ].asUInt();
+
+        const ZR::ZR_Number addrBalance = ZR::ZR_Number::fromDecimalString( res[0u][ "amount" ].asString() );
+        const ZR::ZR_Number change = addrBalance - btcAmount;
+        if( change < 0 )return ZR::ZR_FAILURE;
+
 
         JsonRpc::JsonData txArray( Json::arrayValue );
         JsonRpc::JsonData txObj;
@@ -162,6 +167,10 @@ ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, const ZR:
 
         JsonRpc::JsonData dest;
         dest[ Json::StaticString( recvAddr.c_str() ) ] = btcAmount.toDouble();
+        if( change > 0 ){
+            inoutSendAddr = newAddress();
+            dest[ Json::StaticString( inoutSendAddr.c_str() ) ] = change.toDouble();
+        }
         JsonRpc::JsonData res1 = rpc.executeRpc ("createrawtransaction", txArray, dest );
         std::string rawTx = res1.asString();
         JsonRpc::JsonData res2 = rpc.executeRpc ( "signrawtransaction", rawTx );
