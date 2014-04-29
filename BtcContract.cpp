@@ -51,7 +51,6 @@ void BtcContract::rmContract( BtcContract * contract )
             if( !contract->m_btcTxId.empty() ){
                 ZrDB::Instance()->rmBtcContract( contract->m_btcTxId );
             }
-            RsStackMutex contractMutex( m_contractMutex );
             contracts.erase( it );
             delete contract;
             break;
@@ -69,7 +68,6 @@ void BtcContract::rmContract( const ZR::TransactionId & id )
             if( !contract->m_btcTxId.empty() ){
                 ZrDB::Instance()->rmBtcContract( contract->m_btcTxId );
             }
-            RsStackMutex contractMutex( m_contractMutex );
             contracts.erase( it );
             delete contract;
             break;
@@ -149,6 +147,11 @@ void BtcContract::execute()
         p.commit();
     }
     ZrDB::Instance()->rmBtcContract( m_btcTxId );
+}
+
+void BtcContract::setBtcAmount( const ZR::ZR_Number & btcAmount )
+{
+    m_btcAmount = btcAmount;
 }
 
 

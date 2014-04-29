@@ -104,8 +104,14 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
         std::cerr << "Zero Reserve: Payload ERROR: Protocol mismatch" << std::endl;
         return abortTx( item );
     }
+    ZR::ZR_Number btcAmount = ZR::ZR_Number::fromFractionString( v_payload[0] );
     ZR::TransactionId btcTxId = v_payload[ 1 ];
+
+    if( btcAmount > m_payer->getBtcAmount() ) // seller can't just increase amount I am buying
+        return abortTx( item );
+
     m_payer->setBtcTxId( btcTxId );
+    m_payer->setBtcAmount( btcAmount );
 
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_Destination, COMMIT, Router::SERVER, m_myId );
@@ -181,13 +187,25 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
     std::string currencySym = v_payload[ 1 ];
     ZR::BitcoinAddress destinationBtcAddr = v_payload[ 2 ];
     ZR::ZR_Number btcAmount = ZR::ZR_Number::fromFractionString( v_payload[3] );
+    ZR::ZR_Number fee = ZR::ZR_Number::fromFractionString( v_payload[4] );
+    ZR::ZR_Number price = fiatAmount / btcAmount;
+
+    // check if funds available are sufficient, adjust if necessary
+    Credit credit( item->PeerId(), currencySym );
+    credit.loadPeer();
+    if( credit.getPeerAvailable() < fiatAmount + fee ){
+        fiatAmount = credit.getPeerAvailable() - fee;
+        btcAmount = fiatAmount * price;
+        if( fiatAmount <= 0 ){
+            vote = VOTE_NO;
+        }
+    }
 
     std::string outTxId;
     OrderBook::Order * order = MyOrders::Instance()->startExecute( btcAmount, m_myId, destinationBtcAddr, m_txHex, outTxId );
 
     if( order == NULL ) return abortTx( item );
     if( Currency::currencySymbols[ order->m_currency ] != currencySym ) return abortTx( item );
-    ZR::ZR_Number price = fiatAmount / btcAmount;
     if( price < order->m_price ) vote = VOTE_NO; // Do they want to cheat us?
 
     m_payee = new BtcContract( btcAmount, 0, price, currencySym, BtcContract::RECEIVER, item->PeerId() );
@@ -245,6 +263,8 @@ ZR::RetVal TmContractCohortePayee::processItem( RsZeroReserveItem * baseItem )
 ZR::RetVal TmContractCohortePayee::abortTx( RSZRRemoteTxItem *item )
 {
     std::cerr << "Zero Reserve: TmContractCohortePayee: Requesting ABORT for " << m_TxId << std::endl;
+
+    m_Phase = ABORT_REQUEST;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_myId, ABORT_REQUEST, Router::CLIENT, item->getPayerId() );
     resendItem->PeerId( item->PeerId() );
@@ -302,6 +322,8 @@ ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
     ZR::ZR_Number fee = ZR::ZR_Number::fromFractionString( v_payload[4] );
     ZR::ZR_Number price = fiatAmount / btcAmount;
 
+    // TODO: Check if amount needs to be reduced
+
     std::pair< ZR::PeerAddress, ZR::PeerAddress > route;
     if( Router::Instance()->getTunnel( item->getAddress(), route ) == ZR::ZR_FAILURE )
         return ZR::ZR_FAILURE;
@@ -355,10 +377,19 @@ ZR::RetVal TmContractCohorteHop::doVote( RSZRRemoteTxItem * item )
         std::cerr << "Zero Reserve: Payload ERROR: Protocol mismatch" << std::endl;
         return abortTx( item );
     }
+    ZR::ZR_Number btcAmount = ZR::ZR_Number::fromFractionString( v_payload[0] );
     ZR::TransactionId btcTxId = v_payload[ 1 ];
+
     m_payer->setBtcTxId( btcTxId );
     m_payee->setBtcTxId( btcTxId );
-    // TODO: set amount
+
+    // the amount may have been reduced by subsequent hops or by the payee
+    if( btcAmount > m_payer->getBtcAmount() ) // seller can't just increase amount buyer is buying
+        return abortTx( item );
+
+    m_payer->setBtcAmount( btcAmount );
+    m_payee->setBtcAmount( btcAmount );
+    // TODO: FEES
 
     forwardItem( item );
     return ZR::ZR_SUCCESS;
@@ -429,6 +460,7 @@ ZR::RetVal TmContractCohorteHop::abortTx( RSZRRemoteTxItem *item )
 {
     std::cerr << "Zero Reserve: TmContractCohorteHop: Requesting ABORT for " << m_TxId << std::endl;
 
+    m_Phase = ABORT_REQUEST;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( item->getAddress(), ABORT_REQUEST, Router::CLIENT, item->getPayerId() );
     resendItem->PeerId( item->PeerId() );

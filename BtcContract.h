@@ -58,6 +58,8 @@ public:
     bool isContract( const std::string & contractId ) const { return contractId == m_btcTxId; }
 
     const ZR::ZR_Number & getBtcAmount() const { return m_btcAmount; }
+    void setBtcAmount( const ZR::ZR_Number & btcAmount );
+
     const ZR::ZR_Number getFiatAmount() const { return m_btcAmount * m_price; }
     const std::string & getCurrencySym() const { return m_currencySym; }
     const std::string & getCounterParty() const { return m_counterParty; }
