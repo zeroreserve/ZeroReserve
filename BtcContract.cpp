@@ -34,9 +34,16 @@ RsMutex BtcContract::m_contractMutex("ContractMutex");
 
 void BtcContract::pollContracts()
 {
+    RsStackMutex contractMutex( m_contractMutex );
+
     for( ContractIterator it = contracts.begin(); it != contracts.end(); it++ ){
-        if( (*it)->poll() ){
-            rmContract( *it );
+        BtcContract * contract = *it;
+        if( contract->poll() ){
+            if( !contract->m_btcTxId.empty() ){
+                ZrDB::Instance()->rmBtcContract( contract->m_btcTxId );
+            }
+            contracts.erase( it );
+            delete contract;
         }
     }
 }
@@ -89,25 +96,23 @@ BtcContract::BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number &
 {
     if( creationtime == 0 ){
         m_creationtime = QDateTime::currentMSecsSinceEpoch();  // newly created contract gets a current timestamp
+        if( party == RECEIVER ){
+            ZR::ZR_Number fiatAmount = btcAmount * price;
+            Credit c( counterParty, currencySym );
+            c.loadPeer();
+            if( c.getMyAvailable() <= fee ) throw std::runtime_error( "Insufficient funds" );
+            if( c.getMyAvailable() < fiatAmount + fee ){
+                fiatAmount = c.getPeerAvailable() - fee;
+                m_btcAmount = fiatAmount / price;
+            }
+            c.allocate( fiatAmount );
+        }
     }
     else{
         m_creationtime = creationtime;  // contract loaded from DB
     }
 
     RsStackMutex contractMutex( m_contractMutex );
-
-    if( party == RECEIVER ){
-        ZR::ZR_Number fiatAmount = btcAmount * price;
-        Credit c( counterParty, currencySym );
-        c.loadPeer();
-        if( c.getMyAvailable() <= fee ) throw std::runtime_error( "Insufficient funds" );
-        if( c.getMyAvailable() < fiatAmount + fee ){
-            fiatAmount = c.getPeerAvailable() - fee;
-            m_btcAmount = fiatAmount / price;
-        }
-        c.allocate( fiatAmount );
-    }
-
     contracts.push_back( this );
 }
 
