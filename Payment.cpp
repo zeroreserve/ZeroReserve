@@ -78,7 +78,7 @@ ZR::ZR_Number PaymentReceiver::newBalance() const
 }
 
 
-int PaymentReceiver::init( std::string & txPayload )
+int PaymentReceiver::init()
 {
     switch( m_category )
     {
@@ -124,7 +124,7 @@ ZR::ZR_Number PaymentSpender::newBalance() const
     return m_credit.m_balance - m_amount;
 }
 
-int PaymentSpender::init( std::string &txPayload )
+int PaymentSpender::init( )
 {
     if( m_credit.getMyAvailable() < m_amount ){
         return ZR::ZR_FAILURE;

@@ -57,8 +57,7 @@ ZR::RetVal TmLocalCoordinator::init()
 {
     std::cerr << "Zero Reserve: Setting TX manager up as coordinator. ID: " << m_TxId << std::endl;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    std::string dummy;
-    if ( m_payment->init( dummy ) == ZR::ZR_FAILURE ){
+    if ( m_payment->init() == ZR::ZR_FAILURE ){
         std::cerr << "Zero Reserve: Error, not enough Credit " << std::endl;
         return ZR::ZR_FAILURE;
     }

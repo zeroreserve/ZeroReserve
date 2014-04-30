@@ -30,21 +30,25 @@ const unsigned int BtcContract::reqConfirmations = 6;
 std::list< BtcContract* > BtcContract::contracts;
 RsMutex BtcContract::m_contractMutex("ContractMutex");
 
+const static qint64 contract_timeout = 86400000;  // one day
 
 
 void BtcContract::pollContracts()
 {
     RsStackMutex contractMutex( m_contractMutex );
 
-    for( ContractIterator it = contracts.begin(); it != contracts.end(); it++ ){
+    for( ContractIterator it = contracts.begin(); it != contracts.end(); ){
         BtcContract * contract = *it;
         if( contract->poll() ){
             if( !contract->m_btcTxId.empty() ){
                 ZrDB::Instance()->rmBtcContract( contract->m_btcTxId, contract->m_party );
             }
+            contract->deallocateFunds( contract->getFiatAmount() );
             delete contract;
             it = contracts.erase( it );
-            if( it == contracts.end() ) break;
+        }
+        else{
+            it++;
         }
     }
 }
@@ -59,9 +63,10 @@ void BtcContract::rmContract( BtcContract * contract )
             if( !contract->m_btcTxId.empty() ){
                 ZrDB::Instance()->rmBtcContract( contract->m_btcTxId, contract->m_party );
             }
+            c->deallocateFunds( c->getFiatAmount() );
             delete c;
-            it = contracts.erase( it );
-            if( it == contracts.end() ) break;
+            contracts.erase( it );
+            break;
         }
     }
 }
@@ -109,6 +114,7 @@ bool BtcContract::poll()
 {
     if( !m_activated ) return false; // not yet active
 
+    // is the condition for settlement met?
     unsigned int confirmations = ZR::Bitcoin::Instance()->getConfirmations( m_btcTxId );
     std::cerr << "Zero Reserve: Contract: " << m_btcTxId << " : " << confirmations << " confirmations." << std::endl;
     if( confirmations >= reqConfirmations ){
@@ -116,8 +122,20 @@ bool BtcContract::poll()
         execute();
         return true;
     }
+
+    // is it timed out?
+    if(  QDateTime::currentMSecsSinceEpoch() - m_creationtime > contract_timeout )return true;
+
     return false;
 }
+
+void BtcContract::deallocateFunds( const ZR::ZR_Number & amount )
+{
+    Credit c( m_counterParty, m_currencySym );
+    c.loadPeer();
+    c.allocate( -amount );
+}
+
 
 void BtcContract::persist()
 {
@@ -140,7 +158,10 @@ void BtcContract::execute()
 
 void BtcContract::setBtcAmount( const ZR::ZR_Number & btcAmount )
 {
+    ZR::ZR_Number fiatAmount1 = getFiatAmount();
     m_btcAmount = btcAmount;
+    ZR::ZR_Number fiatAmount2 = getFiatAmount();
+    deallocateFunds( fiatAmount1 - fiatAmount2 );
 }
 
 

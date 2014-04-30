@@ -628,6 +628,7 @@ void ZrDB::loadBtcContracts()
         sqlite3_free(zErrMsg);
         throw std::runtime_error( "SQL Error: Cannot load contract data" );
     }
+    // TODO: Recalculate fund allocation to eliminate stale allocation from a crash
 }
 
 

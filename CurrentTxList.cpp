@@ -32,6 +32,8 @@ CurrentTxList::CurrentTxList(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    RsStackMutex contractMutex( BtcContract::m_contractMutex );
+
     for( BtcContract::ContractIterator it = BtcContract::contracts.begin(); it != BtcContract::contracts.end(); it++ ){
         BtcContract * contract = *it;
         ui->txList->insertRow( 0 );

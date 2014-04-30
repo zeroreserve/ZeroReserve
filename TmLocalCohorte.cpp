@@ -52,8 +52,7 @@ ZR::RetVal TmLocalCohorte::init()
     RsZeroReserveTxItem * reply;
     ZR::RetVal retval;
 
-    std::string dummy;
-    if ( m_payment->init( dummy ) == ZR::ZR_FAILURE ){
+    if ( m_payment->init() == ZR::ZR_FAILURE ){
         std::cerr << "Zero Reserve: initCohort(): Insufficient Credit - voting no" << std::endl;
         reply = new RsZeroReserveTxItem( VOTE_NO );
         retval = ZR::ZR_FAILURE;

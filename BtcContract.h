@@ -77,6 +77,7 @@ private:
     /** check if our TX is in the blockchain and has sufficient confirmations */
     bool poll();
     void execute();
+    void deallocateFunds( const ZR::ZR_Number & amount );
 
 private:
     std::string m_btcTxId;            // checked for final payment
