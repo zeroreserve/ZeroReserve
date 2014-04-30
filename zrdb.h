@@ -112,7 +112,7 @@ public:
     void addMyWallet( MyWallet & wallet );
 
     void addBtcContract( BtcContract * contract );
-    void rmBtcContract( const ZR::TransactionId & btcTxId );
+    void rmBtcContract(const ZR::TransactionId & btcTxId , int party );
     void loadBtcContracts();
 
 private:

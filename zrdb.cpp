@@ -608,11 +608,11 @@ void ZrDB::addBtcContract( BtcContract * contract )
     runQuery( insert.str() );
 }
 
-void ZrDB::rmBtcContract( const ZR::TransactionId & btcTxId )
+void ZrDB::rmBtcContract(const ZR::TransactionId & btcTxId, int party )
 {
     std::cerr << "Zero Reserve: Deleting Contract " << btcTxId << std::endl;
     std::ostringstream rmc;
-    rmc << "delete from  btccontracts where btcTxId = '" << btcTxId << "'";
+    rmc << "delete from  btccontracts where btcTxId = '" << btcTxId << "' and party = " << party;
     runQuery( rmc.str() );
 }
 

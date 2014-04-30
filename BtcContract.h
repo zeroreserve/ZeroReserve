@@ -43,7 +43,7 @@ class BtcContract
 
 public:
     /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
-    enum Party { RECEIVER, SENDER };
+    enum Party { RECEIVER=0, SENDER };
 
     BtcContract(const ZR::ZR_Number & btcAmount, const ZR::ZR_Number & fee, const ZR::ZR_Number & price, const std::string & currencySym, Party party, const std::string & counterParty , const qint64 creationtime = 0 );
     virtual ~BtcContract();
@@ -98,7 +98,6 @@ public:
 
     static void pollContracts();
     static void rmContract( BtcContract * contract );
-    static void rmContract( const ZR::TransactionId &id );
 
     static const unsigned int reqConfirmations;
 };
