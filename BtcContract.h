@@ -39,8 +39,6 @@
 
 class BtcContract
 {
-    friend class ZrDB;
-
 public:
     /** which side of the contract are we. Hops have 2 contracts that cancel each other out */
     enum Party { RECEIVER=0, SENDER };
@@ -61,12 +59,14 @@ public:
     void setBtcAmount( const ZR::ZR_Number & btcAmount );
 
     const ZR::ZR_Number getFiatAmount() const { return m_btcAmount * m_price; }
+    const ZR::ZR_Number getFee() const { return m_fee; }
     const std::string & getCurrencySym() const { return m_currencySym; }
     const std::string & getCounterParty() const { return m_counterParty; }
     const std::string & getBtcTxId() const { return m_btcTxId; }
     Party getParty(){ return m_party; }
     const ZR::ZR_Number & getPrice() { return m_price; }
     const qint64 & getCreationTime(){ return m_creationtime; }
+    const ZR::BitcoinAddress & getDestAddress(){ return m_destAddress; }
 
     void activate( bool val = true ){ m_activated = val; }
     void setBtcAddress( const ZR::BitcoinAddress & addr ){ m_destAddress = addr; }

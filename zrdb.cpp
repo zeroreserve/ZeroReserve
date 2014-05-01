@@ -61,7 +61,6 @@ static int btccontracts_callback(void * , int argc, char ** argv, char ** )
     contract->setBtcAddress( argv[ 6 ] );
     contract->activate();
 
-    BtcContract::contracts.push_back( contract );
     return SQLITE_OK;
 }
 
@@ -121,7 +120,7 @@ static int txlog_callback(void * db, int argc, char ** argv, char ** )
 }
 
 
-static int noop_callback(void * db, int, char **, char **)
+static int noop_callback(void * , int, char **, char **)
 {
     return SQLITE_OK;
 }
@@ -595,15 +594,15 @@ void ZrDB::addBtcContract( BtcContract * contract )
     std::cerr << "Zero Reserve: Inserting contract " << std::endl;
     std::ostringstream insert;
     insert << "insert into btccontracts values( '"
-           << contract->m_btcTxId << "', "
-           << contract->m_btcAmount.toDecimalStdString() << ", "
-           << contract->m_price.toDecimalStdString() << ", '"
-           << contract->m_currencySym << "', "
-           << (int)contract->m_party << ", '"
-           << contract->m_counterParty << "', '"
-           << contract->m_destAddress << "', "
-           << contract->m_creationtime << ", "
-           << contract->m_fee.toDecimalStdString() << " )";
+           << contract->getBtcTxId() << "', "
+           << contract->getBtcAmount().toDecimalStdString() << ", "
+           << contract->getPrice().toDecimalStdString() << ", '"
+           << contract->getCurrencySym() << "', "
+           << (int)contract->getParty() << ", '"
+           << contract->getCounterParty() << "', '"
+           << contract->getDestAddress() << "', "
+           << contract->getCreationTime() << ", "
+           << contract->getFee().toDecimalStdString() << " )";
 
     runQuery( insert.str() );
 }
