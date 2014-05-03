@@ -126,11 +126,17 @@ void p3ZeroReserveRS::processIncoming()
 
 void p3ZeroReserveRS::sendOrderBook( const std::string & uid )
 {
-    for( OrderBook::OrderIterator it = m_asks->begin(); it != m_asks->end(); it++ ){
-        sendOrder( uid, *it );
+    {
+        RsStackMutex askMutex( m_asks->m_order_mutex );
+        for( OrderBook::OrderIterator it = m_asks->begin(); it != m_asks->end(); it++ ){
+            sendOrder( uid, *it );
+        }
     }
-    for( OrderBook::OrderIterator it = m_bids->begin(); it != m_bids->end(); it++ ){
-        sendOrder( uid, *it );
+    {
+        RsStackMutex bidMutex( m_bids->m_order_mutex );
+        for( OrderBook::OrderIterator it = m_bids->begin(); it != m_bids->end(); it++ ){
+            sendOrder( uid, *it );
+        }
     }
     sendItem( new RsZeroReserveMsgItem( RsZeroReserveMsgItem::SENT_ORDERBOOK, "" ) );
 }
