@@ -141,19 +141,18 @@ ZR::RetVal MyOrders::matchOther( Order * other )
     OrderList bids;
     filterBids( bids, other->m_currency );
     ZR::ZR_Number amount = other->m_amount;
+
     for( OrderIterator it = bids.begin(); it != bids.end(); it++ ){
         order = *it;
         if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << order->m_price.toStdString() << std::endl;
 
-        m_CurrentTxOrders[ other->m_order_id + ':' + order->m_order_id ] = std::pair< Order, Order > ( *order, *other ); // remember the matched order pair for later
-
         if( order->m_amount > amount ){
-            buy( other, amount, order->m_order_id );
+            buy( other, order, amount );
             return ZR::ZR_FINISH;
         }
         else {
-            buy( other, order->m_amount, order->m_order_id );
+            buy( other, order, order->m_amount );
         }
         amount -= order->m_amount;
     }
@@ -161,24 +160,22 @@ ZR::RetVal MyOrders::matchOther( Order * other )
 }
 
 
-ZR::RetVal MyOrders::match( Order * order )
+ZR::RetVal MyOrders::match( Order * myOrder )
 {
     OrderList asks;
-    m_asks->filterOrders( asks, order->m_currency );
-    ZR::ZR_Number amount = order->m_amount;
+    m_asks->filterOrders( asks, myOrder->m_currency );
+    ZR::ZR_Number amount = myOrder->m_amount;
     for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){
         Order * other = *askIt;
         if( other->m_isMyOrder ) continue; // don't fill own orders
-        if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
+        if( myOrder->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
 
-        m_CurrentTxOrders[ other->m_order_id + ':' + order->m_order_id ] = std::pair< Order, Order > ( *order, *other ); // remember the matched order pair for later
-
         if( amount > other->m_amount ){
-            buy( other, other->m_amount, order->m_order_id );
+            buy( other, myOrder, other->m_amount );
         }
         else {
-            buy( other, amount, order->m_order_id );
+            buy( other, myOrder, amount );
             return ZR::ZR_FINISH;
         }
         amount -= other->m_amount;
@@ -187,111 +184,10 @@ ZR::RetVal MyOrders::match( Order * order )
 }
 
 
-void MyOrders::buy( Order * order, ZR::ZR_Number amount, const Order::ID & myId )
+void MyOrders::buy( Order * other, Order * myOrder, const ZR::ZR_Number amount )
 {
-    TmContractCoordinator * tm = new TmContractCoordinator( order, amount, myId );
+    TmContractCoordinator * tm = new TmContractCoordinator( other, myOrder, amount );
     if( ZR::ZR_FAILURE == tm->init() ) delete tm;
-}
-
-
-OrderBook::Order * MyOrders::startExecute( ZR::ZR_Number & in_out_btcAmount , const std::string &orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex, ZR::TransactionId & outId )
-{
-    std::cerr << "Zero Reserve: Starting Order execution for " << orderId << std::endl;
-
-    OrderIterator it = find( orderId );
-    if( it == end() ) return NULL;   // no such order
-
-    Order * order = *it;
-    ZR::ZR_Number leftover = order->m_amount - order->m_commitment;
-    if( leftover == 0 )return NULL; // nothing left in this order
-
-    if( in_out_btcAmount > leftover ){
-        order->m_commitment = order->m_amount;
-        in_out_btcAmount = leftover;
-    }
-    else {
-        order->m_commitment += in_out_btcAmount;
-    }
-
-    if( ZR::Bitcoin::Instance()->mkRawTx( in_out_btcAmount, order->m_btcAddr, recvAddr, out_txHex, outId ) != ZR::ZR_SUCCESS )
-        return NULL;
-
-    std::cerr << "Zero Reserve: Order execution; TX: " << out_txHex << std::endl;
-
-    return order;
-}
-
-
-int MyOrders::finishExecute( const std::string & orderId, const ZR::ZR_Number & btcAmount, const ZR::BitcoinTxHex & txHex )
-{
-    std::cerr << "Zero Reserve: Finishing Order execution for " << orderId << std::endl;
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-
-    OrderIterator it = find( orderId );
-    if( it != end() ){
-        Order * oldOrder = *it;
-        if( oldOrder->m_amount >  btcAmount ){ // order only partly filled
-            beginResetModel();
-            m_asks->beginReset();
-            oldOrder->m_purpose = Order::PARTLY_FILLED;
-            oldOrder->m_amount -= btcAmount;
-            oldOrder->m_commitment -= btcAmount;
-            ZrDB::Instance()->updateOrder( oldOrder );
-            m_asks->endReset();
-            endResetModel();
-        }
-        else {  // completely filled
-            oldOrder->m_purpose = Order::FILLED;
-            remove( orderId );
-            m_asks->remove( orderId );
-        }
-        ZR::Bitcoin::Instance()->sendRaw( txHex );
-        p3zr->publishOrder( oldOrder );
-    }
-    else {
-        std::cerr << "Zero Reserve: Could not find order" << std::endl;
-        return ZR::ZR_FAILURE;
-    }
-    return ZR::ZR_SUCCESS;
-}
-
-
-ZR::RetVal MyOrders::updateOrders( const ZR::ZR_Number & btcAmount, const ZR::VirtualAddress & txId )
-{
-    std::cerr << "Zero Reserve: Updating order " << txId << std::endl;
-    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-
-    std::map< ZR::TransactionId, std::pair< Order, Order > >::iterator refIt = m_CurrentTxOrders.find( txId );
-    if( refIt == m_CurrentTxOrders.end() ){
-        std::cerr << "Zero Reserve: Could not find Reference " << txId << std::endl;
-        return ZR::ZR_FAILURE;
-    }
-    OrderIterator orderIt = find( (*refIt).second.first.m_order_id );
-    if( orderIt == end() ) return ZR::ZR_FAILURE;
-
-    Order * order = *orderIt;
-    const Order & other = (*refIt).second.second;
-
-    if( order->m_amount > btcAmount ){
-        beginResetModel();
-        m_bids->beginReset();
-        order->m_amount -= btcAmount;
-        order->m_purpose = Order::PARTLY_FILLED;
-        ZrDB::Instance()->updateOrder( order );
-        m_bids->endReset();
-        endResetModel();
-        p3zr->publishOrder( order );
-    }
-    else{
-        m_bids->remove( order );
-        remove( order );
-        order->m_purpose = Order::FILLED;
-        p3zr->publishOrder( order );
-    }
-
-    m_CurrentTxOrders.erase( refIt );
-
-    return ZR::ZR_SUCCESS;
 }
 
 
@@ -302,40 +198,15 @@ void MyOrders::cancelOrder( int index )
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     Order * order = m_filteredOrders[ index ];
 
-    remove( order );
+    remove( order->m_order_id );
     if( order->m_orderType == Order::ASK ){
-        m_asks->remove( order );
+        m_asks->remove( order->m_order_id );
     }
     else{
-        m_bids->remove( order );
+        m_bids->remove( order->m_order_id );
     }
 
     order->m_purpose = Order::CANCEL;
     p3zr->publishOrder( order );
 }
 
-
-void MyOrders::rollbackSeller( const ZR::VirtualAddress & orderId, const ZR::ZR_Number & btcAmount )
-{
-    std::cerr << "Zero Reserve: Rolling buyer back " << orderId << std::endl;
-    OrderIterator it = find( orderId );
-    if( it == end() ) return;   // no such order
-
-    Order * order = *it;
-    order->m_commitment -= btcAmount;
-}
-
-void MyOrders::rollbackBuyer( const ZR::VirtualAddress & txId )
-{
-    std::cerr << "Zero Reserve: Rolling back " << txId << std::endl;
-
-    std::map< ZR::TransactionId, std::pair< Order, Order > >::iterator refIt = m_CurrentTxOrders.find( txId );
-    if( refIt == m_CurrentTxOrders.end() ){
-        std::cerr << "Zero Reserve: Could not find Reference " << txId << std::endl;
-        return;
-    }
-    Order & other = (*refIt).second.second;
-    m_asks->remove( &other );
-
-    m_CurrentTxOrders.erase( txId );
-}

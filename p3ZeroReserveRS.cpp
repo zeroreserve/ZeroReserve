@@ -213,7 +213,7 @@ bool p3ZeroReserveRS::sendCredit( Credit * credit )
 bool p3ZeroReserveRS::sendOrder( const std::string& peer_id, OrderBook::Order * order )
 {
     std::cerr << "Zero Reserve: Sending order to " << peer_id << std::endl;
-    RsZeroReserveOrderBookItem * item = new RsZeroReserveOrderBookItem( order );
+    RsZeroReserveOrderBookItem * item = new RsZeroReserveOrderBookItem( *order );
     if(!item){
             std::cerr << "Cannot allocate RsZeroReserveOrderBookItem !" << std::endl;
             return false ;

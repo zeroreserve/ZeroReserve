@@ -209,19 +209,19 @@ std::ostream& RsZeroReserveOrderBookItem::print(std::ostream &out, uint16_t inde
         printRsItemBase(out, "RsZeroReserveOrderBookItem", indent);
         uint16_t int_Indent = indent + 2;
         printIndent(out, int_Indent);
-        out << "Amount  : " << m_order->m_amount << std::endl;
+        out << "Amount  : " << m_order.m_amount << std::endl;
 
         printIndent(out, int_Indent);
-        out << "ID      : " << m_order->m_order_id << std::endl;
+        out << "ID      : " << m_order.m_order_id << std::endl;
 
         printIndent(out, int_Indent);
-        out << "Price   : " << m_order->m_price << std::endl;
+        out << "Price   : " << m_order.m_price << std::endl;
 
         printIndent(out, int_Indent);
-        out << "Type    : " << (( m_order->m_orderType == OrderBook::Order::ASK )? "ASK" : "BID" ) << std::endl;
+        out << "Type    : " << (( m_order.m_orderType == OrderBook::Order::ASK )? "ASK" : "BID" ) << std::endl;
 
         printIndent(out, int_Indent);
-        out << "Purpose : " << m_order->m_purpose << std::endl;
+        out << "Purpose : " << m_order.m_purpose << std::endl;
 
         printIndent(out, int_Indent);
         printRsItemEnd(out, "RsZeroReserveOrderBookItem", indent);
@@ -231,12 +231,12 @@ std::ostream& RsZeroReserveOrderBookItem::print(std::ostream &out, uint16_t inde
 uint32_t RsZeroReserveOrderBookItem::serial_size() const
 {
         uint32_t s = RSZRRemoteItem::serial_size();
-        s += m_order->m_amount.length() + HOLLERITH_LEN_SPEC;
-        s += m_order->m_price.length() + HOLLERITH_LEN_SPEC;
+        s += m_order.m_amount.length() + HOLLERITH_LEN_SPEC;
+        s += m_order.m_price.length() + HOLLERITH_LEN_SPEC;
         s += sizeof(uint8_t); // the type (BID / ASK)
         s += CURRENCY_STRLEN + HOLLERITH_LEN_SPEC;
         s += sizeof(uint64_t);
-        s += m_order->m_order_id.length() + HOLLERITH_LEN_SPEC;
+        s += m_order.m_order_id.length() + HOLLERITH_LEN_SPEC;
         s += sizeof( uint8_t );  // purpose
 
         return s;
@@ -253,13 +253,13 @@ bool RsZeroReserveOrderBookItem::serialise(void *data, uint32_t& pktsize)
 
         bool ok = RSZRRemoteItem::serialise( data, pktsize );
 
-        ok &= setRawString( data, tlvsize, &m_Offset, m_order->m_amount.toStdString() );
-        ok &= setRawString( data, tlvsize, &m_Offset, Currency::currencySymbols[m_order->m_currency] );
-        ok &= setRawUInt8( data, tlvsize, &m_Offset, m_order->m_orderType );
-        ok &= setRawString( data, tlvsize, &m_Offset, m_order->m_price.toStdString() );
-        ok &= setRawUInt64( data, tlvsize, &m_Offset, m_order->m_timeStamp );
-        ok &= setRawString( data, tlvsize, &m_Offset, m_order->m_order_id );
-        ok &= setRawUInt8( data, tlvsize, &m_Offset, m_order->m_purpose );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_order.m_amount.toStdString() );
+        ok &= setRawString( data, tlvsize, &m_Offset, Currency::currencySymbols[ m_order.m_currency ] );
+        ok &= setRawUInt8( data, tlvsize, &m_Offset, m_order.m_orderType );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_order.m_price.toStdString() );
+        ok &= setRawUInt64( data, tlvsize, &m_Offset, m_order.m_timeStamp );
+        ok &= setRawString( data, tlvsize, &m_Offset, m_order.m_order_id );
+        ok &= setRawUInt8( data, tlvsize, &m_Offset, m_order.m_purpose );
 
         if (m_Offset != tlvsize){
                 ok = false;
@@ -284,42 +284,40 @@ RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem(void *data, uint32_t pkts
 
     bool ok = true;
 
-    m_order = new OrderBook::Order;
-
     std::string amount;
     ok &= getRawString(data, rssize, &m_Offset, amount);
-    m_order->m_amount = ZR::ZR_Number::fromFractionString( amount );
+    m_order.m_amount = ZR::ZR_Number::fromFractionString( amount );
 
     std::string currency;
     ok &= getRawString(data, rssize, &m_Offset, currency);
-    m_order->m_currency = Currency::getCurrencyBySymbol( currency );  // TODO: Check error "no such symbol"
+    m_order.m_currency = Currency::getCurrencyBySymbol( currency );  // TODO: Check error "no such symbol"
 
     uint8_t order_type;
     ok &= getRawUInt8(data, rssize, &m_Offset, &order_type );
-    m_order->m_orderType = (OrderBook::Order::OrderType) order_type;
+    m_order.m_orderType = (OrderBook::Order::OrderType) order_type;
 
     std::string price;
     ok &= getRawString(data, rssize, &m_Offset, price);
-    m_order->m_price = ZR::ZR_Number::fromFractionString( price );
+    m_order.m_price = ZR::ZR_Number::fromFractionString( price );
 
     uint64_t timestamp;
     ok &= getRawUInt64(data, rssize, &m_Offset, &timestamp );
-    m_order->m_timeStamp = timestamp;
+    m_order.m_timeStamp = timestamp;
 
     std::string order_id;
     ok &= getRawString(data, rssize, &m_Offset, order_id);
-    m_order->m_order_id = order_id;
+    m_order.m_order_id = order_id;
 
     uint8_t order_purpose;
     ok &= getRawUInt8(data, rssize, &m_Offset, &order_purpose );
-    m_order->m_purpose = (OrderBook::Order::Purpose) order_purpose;
+    m_order.m_purpose = (OrderBook::Order::Purpose) order_purpose;
 
     if (m_Offset != rssize || !ok )
         throw std::runtime_error("Deserialisation error!") ;
 }
 
-RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem( OrderBook::Order * order)
-        : RSZRRemoteItem( order->m_order_id, ZERORESERVE_ORDERBOOK_ITEM ),
+RsZeroReserveOrderBookItem::RsZeroReserveOrderBookItem( OrderBook::Order & order)
+        : RSZRRemoteItem( order.m_order_id, ZERORESERVE_ORDERBOOK_ITEM ),
         m_order( order )
 {
 

@@ -40,36 +40,23 @@ public:
     virtual QVariant data(const QModelIndex&, int role = Qt::DisplayRole) const;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
-
-    /** Seller side: start executing the deal - initiate Bitcoin payment */
-    OrderBook::Order * startExecute( ZR::ZR_Number & in_out_btcAmount, const std::string & orderId, const ZR::BitcoinAddress & recvAddr, ZR::BitcoinTxHex & out_txHex , ZR::TransactionId & outId );
-
-    /** Seller side: remove Order from the book, if partly filled, publish
-     * a new order, finish Bitcoin payment
-     */
-    int finishExecute( const std::string & orderId , const ZR::ZR_Number & btcAmount, const ZR::BitcoinTxHex & txHex );
-    ZR::RetVal updateOrders( const ZR::ZR_Number & btcAmount, const ZR::VirtualAddress &txId );
-
-    /** De-allocate funds from an ASK that failed */
-    void rollbackSeller( const ZR::VirtualAddress & orderId, const ZR::ZR_Number & btcAmount );
-
-    /** Remove a BID completely that caused a failed TX */
-    void rollbackBuyer( const ZR::VirtualAddress & txId );
-
     void cancelOrder( int index );
+
+    OrderBook * getBids(){ return m_bids; }
+    OrderBook * getAsks(){ return m_asks; }
 
     static MyOrders * Instance();
 
 protected:
     /** Matches our new order with all others  */
-    virtual ZR::RetVal match(Order *order);
+    virtual ZR::RetVal match( Order *myOrder );
 
     /** Matches incoming new order with ours */
     virtual ZR::RetVal matchOther( Order * other );
 
 
     /** Buyer side: start buying Bitcoins */
-    void buy( Order * order, ZR::ZR_Number amount , const Order::ID &myId );
+    void buy( Order * other, Order * myOrder, const ZR::ZR_Number amount );
 
     void filterBids( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym );
     static bool reverseCompareOrder( const Order * left, const Order * right );
@@ -78,7 +65,6 @@ private:
     OrderBook * m_bids;
     OrderBook * m_asks;
 
-    std::map< ZR::TransactionId, std::pair< Order, Order > > m_CurrentTxOrders;
 
 private:
 

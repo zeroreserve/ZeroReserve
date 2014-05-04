@@ -52,7 +52,7 @@ int TransactionManager::handleTxItem( RSZRRemoteTxItem *item )
     TransactionManager * tm;
     TxManagers::iterator it = currentTX.find( txId );
     if( it == currentTX.end() ){
-        if( MyOrders::Instance()->find( addr ) != MyOrders::Instance()->end() ){
+        if( MyOrders::Instance()->find( addr ) != NULL ){
             tm = new TmContractCohortePayee( addr, item->getPayerId() );
         }
         else {

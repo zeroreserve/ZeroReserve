@@ -105,18 +105,17 @@ public:
     /** remove an order from the book
      *  @param order Template for the order to match. Relevant fields: Id, timestamp and currency
      *  @return a pointer to the removed order */
-    virtual Order * remove( Order * order );
     virtual Order * remove( const std::string & order_id );
-    OrderIterator find( const std::string & order_id );
+    Order * find( const std::string & order_id );
 
     void beginReset(){ beginResetModel(); }
     void endReset(){ endResetModel(); }
 
     virtual int addOrder( Order* order );
 
+    mutable RsMutex m_order_mutex;
 
 protected:
-    mutable RsMutex m_order_mutex;
 
     OrderList m_orders;
     OrderList m_filteredOrders;

@@ -36,15 +36,15 @@ TmContract::TmContract( const ZR::VirtualAddress & addr, const std::string & myI
 
 ///////////////////// TmContractCoordinator /////////////////////////////
 
-TmContractCoordinator::TmContractCoordinator( const OrderBook::Order * order, const ZR::ZR_Number & amount, const std::string & myId ) :
-    TmContract( order->m_order_id , myId ),
-    m_Destination( order->m_order_id ),
-    m_myId( myId ),
+TmContractCoordinator::TmContractCoordinator( OrderBook::Order * other, OrderBook::Order *myOrder, const ZR::ZR_Number & amount ) :
+    TmContract( other->m_order_id , myOrder->m_order_id ),
+    m_otherOrder( other ),
+    m_myOrder( myOrder ),
     m_payer( NULL )
 {
-    ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
+    ZR::PeerAddress addr = Router::Instance()->nextHop( m_otherOrder->m_order_id );
     if( !addr.empty() ){
-        m_payer = new BtcContract( amount, 0, order->m_price, Currency::currencySymbols[ order->m_currency ], BtcContract::SENDER, addr );
+        m_payer = new BtcContract( amount, 0, other->m_price, Currency::currencySymbols[ other->m_currency ], BtcContract::SENDER, addr );
     }
 }
 
@@ -63,7 +63,7 @@ ZR::RetVal TmContractCoordinator::init()
     ZR::ZR_Number fees = 0;
 
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteTxItem * item = new RSZRRemoteTxItem( m_Destination, QUERY, Router::SERVER, m_myId );
+    RSZRRemoteTxItem * item = new RSZRRemoteTxItem( m_otherOrder->m_order_id, QUERY, Router::SERVER, m_myOrder->m_order_id );
     std::string payload = m_payer->getFiatAmount().toStdString() + ':' + m_payer->getCurrencySym() + ':' +
             btcAddr + ':' + m_payer->getBtcAmount().toStdString() + ':' + fees.toStdString();
     item->setPayload( payload );
@@ -114,22 +114,44 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
     m_payer->setBtcAmount( btcAmount );
 
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_Destination, COMMIT, Router::SERVER, m_myId );
+    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_otherOrder->m_order_id, COMMIT, Router::SERVER, m_myOrder->m_order_id );
     resendItem->setPayload( "" );
     resendItem->PeerId( m_payer->getCounterParty() );
     m_payer->activate();
     m_payer->persist();
-    MyOrders::Instance()->updateOrders( m_payer->getBtcAmount(), m_TxId );
-
     p3zr->sendItem( resendItem );
+
+    // updating orders
+    if( m_myOrder->m_amount > btcAmount ){
+        MyOrders::Instance()->beginReset();
+        MyOrders::Instance()->getBids()->beginReset();
+
+        m_myOrder->m_amount -= btcAmount;
+        m_myOrder->m_purpose = OrderBook::Order::PARTLY_FILLED;
+        ZrDB::Instance()->updateOrder( m_myOrder );
+
+        MyOrders::Instance()->getBids()->endReset();
+        MyOrders::Instance()->endReset();
+
+        p3zr->publishOrder( m_myOrder );
+    }
+    else{
+        MyOrders::Instance()->getBids()->remove( m_myOrder->m_order_id );
+        MyOrders::Instance()->remove( m_myOrder->m_order_id );
+        m_myOrder->m_purpose = OrderBook::Order::FILLED;
+        p3zr->publishOrder( m_myOrder );
+        delete m_myOrder;
+        m_myOrder = NULL;
+    }
 
     return ZR::ZR_FINISH;
 }
 
 void TmContractCoordinator::rollback()
 {
+    std::cerr << "Zero Reserve: Rolling back " << m_TxId << std::endl;
     BtcContract::rmContract( m_payer );
-    MyOrders::Instance()->rollbackBuyer( m_TxId );
+    MyOrders::Instance()->getAsks()->remove( m_otherOrder->m_order_id );
 }
 
 
@@ -138,8 +160,8 @@ ZR::RetVal TmContractCoordinator::abortTx( RSZRRemoteTxItem * )
     std::cerr << "Zero Reserve: TmContractCoordinator: Commanding ABORT of " << m_TxId << std::endl;
 
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_Destination, ABORT, Router::SERVER, m_myId );
-    ZR::PeerAddress addr = Router::Instance()->nextHop( m_Destination );
+    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_otherOrder->m_order_id, ABORT, Router::SERVER, m_myOrder->m_order_id );
+    ZR::PeerAddress addr = Router::Instance()->nextHop( m_otherOrder->m_order_id );
     if( addr.empty() )
         return ZR::ZR_FAILURE;
 
@@ -173,8 +195,9 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
     if( m_Phase != INIT || item == NULL )
         return abortTx( item );
     m_Phase = QUERY;
-    m_myId = item->getAddress();
-    TxPhase vote = VOTE_YES;
+    m_myOrder = MyOrders::Instance()->find( item->getAddress() );
+    if( m_myOrder == NULL)
+        return abortTx( item );
 
     std::vector< std::string > v_payload;
     split( item->getPayload(), v_payload );
@@ -197,23 +220,40 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
         fiatAmount = credit.getPeerAvailable() - fee;
         btcAmount = fiatAmount * price;
         if( fiatAmount <= 0 ){
-            vote = VOTE_NO;
+            return voteNo( item );
         }
     }
 
-    std::string outTxId;
-    OrderBook::Order * order = MyOrders::Instance()->startExecute( btcAmount, m_myId, destinationBtcAddr, m_txHex, outTxId );
+    if( Currency::currencySymbols[ m_myOrder->m_currency ] != currencySym ) return abortTx( item );
+    if( price < m_myOrder->m_price )
+        return voteNo( item ); // Do they want to cheat us?
 
-    if( order == NULL ) return abortTx( item );
-    if( Currency::currencySymbols[ order->m_currency ] != currencySym ) return abortTx( item );
-    if( price < order->m_price ) vote = VOTE_NO; // Do they want to cheat us?
+    std::string outTxId;
+    ZR::ZR_Number leftover = m_myOrder->m_amount - m_myOrder->m_commitment;
+    if( leftover == 0 ){
+        return voteNo( item ); // nothing left in this order
+    }
+    else{
+        if( btcAmount > leftover ){
+            m_myOrder->m_commitment = m_myOrder->m_amount;
+            btcAmount = leftover;
+        }
+        else {
+            m_myOrder->m_commitment += btcAmount;
+        }
+
+        if( ZR::Bitcoin::Instance()->mkRawTx( btcAmount, m_myOrder->m_btcAddr, destinationBtcAddr, m_txHex, outTxId ) != ZR::ZR_SUCCESS )
+            return ZR::ZR_FAILURE;
+
+        std::cerr << "Zero Reserve: Order execution; TX: " << m_txHex << std::endl;
+    }
 
     m_payee = new BtcContract( btcAmount, 0, price, currencySym, BtcContract::RECEIVER, item->PeerId() );
     m_payee->setBtcAddress( destinationBtcAddr );
     m_payee->setBtcTxId( outTxId );
 
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_myId, vote, Router::CLIENT, item->getPayerId() );
+    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_myOrder->m_order_id, VOTE_YES, Router::CLIENT, item->getPayerId() );
 
     // return the final Bitcoin amount and the TX ID of the signed TX to the Hops and the payers. They already have the receiving address.
     resendItem->setPayload( m_payee->getBtcAmount().toStdString() + ':' + outTxId );
@@ -234,7 +274,31 @@ ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
 
     m_payee->activate();
     m_payee->persist();
-    MyOrders::Instance()->finishExecute( m_myId, m_payee->getBtcAmount(), m_txHex );
+
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+
+    if( m_myOrder->m_amount >  m_payee->getBtcAmount() ){ // order only partly filled
+        MyOrders::Instance()->beginReset();
+        MyOrders::Instance()->getAsks()->beginReset();
+
+        m_myOrder->m_purpose = OrderBook::Order::PARTLY_FILLED;
+        m_myOrder->m_amount -= m_payee->getBtcAmount();
+        m_myOrder->m_commitment -= m_payee->getBtcAmount();
+        ZrDB::Instance()->updateOrder( m_myOrder );
+
+        MyOrders::Instance()->getAsks()->endReset();
+        MyOrders::Instance()->endReset();
+        p3zr->publishOrder( m_myOrder );
+
+    }
+    else {  // completely filled
+        m_myOrder->m_purpose = OrderBook::Order::FILLED;
+        MyOrders::Instance()->remove( m_myOrder->m_order_id );
+        MyOrders::Instance()->getAsks()->remove( m_myOrder->m_order_id );
+        p3zr->publishOrder( m_myOrder );
+        delete m_myOrder;
+    }
+    ZR::Bitcoin::Instance()->sendRaw( m_txHex );
 
     return ZR::ZR_FINISH;
 }
@@ -266,7 +330,7 @@ ZR::RetVal TmContractCohortePayee::abortTx( RSZRRemoteTxItem *item )
 
     m_Phase = ABORT_REQUEST;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
-    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_myId, ABORT_REQUEST, Router::CLIENT, item->getPayerId() );
+    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_myOrder->m_order_id, ABORT_REQUEST, Router::CLIENT, item->getPayerId() );
     resendItem->PeerId( item->PeerId() );
     p3zr->sendItem( resendItem );
     return ZR::ZR_SUCCESS;
@@ -275,8 +339,22 @@ ZR::RetVal TmContractCohortePayee::abortTx( RSZRRemoteTxItem *item )
 void TmContractCohortePayee::rollback()
 {
     if( !m_payee )return; // abort too early - no contract yet
-    MyOrders::Instance()->rollbackSeller( m_myId, m_payee->getBtcAmount() );
+    std::cerr << "Zero Reserve: Rolling buyer back " << m_myOrder->m_order_id << std::endl;
+
+    m_myOrder->m_commitment -= m_payee->getBtcAmount();
     BtcContract::rmContract( m_payee );
+}
+
+ZR::RetVal TmContractCohortePayee::voteNo( RSZRRemoteTxItem * item )
+{
+    p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
+    RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_myOrder->m_order_id, VOTE_NO, Router::CLIENT, item->getPayerId() );
+
+    resendItem->setPayload( "0/1:VOTE_NO" );
+    resendItem->PeerId( item->PeerId() );
+    p3zr->sendItem( resendItem );
+
+    return ZR::ZR_FINISH;
 }
 
 

@@ -78,11 +78,11 @@ public:
         o << *this;
         return o.str();
     }
-    int length()
+    int length() const
     {
         return toStdString().length();
     }
-    QString toQString()
+    QString toQString() const
     {
         return QString::fromStdString( toStdString() );
     }

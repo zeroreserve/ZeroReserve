@@ -39,6 +39,7 @@ OrderBook::OrderBook() :
 
 OrderBook::~OrderBook()
 {
+    RsStackMutex orderMutex( m_order_mutex );
     for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++) delete *it;
 }
 
@@ -54,7 +55,6 @@ QModelIndex OrderBook::parent(const QModelIndex&) const
 
 int OrderBook::rowCount(const QModelIndex&) const
 {
-    RsStackMutex orderMutex( m_order_mutex );
     return m_filteredOrders.size();
 }
 
@@ -102,6 +102,7 @@ QVariant OrderBook::headerData(int section, Qt::Orientation orientation, int rol
 
 void OrderBook::setCurrency( const QString & currency )
 {
+    RsStackMutex orderMutex( m_order_mutex );
     m_currency = Currency::getCurrencyByName( currency.toStdString() );
     beginResetModel();
     filterOrders( m_filteredOrders, m_currency );
@@ -110,7 +111,6 @@ void OrderBook::setCurrency( const QString & currency )
 
 void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym )
 {
-    RsStackMutex orderMutex( m_order_mutex );
     filteredOrders.clear();
     for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
         if( (*it)->m_currency == currencySym )
@@ -153,8 +153,10 @@ ZR::RetVal OrderBook::processMyOrder( Order* order )
 
 ZR::RetVal OrderBook::processOrder( Order* order )
 {
-    if( m_myOrders->find( order->m_order_id ) != m_myOrders->end() )
+
+    if( m_myOrders->find( order->m_order_id ) != NULL )
         return ZR::ZR_FAILURE; // this is my own order
+
 
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
     if( currentTime - order->m_timeStamp >  Order::timeout
@@ -164,7 +166,7 @@ ZR::RetVal OrderBook::processOrder( Order* order )
     }
 
     if( Order::FILLED == order->m_purpose || Order::CANCEL == order->m_purpose ){
-        Order * oldOrder = remove( order );
+        Order * oldOrder = remove( order->m_order_id );
         if( oldOrder ){
             delete oldOrder;
             return ZR::ZR_SUCCESS;
@@ -173,19 +175,22 @@ ZR::RetVal OrderBook::processOrder( Order* order )
     }
 
     if( Order::PARTLY_FILLED == order->m_purpose ){
-        for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
-            if( *order == *(*it) ){
-                if( order->m_amount == (*it)->m_amount )
-                    return ZR::ZR_FINISH; // we have it already - do nothing
+        {
+            RsStackMutex orderMutex( m_order_mutex );
+            for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+                if( *order == *(*it) ){
+                    if( order->m_amount == (*it)->m_amount )
+                        return ZR::ZR_FINISH; // we have it already - do nothing
+                }
             }
         }
-        remove( order );  // remove so it gets reinserted with the updates values below.
+        remove( order->m_order_id );  // remove so it gets reinserted with the updates values below.
         addOrder( order );
         return ZR::ZR_SUCCESS;
     }
 
-    if( find( order->m_order_id ) != end() )
-        return ZR::ZR_FINISH; // order already in book
+    if( find( order->m_order_id ) != NULL )
+            return ZR::ZR_FINISH; // order already in book
 
     addOrder( order );
     return m_myOrders->matchOther( order );
@@ -197,10 +202,10 @@ int OrderBook::addOrder( Order * order )
 {    
     std::cerr << "Zero Reserve: Inserting Type: " << (int)order->m_orderType <<
                  " Currency: " << order->m_currency << std::endl;
-    {
-        RsStackMutex orderMutex( m_order_mutex );
-        m_orders.append(order);
-    }
+
+    RsStackMutex orderMutex( m_order_mutex );
+    m_orders.append( new Order ( *order ) );
+
     if( order->m_currency != m_currency ) return ZR::ZR_SUCCESS;
 
     beginInsertRows( QModelIndex(), m_filteredOrders.size(), m_filteredOrders.size());
@@ -210,51 +215,32 @@ int OrderBook::addOrder( Order * order )
 }
 
 
-
-OrderBook::Order * OrderBook::remove( Order * order )
-{
-
-    OrderIterator it = find( order->m_order_id );
-    if( it != m_orders.end() ){
-        {
-            RsStackMutex orderMutex( m_order_mutex );
-            m_orders.erase( it );
-        }
-        ZrDB::Instance()->deleteOrder( order);
-        beginResetModel();
-        filterOrders( m_filteredOrders, m_currency );
-        endResetModel();
-        return *it;
-    }
-    return NULL;
-}
-
 OrderBook::Order * OrderBook::remove( const std::string & order_id )
-{
-    // FIXME: Boilerplate
-    OrderIterator it = find( order_id );
-    if( it != m_orders.end() ){
-        {
-            RsStackMutex orderMutex( m_order_mutex );
-            m_orders.erase( it );
-        }
-        beginResetModel();
-        filterOrders( m_filteredOrders, m_currency );
-        endResetModel();
-        return *it;
-    }
-    return NULL;
-}
-
-OrderBook::OrderIterator OrderBook::find( const std::string & order_id )
 {
     RsStackMutex orderMutex( m_order_mutex );
     for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
         if( order_id == (*it)->m_order_id ){
-            return it;
+            Order * order = *it;
+            m_orders.erase( it );
+            ZrDB::Instance()->deleteOrder( order);
+            beginResetModel();
+            filterOrders( m_filteredOrders, m_currency );
+            endResetModel();
+            return order;
         }
     }
-    return m_orders.end();
+    return NULL;
+}
+
+OrderBook::Order * OrderBook::find( const std::string & order_id )
+{
+    RsStackMutex orderMutex( m_order_mutex );
+    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
+        if( order_id == (*it)->m_order_id ){
+            return *it;
+        }
+    }
+    return NULL;
 }
 
 bool OrderBook::compareOrder( const Order * left, const Order * right ){
@@ -305,9 +291,9 @@ void OrderBook::timeoutOrders()
         Order * order = *it;
         if( currentTime - order->m_timeStamp > Order::timeout ){
             if( order->m_commitment == 0 ){
-                remove( order );
+                remove( order->m_order_id );
                 if( order->m_isMyOrder ){
-                    m_myOrders->remove( order );
+                    m_myOrders->remove( order->m_order_id );
                 }
                 delete order;
             }

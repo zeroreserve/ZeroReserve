@@ -70,7 +70,7 @@ public:
      * @param amount Bitcoin amount to buy as part of the seller's order
      * @param myId my order id
      */
-    TmContractCoordinator( const OrderBook::Order * order, const ZR::ZR_Number & amount, const std::string & myId );
+    TmContractCoordinator( OrderBook::Order * other, OrderBook::Order * myOrder, const ZR::ZR_Number & amount );
     virtual ~TmContractCoordinator(){}
 
     virtual ZR::RetVal init();
@@ -84,8 +84,8 @@ private:
     // unlike the other TM, which request an abort on calling this function, a coordinator aborts.
     ZR::RetVal abortTx( RSZRRemoteTxItem * );
 
-    ZR::VirtualAddress m_Destination;
-    std::string m_myId;
+    OrderBook::Order * m_otherOrder;
+    OrderBook::Order * m_myOrder;
     BtcContract * m_payer;
 };
 
@@ -106,10 +106,11 @@ private:
 
     // request an abort
     ZR::RetVal abortTx( RSZRRemoteTxItem *item );
+    ZR::RetVal voteNo( RSZRRemoteTxItem * item );
 
     BtcContract * m_payee;
     ZR::BitcoinTxHex m_txHex;
-    std::string m_myId;
+    OrderBook::Order * m_myOrder;
 };
 
 
