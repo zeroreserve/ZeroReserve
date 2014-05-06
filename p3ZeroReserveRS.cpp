@@ -164,7 +164,7 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
     std::cerr << "Zero Reserve: Received Orderbook Item" << std::endl;
     ZR::RetVal result;
     item->print( std::cerr );
-    OrderBook::Order * order = item->getOrder();
+    OrderBook::Order * order = new OrderBook::Order( *( item->getOrder() ) );
 
     if( !Router::Instance()->hasRoute( order->m_order_id ) ){
         Router::Instance()->addRoute( order->m_order_id, item->PeerId() );
@@ -178,7 +178,10 @@ void p3ZeroReserveRS::handleOrder(RsZeroReserveOrderBookItem *item)
     }
 
     if( ZR::ZR_SUCCESS == result ){
-        publishOrder( order );
+        publishOrder( order, item );
+    }
+    else{
+        delete order;
     }
 }
 
@@ -224,12 +227,13 @@ bool p3ZeroReserveRS::sendOrder( const std::string& peer_id, OrderBook::Order * 
 }
 
 
-void p3ZeroReserveRS::publishOrder( OrderBook::Order * order )
+void p3ZeroReserveRS::publishOrder( OrderBook::Order * order, RsZeroReserveOrderBookItem * item )
 {
     std::list< std::string > sendList;
     m_peers->getOnlineList(sendList);
     for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
         if( (*it) == getOwnId() ) continue;
+        if( item && (*it) == item->PeerId() ) continue; // don't return to sender
         sendOrder( *it, order );
     }
 }

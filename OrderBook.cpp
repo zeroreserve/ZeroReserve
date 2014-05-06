@@ -121,7 +121,7 @@ void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::Curren
 
 ZR::RetVal OrderBook::processMyOrder( Order* order )
 {
-    ZR::RetVal retval;
+    ZR::RetVal retval = ZR::ZR_SUCCESS;
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
 
     try {
@@ -138,17 +138,11 @@ ZR::RetVal OrderBook::processMyOrder( Order* order )
     if( order->m_orderType == Order::BID ){
         retval = m_myOrders->match( order );
     }
-    else {
-        // TODO: Re-enable this:
-        // m_myOrders->matchAsk( order );
-        // addOrder( order );
-        // TODO: Add a publisher queue for the case that counterparty doesn't respond
-        retval = ZR::ZR_SUCCESS;
-    }
+
     if( ZR::ZR_SUCCESS == retval ){
         p3zr->publishOrder( order );
     }
-    return ZR::ZR_SUCCESS;
+    return retval;
 }
 
 ZR::RetVal OrderBook::processOrder( Order* order )
@@ -169,9 +163,9 @@ ZR::RetVal OrderBook::processOrder( Order* order )
         Order * oldOrder = remove( order->m_order_id );
         if( oldOrder ){
             delete oldOrder;
-            return ZR::ZR_SUCCESS;
+            return ZR::ZR_SUCCESS;  // republish if we had it
         }
-        return ZR::ZR_FINISH;
+        return ZR::ZR_FINISH; // do not republish - this may be the second time we got this
     }
 
     if( Order::PARTLY_FILLED == order->m_purpose ){
@@ -180,7 +174,7 @@ ZR::RetVal OrderBook::processOrder( Order* order )
             for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
                 if( *order == *(*it) ){
                     if( order->m_amount == (*it)->m_amount )
-                        return ZR::ZR_FINISH; // we have it already - do nothing
+                        return ZR::ZR_FINISH; // we have this update already - do nothing
                 }
             }
         }
@@ -192,6 +186,7 @@ ZR::RetVal OrderBook::processOrder( Order* order )
     if( find( order->m_order_id ) != NULL )
             return ZR::ZR_FINISH; // order already in book
 
+    // its a new order we don't have yet
     addOrder( order );
     return m_myOrders->matchOther( order );
 }
@@ -204,7 +199,7 @@ int OrderBook::addOrder( Order * order )
                  " Currency: " << order->m_currency << std::endl;
 
     RsStackMutex orderMutex( m_order_mutex );
-    m_orders.append( new Order ( *order ) );
+    m_orders.append( order );
 
     if( order->m_currency != m_currency ) return ZR::ZR_SUCCESS;
 

@@ -42,7 +42,7 @@ public:
 
     bool sendOrder( const std::string& peer_id, OrderBook::Order * order );
     bool sendCredit( Credit * credit );
-    void publishOrder( OrderBook::Order * order );
+    void publishOrder( OrderBook::Order * order, RsZeroReserveOrderBookItem * item = NULL );
     std::string getOwnId(){ return m_peers->getOwnId(); }
     virtual void statusChange(const std::list<pqipeer> &plist);
 

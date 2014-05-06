@@ -121,6 +121,7 @@ bool MyOrders::reverseCompareOrder( const Order * left, const Order * right ){
 
 void MyOrders::filterBids( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym )
 {
+    RsStackMutex orderMutex( m_order_mutex );
     filteredOrders.clear();
     for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
         Order * order = *it;
@@ -149,12 +150,13 @@ ZR::RetVal MyOrders::matchOther( Order * other )
 
         if( order->m_amount > amount ){
             buy( other, order, amount );
-            return ZR::ZR_FINISH;
+            return ZR::ZR_SUCCESS;
         }
         else {
             buy( other, order, order->m_amount );
         }
         amount -= order->m_amount;
+        if( amount == 0 )break;
     }
     return ZR::ZR_SUCCESS;
 }
