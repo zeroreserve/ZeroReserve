@@ -133,7 +133,7 @@ void BtcContract::deallocateFunds( const ZR::ZR_Number & amount )
 {
     Credit c( m_counterParty, m_currencySym );
     c.loadPeer();
-    c.allocate( -amount );
+    c.deallocate( amount );
 }
 
 

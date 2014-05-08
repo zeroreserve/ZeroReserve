@@ -24,6 +24,7 @@
 #include "ZeroReserveDialog.h"
 #include "MyOrders.h"
 #include "BtcContract.h"
+#include "Currency.h"
 
 #include "pqi/p3linkmgr.h"
 
@@ -234,6 +235,16 @@ void p3ZeroReserveRS::publishOrder( OrderBook::Order * order, RsZeroReserveOrder
     for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
         if( (*it) == getOwnId() ) continue;
         if( item && (*it) == item->PeerId() ) continue; // don't return to sender
+
+        Credit c( *it, Currency::currencySymbols[ order->m_currency ] );
+        c.loadPeer();
+        // do not route orders we cannot at least fill to 10%
+        if( order->m_isMyOrder == OrderBook::Order::ASK ){
+            if( c.getMyAvailable() < order->m_amount * 0.1 ) continue;
+        }
+        else{
+            if( c.getPeerAvailable() < order->m_amount * 0.1 ) continue;
+        }
         sendOrder( *it, order );
     }
 }
