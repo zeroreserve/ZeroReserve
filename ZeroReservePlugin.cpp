@@ -58,8 +58,8 @@ extern "C" {
 
 void ZeroReservePlugin::getPluginVersion(int& major,int& minor,int& svn_rev) const
 {
-        major = 5 ;
-	minor = 4 ;
+    major = 5 ;
+    minor = 5 ;
     svn_rev = SVN_REVISION_NUMBER;
 }
 
@@ -181,4 +181,12 @@ void ZeroReservePlugin::stop()
     ZrDB::Instance()->close();
 
     ZR::Bitcoin::Instance()->stop();
+}
+
+
+void ZeroReservePlugin::placeMsg( const std::string & _msg )
+{
+    QString msg = QString::fromStdString( _msg );
+    if( mainpage )
+        mainpage->placeMsg( msg );
 }

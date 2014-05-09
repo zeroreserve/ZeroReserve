@@ -138,10 +138,25 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     timer->start( 3000 );
 }
 
+void ZeroReserveDialog::placeMsg( const QString & msg )
+{
+    m_messages.append( msg );
+}
+
+void ZeroReserveDialog::displayMsg()
+{
+    for( QList< QString >::Iterator it = m_messages.begin(); it != m_messages.end(); ){
+        QString msg = *it;
+        QMessageBox::warning( this, "Zero Reserve", msg);
+        it = m_messages.erase( it );
+    }
+}
+
 
 void ZeroReserveDialog::janitor()
 {
     updateFriendList();
+    displayMsg();
 }
 
 void ZeroReserveDialog::loadTxLog()

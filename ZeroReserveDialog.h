@@ -26,6 +26,7 @@
 
 #include <QPoint>
 #include <QString>
+#include <QList>
 
 
 class ZeroReserveDialog : public MainPage
@@ -36,6 +37,9 @@ public:
     ZeroReserveDialog( OrderBook * bids, OrderBook * asks, QWidget *parent = 0 );
     void updateFriendList();
 
+    /** place a message to be displayed on a QMessageBox */
+    void placeMsg( const QString & msg );
+    void displayMsg();
 
 public slots:
     void addBid();
@@ -57,6 +61,8 @@ private:
 
     Ui::ZeroReserveDialog ui;
     bool m_update;
+
+    QList< QString > m_messages;
 };
 
 #endif // ZERORESERVEDIALOG_H

@@ -18,14 +18,18 @@
 #ifndef ZERORESERVEPLUGIN_H
 #define ZERORESERVEPLUGIN_H
 
+
 #include <retroshare/rsplugin.h>
 #include <retroshare-gui/mainpage.h>
 #include "util/rsthreads.h"
+
+#include <string>
 
 
 class OrderBook;
 class p3ZeroReserveRS;
 class ConfigPage;
+class ZeroReserveDialog;
 
 class ZeroReservePlugin: public RsPlugin
 {
@@ -49,9 +53,13 @@ public:
     virtual std::string getPluginName() const;
     virtual RsPQIService * rs_pqi_service() const;
     virtual void setInterfaces(RsPlugInInterfaces& interfaces);
+
+    /** interface between a worker thread and the GUI thread. Only GUI thread can open a dialog */
+    void placeMsg( const std::string & _msg );
+
 private:
     mutable RsPluginHandler *mPlugInHandler;
-    mutable MainPage* mainpage ;
+    mutable ZeroReserveDialog * mainpage ;
     mutable QIcon* mIcon ;
     mutable RsPeers* m_peers;
     OrderBook * m_asks;

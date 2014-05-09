@@ -62,7 +62,7 @@ MyOrders::MyOrders( OrderBook * bids, OrderBook * asks ) :
         }
     }
     catch( std::runtime_error & e ){
-        std::cerr << "Zero Reserve: ERROR: " << e.what() << std::endl;
+        g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() );
     }
 
     me = this;

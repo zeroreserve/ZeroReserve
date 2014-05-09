@@ -16,6 +16,7 @@
 */
 
 #include "Currency.h"
+#include "ZeroReservePlugin.h"
 
 #include <iostream>
 
@@ -401,7 +402,7 @@ Currency::CurrencySymbols Currency::getCurrencyBySymbol( const std::string & cur
         }
         index++;
     }
-    std::cerr << "Zero Reserve: Currency Symbol " << currency << " not found" << std::endl;
+    g_ZeroReservePlugin->placeMsg( std::string( "Currency Symbol " ) + currency + " not found" );
     return INVALID;
 }
 
@@ -414,6 +415,6 @@ Currency::CurrencySymbols Currency::getCurrencyByName( const std::string & curre
         }
         index++;
     }
-    std::cerr << "Zero Reserve: Currency Name " << currency << " not found" << std::endl;
+    g_ZeroReservePlugin->placeMsg( std::string( "Currency Symbol " ) + currency + " not found" );
     return INVALID;
 }
