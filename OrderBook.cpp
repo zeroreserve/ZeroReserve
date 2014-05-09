@@ -113,7 +113,8 @@ void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::Curren
 {
     filteredOrders.clear();
     for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
-        if( (*it)->m_currency == currencySym )
+        Order * order = *it;
+        if( order->m_currency == currencySym && !order->m_ignored )
             filteredOrders.append( *it );
     }
     qSort( filteredOrders.begin(), filteredOrders.end(), compareOrder );

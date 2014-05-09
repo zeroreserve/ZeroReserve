@@ -42,19 +42,21 @@ public:
 
     void cancelOrder( int index );
 
+    /** iterate through all my orders and try matching */
+    void match();
+
     OrderBook * getBids(){ return m_bids; }
     OrderBook * getAsks(){ return m_asks; }
 
     static MyOrders * Instance();
 
 protected:
-    /** Matches our new order with all others  */
+    /** Matches one of my orders with all "other" others  */
     virtual ZR::RetVal match( Order *myOrder );
 
     /** Buyer side: start buying Bitcoins */
     void buy( Order * other, Order * myOrder, const ZR::ZR_Number amount );
 
-    void filterBids( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym );
     static bool reverseCompareOrder( const Order * left, const Order * right );
 
 private:

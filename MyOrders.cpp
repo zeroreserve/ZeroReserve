@@ -119,16 +119,16 @@ bool MyOrders::reverseCompareOrder( const Order * left, const Order * right ){
     return ( left->m_orderType == Order::BID ) ? left->m_price > right->m_price : left->m_price < right->m_price;
 }
 
-void MyOrders::filterBids( OrderList & filteredOrders, const Currency::CurrencySymbols currencySym )
+
+void MyOrders::match()
 {
     RsStackMutex orderMutex( m_order_mutex );
-    filteredOrders.clear();
-    for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
+    for( OrderIterator it = m_orders.begin(); it != m_orders.end(); it++ ){
         Order * order = *it;
-        if( order->m_currency == currencySym && order->m_orderType == Order::BID )
-            filteredOrders.append( *it );
+        if( order->m_orderType == Order::BID ){
+            match( order );
+        }
     }
-    qSort( filteredOrders.begin(), filteredOrders.end(), reverseCompareOrder );
 }
 
 

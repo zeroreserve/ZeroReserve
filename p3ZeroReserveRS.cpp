@@ -90,6 +90,8 @@ void p3ZeroReserveRS::janitor()
 
     TransactionManager::timeout();
     BtcContract::pollContracts();
+
+    MyOrders::Instance()->match();
 }
 
 void p3ZeroReserveRS::processIncoming()
