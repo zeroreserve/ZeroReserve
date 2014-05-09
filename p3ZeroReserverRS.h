@@ -46,9 +46,6 @@ public:
     std::string getOwnId(){ return m_peers->getOwnId(); }
     virtual void statusChange(const std::list<pqipeer> &plist);
 
-// remote stuff
-    void sendRemote( const ZR::VirtualAddress & address, ZR::ZR_Number amount, const std::string & currency );
-
 private:
 
     void processIncoming();
@@ -57,7 +54,6 @@ private:
     void handleOrder( RsZeroReserveOrderBookItem *item );
     void handleCredit( RsZeroReserveCreditItem *item );
     void handleMessage( RsZeroReserveMsgItem *item );
-    void handlePaymentRequest( RSZRPayRequestItem * item );
 
 
     /** help our friends to bootstrap the order book */

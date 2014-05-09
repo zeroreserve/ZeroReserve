@@ -113,9 +113,6 @@ void p3ZeroReserveRS::processIncoming()
         case RsZeroReserveItem::ZERORESERVE_MSG_ITEM:
             handleMessage( dynamic_cast<RsZeroReserveMsgItem*>( item ) );
             break;
-        case RsZeroReserveItem::ZR_REMOTE_PAYREQUEST_ITEM:
-            handlePaymentRequest( dynamic_cast<RSZRPayRequestItem*>( item ) );
-            break;
         case RsZeroReserveItem::ZR_REMOTE_TX_ITEM:
             TransactionManager::handleTxItem( dynamic_cast<RSZRRemoteTxItem*>( item ) );
             break;
@@ -251,39 +248,3 @@ void p3ZeroReserveRS::publishOrder( OrderBook::Order * order, RsZeroReserveOrder
     }
 }
 
-
-void p3ZeroReserveRS::sendRemote( const ZR::VirtualAddress & address, ZR::ZR_Number amount, const std::string & currency )
-{
-    std::list< std::string > sendList;
-    m_peers->getOnlineList(sendList);
-    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
-        if( (*it) == getOwnId() ) continue;
-        RSZRPayRequestItem * item = new RSZRPayRequestItem( address, amount, currency );
-        item->PeerId( *it );
-        sendItem( item );
-    }
-}
-
-
-void p3ZeroReserveRS::handlePaymentRequest( RSZRPayRequestItem * item )
-{
-    if( Router::Instance()->hasRoute( item->getAddress() ) ){
-        return;
-    }
-    Credit credit( item->PeerId(), item->getCurrency() );
-    credit.loadPeer();
-    if( credit.getMyAvailable() == 0 ) return;
-
-    std::cerr << "Zero Reserve: Adding address " << item->getAddress() << " to the routing table" << std::endl;
-    Currency::CurrencySymbols currency = Currency::getCurrencyBySymbol( item->getCurrency() );
-    Router::Instance()->addRoute( item->getAddress(), item->PeerId() );
-    Payment::addRequest( item->getAddress(), Payment::Request( item->getAmount(), currency ) );
-    std::list< std::string > sendList;
-    m_peers->getOnlineList(sendList);
-    for(std::list< std::string >::const_iterator it = sendList.begin(); it != sendList.end(); it++ ){
-        if( (*it) == getOwnId() || (*it) == item->PeerId() ) continue;
-        RSZRPayRequestItem * republishItem = new RSZRPayRequestItem( *item );
-        republishItem->PeerId( *it );
-        sendItem( republishItem );
-    }
-}

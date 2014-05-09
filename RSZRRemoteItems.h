@@ -58,31 +58,6 @@ protected:
 };
 
 
-/**
- * @brief propagate a payment request through the network.
- * @see RsZeroReserveOrderBookItem
- *
- */
-
-class RSZRPayRequestItem : public RSZRRemoteItem
-{
-    RSZRPayRequestItem();
-public:
-
-    RSZRPayRequestItem(void *data,uint32_t size);
-    RSZRPayRequestItem(const ZR::VirtualAddress & addr, const ZR::ZR_Number &amount, const std::string & currencySymbol);
-
-    virtual bool serialise(void *data,uint32_t& size) ;
-    virtual uint32_t serial_size() const ;
-    virtual std::ostream & print(std::ostream &out, uint16_t indent = 0);
-
-    const std::string & getCurrency(){ return m_Currency; }
-    const ZR::ZR_Number & getAmount(){ return m_Amount; }
-
-private:
-    ZR::ZR_Number m_Amount;
-    std::string m_Currency;
-};
 
 /**
  * @brief propagate Bitcoin bid and ask orders through the network

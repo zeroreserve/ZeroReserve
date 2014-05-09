@@ -22,6 +22,7 @@
 
 #include "serialiser/rsbaseserial.h"
 
+#include"ZeroReservePlugin.h"
 
 bool RSZRRemoteItem::serialise(void *data, uint32_t& pktsize)
 {
@@ -43,86 +44,6 @@ RSZRRemoteItem::RSZRRemoteItem( void *data,uint32_t size, uint8_t zeroreserve_su
     uint32_t rssize = getRsItemSize(data);
     getRawString(data, rssize, &m_Offset, m_Address );
 }
-
-
-//// Begin RSZRPayRequestItem Item  /////
-
-
-std::ostream& RSZRPayRequestItem::print(std::ostream &out, uint16_t indent)
-{
-        printRsItemBase(out, "RsZeroReserveMsgItem", indent);
-        uint16_t int_Indent = indent + 2;
-        printIndent(out, int_Indent);
-        out << "Amount : " << m_Amount << std::endl;
-
-        printIndent(out, int_Indent);
-        out << "Currency : " << m_Currency << std::endl;
-
-        printRsItemEnd(out, "RsZeroReserveMsgItem", indent);
-        return out;
-}
-
-uint32_t RSZRPayRequestItem::serial_size() const
-{
-        uint32_t s = RSZRRemoteItem::serial_size();
-        s += m_Amount.toStdString().length() + HOLLERITH_LEN_SPEC;
-        s += CURRENCY_STRLEN + HOLLERITH_LEN_SPEC;
-
-        return s;
-}
-
-bool RSZRPayRequestItem::serialise(void *data, uint32_t& pktsize)
-{
-        uint32_t tlvsize = serial_size() ;
-
-        if (pktsize < tlvsize)
-                return false; /* not enough space */
-
-        pktsize = tlvsize;
-
-        bool ok = RSZRRemoteItem::serialise( data,  pktsize);
-
-        ok &= setRawString( data, tlvsize, &m_Offset, m_Amount.toStdString() );
-        ok &= setRawString( data, tlvsize, &m_Offset, m_Currency );
-
-        if (m_Offset != tlvsize){
-                ok = false;
-                std::cerr << "RsZeroReserveMsgItem::serialise() Size Error! " << std::endl;
-        }
-
-        return ok;
-}
-
-RSZRPayRequestItem::RSZRPayRequestItem(void *data, uint32_t pktsize)
-        : RSZRRemoteItem( data, pktsize, ZR_REMOTE_PAYREQUEST_ITEM )
-{
-    /* get the type and size */
-    uint32_t rstype = getRsItemId(data);
-    uint32_t rssize = getRsItemSize(data);
-
-    if ((RS_PKT_VERSION_SERVICE != getRsItemVersion(rstype)) || (RS_SERVICE_TYPE_ZERORESERVE_PLUGIN != getRsItemService(rstype)) || (ZR_REMOTE_PAYREQUEST_ITEM != getRsItemSubType(rstype)))
-        throw std::runtime_error("Wrong packet type!") ;
-
-    if (pktsize < rssize)    /* check size */
-        throw std::runtime_error("Not enough size!") ;
-
-    bool ok = true;
-
-    std::string amount;
-    ok &= getRawString(data, rssize, &m_Offset, amount );
-    m_Amount = ZR::ZR_Number::fromFractionString( amount );
-    ok &= getRawString(data, rssize, &m_Offset, m_Currency );
-
-
-    if ( m_Offset != rssize || !ok )
-        throw std::runtime_error("Deserialisation error!") ;
-}
-
-RSZRPayRequestItem::RSZRPayRequestItem( const ZR::VirtualAddress & addr, const ZR::ZR_Number & amount, const std::string & currency )
-        : RSZRRemoteItem( addr, ZR_REMOTE_PAYREQUEST_ITEM ),
-        m_Amount( amount ),
-        m_Currency( currency )
-{}
 
 
 //// Begin RSZRRemoteTxItem Item  /////
