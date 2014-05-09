@@ -135,7 +135,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(janitor()));
-    timer->start( 3000 );
+    timer->start( 1000 );
 }
 
 void ZeroReserveDialog::placeMsg( const QString & msg )
