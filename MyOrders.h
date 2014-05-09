@@ -52,12 +52,10 @@ public:
 
 protected:
     /** Matches one of my orders with all "other" others  */
-    virtual ZR::RetVal match( Order *myOrder );
+    ZR::RetVal match( Order *myOrder );
 
     /** Buyer side: start buying Bitcoins */
     void buy( Order * other, Order * myOrder, const ZR::ZR_Number amount );
-
-    static bool reverseCompareOrder( const Order * left, const Order * right );
 
 private:
     OrderBook * m_bids;

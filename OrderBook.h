@@ -129,11 +129,6 @@ protected:
     Currency::CurrencySymbols m_currency;
     OrderBook * m_myOrders;
 
-protected:
-    /** Matches our new order with all others  */
-    virtual ZR::RetVal match( Order * ){ return ZR::ZR_FAILURE; }
-
-signals:
 
 public slots:
     void setCurrency( const QString & currency );

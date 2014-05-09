@@ -136,10 +136,6 @@ ZR::RetVal OrderBook::processMyOrder( Order* order )
     m_myOrders->addOrder( order );
     addOrder( order );
 
-    if( order->m_orderType == Order::BID ){
-        retval = m_myOrders->match( order );
-    }
-
     if( ZR::ZR_SUCCESS == retval ){
         p3zr->publishOrder( order );
     }

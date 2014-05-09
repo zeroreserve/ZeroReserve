@@ -115,10 +115,6 @@ QVariant MyOrders::data( const QModelIndex& index, int role ) const
     return QVariant();
 }
 
-bool MyOrders::reverseCompareOrder( const Order * left, const Order * right ){
-    return ( left->m_orderType == Order::BID ) ? left->m_price > right->m_price : left->m_price < right->m_price;
-}
-
 
 void MyOrders::match()
 {
