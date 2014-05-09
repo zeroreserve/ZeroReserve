@@ -239,7 +239,7 @@ void p3ZeroReserveRS::publishOrder( OrderBook::Order * order, RsZeroReserveOrder
         Credit c( *it, Currency::currencySymbols[ order->m_currency ] );
         c.loadPeer();
         // do not route orders we cannot at least fill to 10%
-        if( order->m_isMyOrder == OrderBook::Order::ASK ){
+        if( order->m_isMyOrder == OrderBook::Order::ASK && ( order->m_purpose != OrderBook::Order::CANCEL || order->m_purpose != OrderBook::Order::FILLED ) ){
             if( c.getMyAvailable() < order->m_amount * 0.1 ) continue;
         }
         else{

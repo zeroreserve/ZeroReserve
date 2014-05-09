@@ -71,7 +71,7 @@ public:
      * @param myId my order id
      */
     TmContractCoordinator( OrderBook::Order * other, OrderBook::Order * myOrder, const ZR::ZR_Number & amount );
-    virtual ~TmContractCoordinator(){}
+    virtual ~TmContractCoordinator();
 
     virtual ZR::RetVal init();
     virtual void rollback();

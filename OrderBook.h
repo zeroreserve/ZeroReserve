@@ -54,7 +54,12 @@ public:
                                         // an ask market order will not be published
                                         // bid market orders go to execution right away.
                      };
-        Order( bool isMyOrder = false ) : m_isMyOrder( isMyOrder), m_commitment( 0 )
+
+        Order( bool isMyOrder = false ) :
+            m_isMyOrder( isMyOrder),
+            m_commitment( 0 ),
+            m_locked( false ),
+            m_ignored( false )
         {}
 
         ID m_order_id; // hashed from order attributes, a secret and randomness
@@ -66,8 +71,10 @@ public:
         qint64 m_timeStamp;   // no more than 1 order / millisecond
         OrderBook::Order::Purpose m_purpose;
         ZR::ZR_Number m_commitment;    // the amount which is currently processed by active TX
-                                       // m_commitment <= m_amount
+                                       // m_commitment <= m_amount on my SELL orders
         ZR::BitcoinAddress m_btcAddr;  // address where those Bitcoins are on
+        bool m_locked;                   // ongoing transaction on buyer side locks this order from matching
+        bool m_ignored;                  // this order failed a tx and is no longer shown or matched
 
         bool operator == (const Order & other);
         bool operator < ( const Order & other) const;
@@ -111,7 +118,7 @@ public:
     void beginReset(){ beginResetModel(); }
     void endReset(){ endResetModel(); }
 
-    virtual int addOrder( Order* order );
+    virtual ZR::RetVal addOrder( Order* order );
 
     mutable RsMutex m_order_mutex;
 
@@ -125,8 +132,7 @@ protected:
 protected:
     /** Matches our new order with all others  */
     virtual ZR::RetVal match( Order * ){ return ZR::ZR_FAILURE; }
-    /** Matches incoming new order with ours */
-    virtual ZR::RetVal matchOther( Order * ){ return ZR::ZR_FAILURE; }
+
 signals:
 
 public slots:

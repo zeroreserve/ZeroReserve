@@ -51,10 +51,6 @@ protected:
     /** Matches our new order with all others  */
     virtual ZR::RetVal match( Order *myOrder );
 
-    /** Matches incoming new order with ours */
-    virtual ZR::RetVal matchOther( Order * other );
-
-
     /** Buyer side: start buying Bitcoins */
     void buy( Order * other, Order * myOrder, const ZR::ZR_Number amount );
 

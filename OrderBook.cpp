@@ -187,13 +187,12 @@ ZR::RetVal OrderBook::processOrder( Order* order )
             return ZR::ZR_FINISH; // order already in book
 
     // its a new order we don't have yet
-    addOrder( order );
-    return m_myOrders->matchOther( order );
+    return addOrder( order );
 }
 
 
 
-int OrderBook::addOrder( Order * order )
+ZR::RetVal OrderBook::addOrder( Order * order )
 {    
     std::cerr << "Zero Reserve: Inserting Type: " << (int)order->m_orderType <<
                  " Currency: " << order->m_currency << std::endl;

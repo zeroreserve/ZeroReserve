@@ -131,39 +131,11 @@ void MyOrders::filterBids( OrderList & filteredOrders, const Currency::CurrencyS
     qSort( filteredOrders.begin(), filteredOrders.end(), reverseCompareOrder );
 }
 
-ZR::RetVal MyOrders::matchOther( Order * other )
-{
-    if( other->m_isMyOrder ) return ZR::ZR_FAILURE; // don't fill own orders
-    if( other->m_orderType == Order::BID ){
-        return ZR::ZR_SUCCESS;
-    }
-
-    Order * order = NULL;
-    OrderList bids;
-    filterBids( bids, other->m_currency );
-    ZR::ZR_Number amount = other->m_amount;
-
-    for( OrderIterator it = bids.begin(); it != bids.end(); it++ ){
-        order = *it;
-        if( order->m_price < other->m_price ) break;    // no need to try and find matches beyond
-        std::cerr << "Zero Reserve: Match at ask price " << order->m_price.toStdString() << std::endl;
-
-        if( order->m_amount > amount ){
-            buy( other, order, amount );
-            return ZR::ZR_SUCCESS;
-        }
-        else {
-            buy( other, order, order->m_amount );
-        }
-        amount -= order->m_amount;
-        if( amount == 0 )break;
-    }
-    return ZR::ZR_SUCCESS;
-}
-
 
 ZR::RetVal MyOrders::match( Order * myOrder )
 {
+    if( myOrder->m_locked || myOrder->m_ignored ) return ZR::ZR_FAILURE;
+
     OrderList asks;
     m_asks->filterOrders( asks, myOrder->m_currency );
     ZR::ZR_Number amount = myOrder->m_amount;

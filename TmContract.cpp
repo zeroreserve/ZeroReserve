@@ -46,6 +46,13 @@ TmContractCoordinator::TmContractCoordinator( OrderBook::Order * other, OrderBoo
     if( !addr.empty() ){
         m_payer = new BtcContract( amount, 0, other->m_price, Currency::currencySymbols[ other->m_currency ], BtcContract::SENDER, addr );
     }
+    myOrder->m_locked = true;
+}
+
+
+TmContractCoordinator::~TmContractCoordinator()
+{
+    m_myOrder->m_locked = false;
 }
 
 
@@ -151,6 +158,7 @@ void TmContractCoordinator::rollback()
 {
     std::cerr << "Zero Reserve: Rolling back " << m_TxId << std::endl;
     BtcContract::rmContract( m_payer );
+    m_myOrder->m_ignored = true;
     MyOrders::Instance()->getAsks()->remove( m_otherOrder->m_order_id );
 }
 
