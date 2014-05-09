@@ -52,7 +52,6 @@ TmContractCoordinator::TmContractCoordinator( OrderBook::Order * other, OrderBoo
 
 TmContractCoordinator::~TmContractCoordinator()
 {
-    m_myOrder->m_locked = false;
 }
 
 
@@ -135,6 +134,8 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
 
         m_myOrder->m_amount -= btcAmount;
         m_myOrder->m_purpose = OrderBook::Order::PARTLY_FILLED;
+        m_myOrder->m_locked = false;
+
         ZrDB::Instance()->updateOrder( m_myOrder );
 
         MyOrders::Instance()->getBids()->endReset();
