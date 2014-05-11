@@ -190,12 +190,14 @@ void p3ZeroReserveRS::handleCredit(RsZeroReserveCreditItem *item)
     std::cerr << "Zero Reserve: Received Credit Item" << std::endl;
     Credit * otherCredit = item->getCredit();
     Credit ourCredit( otherCredit->m_id, otherCredit->m_currency );
+    ourCredit.loadPeer();
+
     if( ourCredit.m_our_credit != otherCredit->m_our_credit ){
         otherCredit->updateOurCredit();
     }
     if( ourCredit.m_balance != otherCredit->m_balance ){
-        std::cerr << "Zero Reserve: " << "Different balance: " << otherCredit->m_id << " has " << otherCredit->m_balance
-                     << " we have " << ourCredit.m_balance << std::endl;
+        g_ZeroReservePlugin->placeMsg( std::string( "Different balance: " ) + rsPeers->getPeerName( otherCredit->m_id ) + " has " + otherCredit->m_balance.toDecimalStdString()
+                     + " we have " + ourCredit.m_balance.toDecimalStdString() );
     }
 }
 
