@@ -24,6 +24,8 @@
 #include "ui_ZeroReserveDialog.h"
 #include "OrderBook.h"
 
+#include "util/rsthreads.h"
+
 #include <QPoint>
 #include <QString>
 #include <QList>
@@ -63,6 +65,7 @@ private:
     bool m_update;
 
     QList< QString > m_messages;
+    RsMutex m_messages_mutex;
 };
 
 #endif // ZERORESERVEDIALOG_H
