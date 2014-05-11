@@ -195,7 +195,7 @@ void p3ZeroReserveRS::handleCredit(RsZeroReserveCreditItem *item)
     if( ourCredit.m_our_credit != otherCredit->m_our_credit ){
         otherCredit->updateOurCredit();
     }
-    if( ourCredit.m_balance != otherCredit->m_balance ){
+    if( -ourCredit.m_balance != otherCredit->m_balance ){
         g_ZeroReservePlugin->placeMsg( std::string( "Different balance: " ) + rsPeers->getPeerName( otherCredit->m_id ) + " has " + otherCredit->m_balance.toDecimalStdString()
                      + " we have " + ourCredit.m_balance.toDecimalStdString() );
     }
