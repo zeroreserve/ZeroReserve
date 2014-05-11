@@ -248,7 +248,7 @@ RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
 
     std::string currency;
     bool ok = getRawString( data, rssize, &m_Offset, currency );
-    m_credit = new Credit( "", currency );  // FIXME: We can't give an ID here - add it later. Bad
+    m_credit = new Credit( "", currency );  // We can't give an ID here - add it later. Bad
 
     std::string buf;
     ok &= getRawString( data, rssize, &m_Offset, buf ); // these 2 need to interchange

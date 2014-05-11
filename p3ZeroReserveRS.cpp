@@ -189,7 +189,6 @@ void p3ZeroReserveRS::handleCredit(RsZeroReserveCreditItem *item)
 {
     std::cerr << "Zero Reserve: Received Credit Item" << std::endl;
     Credit * otherCredit = item->getCredit();
-    otherCredit->m_id = item->PeerId();
     Credit ourCredit( otherCredit->m_id, otherCredit->m_currency );
     if( ourCredit.m_our_credit != otherCredit->m_our_credit ){
         otherCredit->updateOurCredit();

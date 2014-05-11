@@ -168,7 +168,7 @@ public:
 
     virtual ~RsZeroReserveCreditItem();
     virtual std::ostream& print(std::ostream &out, uint16_t indent = 0);
-    Credit * getCredit(){ return m_credit; }
+    Credit * getCredit(){ m_credit->m_id = PeerId(); return m_credit; }
 
 private:
     Credit * m_credit;
