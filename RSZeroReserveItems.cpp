@@ -253,8 +253,10 @@ RsZeroReserveCreditItem::RsZeroReserveCreditItem(void *data, uint32_t pktsize)
     std::string buf;
     ok &= getRawString( data, rssize, &m_Offset, buf ); // these 2 need to interchange
     m_credit->m_our_credit = ZR::ZR_Number::fromFractionString( buf );
+    buf.clear();
     ok &= getRawString( data, rssize, &m_Offset, buf );     // because credit at peer is our_credit here
     m_credit->m_credit = ZR::ZR_Number::fromFractionString( buf );
+    buf.clear();
     ok &= getRawString( data, rssize, &m_Offset, buf );
     m_credit->m_balance = ZR::ZR_Number::fromFractionString( buf );
 
