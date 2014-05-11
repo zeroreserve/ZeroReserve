@@ -129,7 +129,7 @@ ZR::RetVal OrderBook::processMyOrder( Order* order )
         ZrDB::Instance()->addOrder( order );
     }
     catch( std::runtime_error & e ){
-        std::cerr << "Zero Reserve: ERROR:" << e.what() << std::endl;
+        g_ZeroReservePlugin->placeMsg( std::string( "Exception caught at " ) + __func__ + ": " + e.what() );
         return ZR::ZR_FAILURE;
     }
 
@@ -152,7 +152,7 @@ ZR::RetVal OrderBook::processOrder( Order* order )
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
     if( currentTime - order->m_timeStamp >  Order::timeout
             || order->m_timeStamp - currentTime > 3600000){  // or more than an hour in the future
-        std::cerr << "Zero Reserve: Order " << order->m_order_id << " has bad timestamp" << std::endl;
+        g_ZeroReservePlugin->placeMsg( std::string( "Order " ) + order->m_order_id + " has bad timestamp" );
         return ZR::ZR_FAILURE;
     }
 

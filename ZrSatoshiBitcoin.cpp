@@ -18,6 +18,7 @@
 #include "ZrSatoshiBitcoin.h"
 
 #include "helpers.h"
+#include "ZeroReservePlugin.h"
 
 
 using namespace nmcrpc;
@@ -33,8 +34,8 @@ ZrSatoshiBitcoin::ZrSatoshiBitcoin()
         m_settings.readConfig( home + "/.bitcoin/bitcoin.conf" );
 #endif
     }
-    catch( std::runtime_error e ){
-        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+    catch( std::exception e ){
+        g_ZeroReservePlugin->placeMsg( std::string( "Exception caught at " ) + __func__ + ": " + e.what() );
         print_stacktrace();
     }
 }

@@ -62,7 +62,7 @@ ZR::RetVal TmContractCoordinator::init()
 
     ZR::BitcoinAddress btcAddr = ZR::Bitcoin::Instance()->newAddress();
     if( btcAddr.empty() ){
-        std::cerr << "Zero Reserve: ERROR getting Bitcoin Address" << std::endl;
+        g_ZeroReservePlugin->placeMsg( "ERROR getting Bitcoin Address" );
         return ZR::ZR_FAILURE;
     }
     m_payer->setBtcAddress( btcAddr );
@@ -107,7 +107,7 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
     std::vector< std::string > v_payload;
     split( item->getPayload(), v_payload );
     if( v_payload.size() != 2 ){
-        std::cerr << "Zero Reserve: Payload ERROR: Protocol mismatch" << std::endl;
+        g_ZeroReservePlugin->placeMsg( "Payload ERROR: Protocol mismatch" );
         return abortTx( item );
     }
     ZR::ZR_Number btcAmount = ZR::ZR_Number::fromFractionString( v_payload[0] );
@@ -418,8 +418,8 @@ ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
     try{
         m_payee = new BtcContract( btcAmount, fee, price, currencySym, BtcContract::RECEIVER, route.first );
     }
-    catch( std::runtime_error e ){
-        std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+    catch( std::exception e ){
+        g_ZeroReservePlugin->placeMsg( std::string(  __func__ ) + ": Exception caught: " + e.what() );
         delete m_payee;
         abortTx( item );
     }
