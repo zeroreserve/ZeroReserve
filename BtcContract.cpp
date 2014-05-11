@@ -43,7 +43,8 @@ void BtcContract::pollContracts()
             if( !contract->m_btcTxId.empty() ){
                 ZrDB::Instance()->rmBtcContract( contract->m_btcTxId, contract->m_party );
             }
-            contract->deallocateFunds( contract->getFiatAmount() );
+            if( contract->m_party == RECEIVER )
+                contract->deallocateFunds( contract->getFiatAmount() );
             delete contract;
             it = contracts.erase( it );
         }
@@ -63,7 +64,8 @@ void BtcContract::rmContract( BtcContract * contract )
             if( !contract->m_btcTxId.empty() ){
                 ZrDB::Instance()->rmBtcContract( contract->m_btcTxId, contract->m_party );
             }
-            c->deallocateFunds( c->getFiatAmount() );
+            if( contract->m_party == RECEIVER )
+                c->deallocateFunds( c->getFiatAmount() );
             delete c;
             contracts.erase( it );
             break;
@@ -161,7 +163,8 @@ void BtcContract::setBtcAmount( const ZR::ZR_Number & btcAmount )
     ZR::ZR_Number fiatAmount1 = getFiatAmount();
     m_btcAmount = btcAmount;
     ZR::ZR_Number fiatAmount2 = getFiatAmount();
-    deallocateFunds( fiatAmount1 - fiatAmount2 );
+    if( m_party == RECEIVER )
+        deallocateFunds( fiatAmount1 - fiatAmount2 );
 }
 
 
