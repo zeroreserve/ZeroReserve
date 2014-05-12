@@ -194,6 +194,8 @@ ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, ZR::Bitco
 ZR::BitcoinAddress ZrSatoshiBitcoin::mkOrderAddress( const ZR::ZR_Number & amount )
 {
     std::string addr = newAddress();
+    if( addr.empty() )
+        return addr;
 
     try{
         JsonRpc rpc( m_settings );
@@ -232,6 +234,7 @@ ZR::RetVal ZrSatoshiBitcoin::sendRaw( const ZR::BitcoinTxHex & txHex )
         JsonRpc::JsonData res1 = rpc.executeRpc ( "sendrawtransaction", txHex );
     }
     catch( std::runtime_error e ){
+        g_ZeroReservePlugin->placeMsg( std::string( "Exception caught at " ) + __func__ + ": " + e.what() + " Cannot send raw TX" );
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
         print_stacktrace();
         return ZR::ZR_FAILURE;
@@ -250,6 +253,7 @@ const ZR::BitcoinAddress ZrSatoshiBitcoin::newAddress() const
     }
     catch( std::runtime_error e ){
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
+        g_ZeroReservePlugin->placeMsg( std::string( "Exception caught at " ) + __func__ + ": " + e.what() + " Cannot create new Bitcoin address." );
         print_stacktrace();
     }
     return addr;
