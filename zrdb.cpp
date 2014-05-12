@@ -36,6 +36,10 @@ const char * const ZrDB::DB_VERSION       = "DB_VERSION";
 const char * const ZrDB::MINIMUM_FEE      = "MINIMUM_FEE";
 const char * const ZrDB::PERCENTAGE_FEE   = "PERCENTAGE_FEE";
 
+// increment this every time the DB layout changes
+// and provide an update program
+const static char* REQUIRED_DB_VERSION = "0";
+
 
 
 ZrDB * ZrDB::instance = 0;
@@ -255,11 +259,27 @@ void ZrDB::init()
             }
         }
         setConfig( TXLOGPATH, pathname + "/zeroreserve.tx" );
-        setConfig( DB_VERSION, "0" );
+        setConfig( DB_VERSION, REQUIRED_DB_VERSION );
         setConfig( MINIMUM_FEE, "0/1" );
         setConfig( PERCENTAGE_FEE, "0/1" );
     }
+
     openTxLog();
+
+    std::string dbversion = getConfig( "DB_VERSION" );
+    if( getConfig( "DB_VERSION" ) != REQUIRED_DB_VERSION ){
+        g_ZeroReservePlugin->placeMsg( std::string( "Updating Database version, required version is " ) + REQUIRED_DB_VERSION + " current version is " + dbversion );
+
+        // Append DB update functions as required below
+        if( dbversion == "a" ){
+            setConfig( "DB_VERSION", REQUIRED_DB_VERSION );
+            dbversion = "0";
+        }
+        if( dbversion == "0" ){
+            // enter code for update to version "1"
+        }
+
+    }
 }
 
 void ZrDB::setConfig( const std::string & key, const std::string & value )
