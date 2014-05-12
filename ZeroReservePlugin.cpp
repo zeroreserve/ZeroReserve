@@ -63,7 +63,9 @@ void ZeroReservePlugin::getPluginVersion(int& major,int& minor,int& svn_rev) con
     svn_rev = SVN_REVISION_NUMBER;
 }
 
-ZeroReservePlugin::ZeroReservePlugin()
+ZeroReservePlugin::ZeroReservePlugin() :
+    mainpage( NULL ),
+    m_messages_mutex ( "messages_mutex" )
 {
 	mainpage = NULL ;
         mIcon = NULL ;
@@ -187,6 +189,17 @@ void ZeroReservePlugin::stop()
 void ZeroReservePlugin::placeMsg( const std::string & _msg )
 {
     QString msg = QString::fromStdString( _msg );
-    if( mainpage )
-        mainpage->placeMsg( msg );
+    RsStackMutex messagesMutex( m_messages_mutex );
+    m_messages.append( msg );
+}
+
+
+void ZeroReservePlugin::displayMsg()
+{
+    RsStackMutex messagesMutex( m_messages_mutex );
+    for( QList< QString >::Iterator it = m_messages.begin(); it != m_messages.end(); ){
+        QString msg = *it;
+        QMessageBox::warning( mainpage, "Zero Reserve", msg);
+        it = m_messages.erase( it );
+    }
 }

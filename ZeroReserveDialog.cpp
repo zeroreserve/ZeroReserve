@@ -41,8 +41,7 @@
 
 
 ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget *parent )
-: MainPage(parent),
-  m_messages_mutex ( "messages_mutex" )
+: MainPage(parent)
 {
     std::cerr << "Zero Reserve: Setting up main dialog" << std::endl;
     ui.setupUi(this);
@@ -139,27 +138,11 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     timer->start( 1000 );
 }
 
-void ZeroReserveDialog::placeMsg( const QString & msg )
-{
-    RsStackMutex messagesMutex( m_messages_mutex );
-    m_messages.append( msg );
-}
-
-void ZeroReserveDialog::displayMsg()
-{
-    RsStackMutex messagesMutex( m_messages_mutex );
-    for( QList< QString >::Iterator it = m_messages.begin(); it != m_messages.end(); ){
-        QString msg = *it;
-        QMessageBox::warning( this, "Zero Reserve", msg);
-        it = m_messages.erase( it );
-    }
-}
-
 
 void ZeroReserveDialog::janitor()
 {
     updateFriendList();
-    displayMsg();
+    g_ZeroReservePlugin->displayMsg();
 }
 
 void ZeroReserveDialog::loadTxLog()

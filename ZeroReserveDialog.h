@@ -39,10 +39,6 @@ public:
     ZeroReserveDialog( OrderBook * bids, OrderBook * asks, QWidget *parent = 0 );
     void updateFriendList();
 
-    /** place a message to be displayed on a QMessageBox */
-    void placeMsg( const QString & msg );
-    void displayMsg();
-
 public slots:
     void addBid();
     void addAsk();
@@ -64,8 +60,6 @@ private:
     Ui::ZeroReserveDialog ui;
     bool m_update;
 
-    QList< QString > m_messages;
-    RsMutex m_messages_mutex;
 };
 
 #endif // ZERORESERVEDIALOG_H

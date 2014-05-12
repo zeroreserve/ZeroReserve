@@ -56,8 +56,10 @@ public:
 
     /** interface between a worker thread and the GUI thread. Only GUI thread can open a dialog */
     void placeMsg( const std::string & _msg );
+    void displayMsg();
 
 private:
+
     mutable RsPluginHandler *mPlugInHandler;
     mutable ZeroReserveDialog * mainpage ;
     mutable QIcon* mIcon ;
@@ -67,6 +69,9 @@ private:
     mutable p3ZeroReserveRS * m_ZeroReserve;
 
     static RsMutex widget_creation_mutex;
+
+    QList< QString > m_messages;
+    RsMutex m_messages_mutex;
 };
 
 extern ZeroReservePlugin * g_ZeroReservePlugin;
