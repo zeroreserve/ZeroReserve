@@ -65,7 +65,8 @@ void ZeroReservePlugin::getPluginVersion(int& major,int& minor,int& svn_rev) con
 
 ZeroReservePlugin::ZeroReservePlugin() :
     mainpage( NULL ),
-    m_messages_mutex ( "messages_mutex" )
+    m_messages_mutex ( "messages_mutex" ),
+    m_stopped( false )
 {
 	mainpage = NULL ;
         mIcon = NULL ;
@@ -176,12 +177,11 @@ QDialog * ZeroReservePlugin::qt_about_page() const
 
 void ZeroReservePlugin::stop()
 {
-    std::cerr << "Zero Reserve: Closing Database" << std::endl;
-    // TODO: Stop taking TX, try to finish all ongoing TX and send out errors to all
-    // TODO: TX controllers who aren't done within 30 seconds.
-    // TODO: Display a progress bar.
-    ZrDB::Instance()->close();
+    if( m_stopped )return;
 
+    std::cerr << "Zero Reserve: Closing Database" << std::endl;
+    m_stopped = true;
+    ZrDB::Instance()->close();
     ZR::Bitcoin::Instance()->stop();
 }
 

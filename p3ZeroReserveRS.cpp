@@ -80,7 +80,9 @@ void p3ZeroReserveRS::statusChange(const std::list< pqipeer > &plist)
 
 int p3ZeroReserveRS::tick()
 {
-    processIncoming();
+    if( !g_ZeroReservePlugin->isStopped() ) // something bad must have happened. Don't make it worse
+        processIncoming();
+
     janitor();
     return 0;
 }

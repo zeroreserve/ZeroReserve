@@ -202,9 +202,8 @@ ZrDB * ZrDB::Instance()
             ZrDB::instance->init();
         }
         catch( std::exception e ){
-            g_ZeroReservePlugin->placeMsg( e.what() );
-            delete ZrDB::instance;
-            ZrDB::instance = 0;
+            g_ZeroReservePlugin->placeMsg( std::string( e.what() ) + " STOPPING PLUGIN");
+            g_ZeroReservePlugin->stop();
         }
     }
     return ZrDB::instance;

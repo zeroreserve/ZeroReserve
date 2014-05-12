@@ -58,6 +58,8 @@ public:
     void placeMsg( const std::string & _msg );
     void displayMsg();
 
+    bool isStopped(){ return m_stopped; }
+
 private:
 
     mutable RsPluginHandler *mPlugInHandler;
@@ -72,6 +74,8 @@ private:
 
     QList< QString > m_messages;
     RsMutex m_messages_mutex;
+
+    bool m_stopped;
 };
 
 extern ZeroReservePlugin * g_ZeroReservePlugin;
