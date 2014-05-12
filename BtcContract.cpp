@@ -44,9 +44,11 @@ void BtcContract::pollContracts()
             if( !contract->m_btcTxId.empty() ){
                 try{
                     ZrDB::Instance()->rmBtcContract( contract->m_btcTxId, contract->m_party );
+                    ZrDB::Instance()->commitTx();
                 }
                 catch( std::exception e ){
                     g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Can't remove contract " + contract->m_btcTxId );
+                    ZrDB::Instance()->rollbackTx();
                 }
             }
             if( contract->m_party == RECEIVER )
@@ -132,6 +134,7 @@ bool BtcContract::poll()
     std::cerr << "Zero Reserve: Contract: " << m_btcTxId << " : " << confirmations << " confirmations." << std::endl;
     if( confirmations >= reqConfirmations ){
         // TODO: Check BTC Address and amount
+        ZrDB::Instance()->beginTx();
         execute();
         return true;
     }

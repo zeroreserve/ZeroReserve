@@ -122,12 +122,6 @@ static int txlog_callback(void * db, int argc, char ** argv, char ** )
 }
 
 
-static int noop_callback(void * , int, char **, char **)
-{
-    return SQLITE_OK;
-}
-
-
 static int store_peer_callback(void * db, int, char **, char **)
 {
     ZrDB * zrdb = static_cast< ZrDB * >( db );
@@ -250,7 +244,7 @@ void ZrDB::init()
         tables.push_back( "create table if not exists btccontracts ( btcTxId varchar(64), btcAmount decimal(12,8), price decimal(12,8), currency varchar(3), party int, counterparty varchar(32), destAddress varchar(36), creationtime int, fee decimal(12,8) )");
         tables.push_back( "create unique index if not exists id_curr on peers ( id, currency)");
         for(std::vector < std::string >::const_iterator it = tables.begin(); it != tables.end(); it++ ){
-            rc = sqlite3_exec(m_db, (*it).c_str(), noop_callback, this, &zErrMsg);
+            rc = sqlite3_exec(m_db, (*it).c_str(), NULL, NULL, &zErrMsg);
             if( rc!=SQLITE_OK ){
                 std::cerr << "SQL error: " << zErrMsg << std::endl;
                 sqlite3_free(zErrMsg);
@@ -313,6 +307,22 @@ std::string ZrDB::getConfig( const std::string & key )
     return m_config_value;
 }
 
+
+
+void ZrDB::beginTx()
+{
+    runQuery( "BEGIN TRANSACTION");
+}
+
+void ZrDB::commitTx()
+{
+    runQuery( "COMMIT");
+}
+
+void ZrDB::rollbackTx()
+{
+    runQuery( "ROLLBACK");
+}
 
 ZrDB::GrandTotal & ZrDB::loadGrandTotal( const std::string & currency )
 {
@@ -383,7 +393,7 @@ void ZrDB::updatePeerCredit( const Credit & peer_in, const std::string & column,
 void ZrDB::runQuery( const std::string & sql )
 {
     char *zErrMsg = 0;
-    int rc = sqlite3_exec(m_db, sql.c_str(), noop_callback, this, &zErrMsg);
+    int rc = sqlite3_exec(m_db, sql.c_str(), NULL, NULL, &zErrMsg);
     if( rc != SQLITE_OK ){
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
@@ -472,7 +482,7 @@ void ZrDB::openTxLog()
         sqlite3_close(m_txLog);
         throw  std::runtime_error("SQL Error: Cannot open database");
     }
-    rc = sqlite3_exec(m_txLog, "create table if not exists txlog ( uid varchar(32), currency varchar(3), amount decimal(12,8), txtime datetime default current_timestamp )", noop_callback, this, &zErrMsg);
+    rc = sqlite3_exec(m_txLog, "create table if not exists txlog ( uid varchar(32), currency varchar(3), amount decimal(12,8), txtime datetime default current_timestamp )", NULL, NULL, &zErrMsg);
     if( rc!=SQLITE_OK ){
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
@@ -489,7 +499,7 @@ void ZrDB::appendTx(const std::string & id, const std::string & currency, ZR::ZR
            << id << "', '"
            << currency << "', "
            << amount.toDouble() << " )";
-    int rc = sqlite3_exec(m_txLog, insert.str().c_str(), noop_callback, this, &zErrMsg);
+    int rc = sqlite3_exec(m_txLog, insert.str().c_str(), NULL, NULL, &zErrMsg);
     if( rc!=SQLITE_OK ){
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);

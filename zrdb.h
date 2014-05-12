@@ -100,6 +100,10 @@ public:
     void appendTx(const std::string & id, const std::string &currency, ZR::ZR_Number amount );
     void loadTxLog(std::list< TxLogItem > & txList );
 
+    void beginTx();
+    void commitTx();
+    void rollbackTx();
+
 
     // TODO void logPayment() const;
     // TODO: void replayPaymentLog();
