@@ -20,6 +20,8 @@
 #include "zrtypes.h"
 #include "zrdb.h"
 
+#include "ZeroReservePlugin.h"
+
 #include <QListWidget>
 #include <QDateTime>
 
@@ -92,16 +94,24 @@ int PaymentReceiver::init()
 
 int PaymentReceiver::commit()
 {
-    m_credit.loadPeer();
-    m_credit.m_balance = newBalance();
-    // TODO: make atomic !!!!
-    ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
-    ZrDB::Instance()->appendTx( m_credit.m_id, m_credit.m_currency, m_amount );
+    try{
+        m_credit.loadPeer();
+        m_credit.m_balance = newBalance();
 
-    if( txLogView ){
-        txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : +" + m_amount.toDecimalQString() );
-        txLogView->setCurrentRow( 0 ); // make the view emit currentItemChanged()
+        // TODO: make atomic !!!!
+        ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
+        ZrDB::Instance()->appendTx( m_credit.m_id, m_credit.m_currency, m_amount );
+
+        if( txLogView ){
+            txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : +" + m_amount.toDecimalQString() );
+            txLogView->setCurrentRow( 0 ); // make the view emit currentItemChanged()
+        }
     }
+    catch( std::exception e ){
+        g_ZeroReservePlugin->placeMsg( std::string(  __func__ ) + ": Exception caught: " + e.what() );
+        return ZR::ZR_FAILURE;
+    }
+
 
     switch( m_category )
     {
@@ -134,15 +144,21 @@ int PaymentSpender::init( )
 
 int PaymentSpender::commit()
 {
-    m_credit.loadPeer();
-    m_credit.m_balance = newBalance();
-    // TODO: make atomic !!!!
-    ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
-    ZrDB::Instance()->appendTx( m_credit.m_id, m_credit.m_currency,  -m_amount );
+    try{
+        m_credit.loadPeer();
+        m_credit.m_balance = newBalance();
+        // TODO: make atomic !!!!
+        ZrDB::Instance()->updatePeerCredit( m_credit, "balance", m_credit.m_balance );
+        ZrDB::Instance()->appendTx( m_credit.m_id, m_credit.m_currency,  -m_amount );
 
-    if( txLogView ){
-        txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : -" + m_amount.toDecimalQString() );
-        txLogView->setCurrentRow( 0 ); // make the view emit currentItemChanged()
+        if( txLogView ){
+            txLogView->insertItem( 0, QDateTime::currentDateTime().toString() + " : " + m_credit.m_currency.c_str() + " : -" + m_amount.toDecimalQString() );
+            txLogView->setCurrentRow( 0 ); // make the view emit currentItemChanged()
+        }
+    }
+    catch( std::exception e ){
+        g_ZeroReservePlugin->placeMsg( std::string(  __func__ ) + ": Exception caught: " + e.what() );
+        return ZR::ZR_FAILURE;
     }
 
     switch( m_category )

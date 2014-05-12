@@ -66,6 +66,7 @@ ZR::RetVal ZrSatoshiBitcoin::getinfo( BtcInfo & infoOut )
         infoOut.version = res[ "version" ].asUInt();
     }
     catch( std::runtime_error e ){
+        g_ZeroReservePlugin->placeMsg( std::string( "Exception caught at " ) + __func__ + ": " + e.what() );
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
         print_stacktrace();
         return ZR::ZR_FAILURE;
@@ -181,6 +182,7 @@ ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, ZR::Bitco
         outId = res3[ "txid" ].asString();
     }
     catch( std::runtime_error e ){
+        g_ZeroReservePlugin->placeMsg( std::string( "Exception caught at " ) + __func__ + ": " + e.what() );
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
         print_stacktrace();
         return ZR::ZR_FAILURE;
@@ -214,6 +216,7 @@ ZR::BitcoinAddress ZrSatoshiBitcoin::mkOrderAddress( const ZR::ZR_Number & amoun
         JsonRpc::JsonData res1 = rpc.executeRpc ( "lockunspent", true, lockObjArray );
     }
     catch( std::runtime_error e ){
+        g_ZeroReservePlugin->placeMsg( std::string( "Exception caught at " ) + __func__ + ": " + e.what() + " Cannot make an order address. Insufficient funds? If you have enough, try restarting the Satoshi Client." );
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
         print_stacktrace();
         return "";

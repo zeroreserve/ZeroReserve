@@ -20,6 +20,7 @@
 #include "ZRBitcoin.h"
 #include "Payment.h"
 #include "zrdb.h"
+#include "ZeroReservePlugin.h"
 
 #ifdef ZR_TESTNET
 const unsigned int BtcContract::reqConfirmations = 2;
@@ -41,7 +42,12 @@ void BtcContract::pollContracts()
         BtcContract * contract = *it;
         if( contract->poll() ){
             if( !contract->m_btcTxId.empty() ){
-                ZrDB::Instance()->rmBtcContract( contract->m_btcTxId, contract->m_party );
+                try{
+                    ZrDB::Instance()->rmBtcContract( contract->m_btcTxId, contract->m_party );
+                }
+                catch( std::exception e ){
+                    g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Can't remove contract " + contract->m_btcTxId );
+                }
             }
             if( contract->m_party == RECEIVER )
                 contract->deallocateFunds( contract->getFiatAmount() );
@@ -62,7 +68,12 @@ void BtcContract::rmContract( BtcContract * contract )
         BtcContract * c = *it;
         if( c->m_counterParty == contract->m_counterParty && c->m_btcTxId == contract->m_btcTxId ){
             if( !contract->m_btcTxId.empty() ){
-                ZrDB::Instance()->rmBtcContract( contract->m_btcTxId, contract->m_party );
+                try{
+                    ZrDB::Instance()->rmBtcContract( contract->m_btcTxId, contract->m_party );
+                }
+                catch( std::exception e ){
+                    g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Can't remove contract " + contract->m_btcTxId );
+                }
             }
             if( contract->m_party == RECEIVER )
                 c->deallocateFunds( c->getFiatAmount() );

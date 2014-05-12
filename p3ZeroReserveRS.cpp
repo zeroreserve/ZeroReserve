@@ -61,7 +61,14 @@ void p3ZeroReserveRS::statusChange(const std::list< pqipeer > &plist)
     for (std::list< pqipeer >::const_iterator peerIt = plist.begin(); peerIt != plist.end(); peerIt++ ){
         if( RS_PEER_CONNECTED & (*peerIt).actions ){
             Credit::CreditList cl;
-            Credit::getCreditList( cl, (*peerIt).id );
+            try{
+                Credit::getCreditList( cl, (*peerIt).id );
+            }
+            catch( std::exception e ){
+                g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Cannot load credit list" );
+                break;
+            }
+
             for( Credit::CreditList::const_iterator creditIt = cl.begin(); creditIt != cl.end(); creditIt++){
                 sendCredit( *creditIt );
             }

@@ -22,10 +22,8 @@
 
 #include "retroshare/rsinit.h"
 
-#include <QMessageBox>
 #include <QDir>
 #include <QFile>
-#include <QFileDialog>
 
 #include <iostream>
 #include <sstream>
@@ -200,7 +198,7 @@ ZrDB * ZrDB::Instance()
             ZrDB::instance->init();
         }
         catch( std::exception e ){
-            QMessageBox::critical(0, "SQL Error", e.what() );
+            g_ZeroReservePlugin->placeMsg( e.what() );
             delete ZrDB::instance;
             ZrDB::instance = 0;
         }
@@ -218,18 +216,23 @@ void ZrDB::init()
     QDir zrdata ( QString::fromStdString(pathname) );
 
     if( !zrdata.mkpath( QString::fromStdString( pathname ) ) ){
-        QMessageBox::critical(0, "Error", "Cannot create DB");
-        return;
+        throw  std::runtime_error( std::string( "Error", "Cannot create DB at " ) + pathname );
     }
     std::string db_name = pathname + "/zeroreserve.db";
     bool db_exists = QFile::exists(db_name.c_str() );
 
-    std::cerr << "Opening or creating DB " << db_name << std::endl;
+    if( db_exists ){
+        std::cerr << "Opening DB " << db_name << std::endl;
+    }
+    else{
+        g_ZeroReservePlugin->placeMsg( std::string( "Creating DB: " ) + db_name );
+    }
+
     rc = sqlite3_open( db_name.c_str(), &m_db);
     if( rc ){
         std::cerr <<  "Can't open database: " << sqlite3_errmsg(m_db) << std::endl;
         sqlite3_close(m_db);
-        throw  std::runtime_error("SQL Error: Cannot open database");
+        throw  std::runtime_error( std::string( "SQL Error: Cannot open database: " ) + db_name );
     }
 
     if( !db_exists ){
@@ -365,7 +368,7 @@ void ZrDB::runQuery(const std::string & sql )
     if( rc != SQLITE_OK ){
         std::cerr << "SQL error: " << zErrMsg << std::endl;
         sqlite3_free(zErrMsg);
-        throw std::runtime_error( "SQL Error: Cannot update peer data" );
+        throw std::runtime_error( std::string( "SQL Error: Cannot run query " ) + sql );
     }
 }
 

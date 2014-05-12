@@ -36,7 +36,6 @@ public:
     void loadPeer();
     void publish();
     void updateOurCredit();
-    void updateBalance();
     void allocate( const ZR::ZR_Number & amount);
     void deallocate( const ZR::ZR_Number & amount);
 

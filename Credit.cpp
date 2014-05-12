@@ -49,44 +49,53 @@ void Credit::allocate( const ZR::ZR_Number & amount)
     ZrDB::Instance()->updatePeerCredit( *this, "allocation", m_allocated );
 }
 
+
 void Credit::deallocate( const ZR::ZR_Number & amount)
 {
     m_allocated -= amount;
-    ZrDB::Instance()->updatePeerCredit( *this, "allocation", m_allocated );
+    try{
+        ZrDB::Instance()->updatePeerCredit( *this, "allocation", m_allocated );
+    }
+    catch( std::exception e ){
+        g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Cannot deallocate funds" );
+    }
 }
 
 
 void Credit::updateCredit()
 {
-    ZrDB * db = ZrDB::Instance();
-    if( !db->peerExists( *this )){
-        db->createPeerRecord( *this );
+    try{
+        ZrDB * db = ZrDB::Instance();
+        if( !db->peerExists( *this )){
+            db->createPeerRecord( *this );
+        }
+        db->updatePeerCredit( *this, "credit", m_credit );
     }
-    db->updatePeerCredit( *this, "credit", m_credit );
+    catch( std::exception e ){
+        g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Cannot update credit" );
+    }
 }
 
 void Credit::updateOurCredit()
 {
-    ZrDB * db = ZrDB::Instance();
-    if( !db->peerExists( *this )){
-        db->createPeerRecord( *this );
+    try{
+        ZrDB * db = ZrDB::Instance();
+        if( !db->peerExists( *this )){
+            db->createPeerRecord( *this );
+        }
+        db->updatePeerCredit( *this, "our_credit", m_our_credit );
     }
-    db->updatePeerCredit( *this, "our_credit", m_our_credit );
+    catch( std::exception e ){
+        g_ZeroReservePlugin->placeMsg( e.what() );
+    }
 }
 
-void Credit::updateBalance()
-{
-    ZrDB * db = ZrDB::Instance();
-    if( !db->peerExists( *this )){
-        db->createPeerRecord( *this );
-    }
-    db->updatePeerCredit( *this, "balance", m_balance );
-}
 
 void Credit::loadPeer()
 {
-    ZrDB::Instance()->loadPeer( *this );
+        ZrDB::Instance()->loadPeer( *this );
 }
+
 
 void Credit::publish()
 {
