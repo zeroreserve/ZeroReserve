@@ -144,6 +144,7 @@ void ZeroReserveDialog::janitor()
 {
     updateFriendList();
     g_ZeroReservePlugin->displayMsg();
+    ui.paymentHistoryList->setCurrentRow( 0 ); // make the view emit currentItemChanged
 }
 
 void ZeroReserveDialog::loadTxLog()
