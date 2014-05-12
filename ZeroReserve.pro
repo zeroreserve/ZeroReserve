@@ -85,8 +85,6 @@ FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
     paymentdialog.ui \
     ZeroReserveConfig.ui \
-    RemotePaymentDialog.ui \
-    RemotePaymentRequestDialog.ui \
     NewWallet.ui \
     PeerAddressDialog.ui \
     CurrentTxList.ui \
