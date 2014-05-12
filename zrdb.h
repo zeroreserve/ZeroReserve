@@ -69,6 +69,7 @@ public:
 
     static ZrDB * Instance();
     void createPeerRecord( const Credit & peer_in );
+    void deletePeerRecord( const std::string & uid, const Currency::CurrencySymbols & sym );
     void updatePeerCredit(const Credit & peer_in, const std::string & column, ZR::ZR_Number &value );
     void loadPeer( Credit & peer_out );
     void loadPeer( const std::string & id, Credit::CreditList & peer_out );

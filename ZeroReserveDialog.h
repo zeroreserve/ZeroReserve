@@ -46,6 +46,7 @@ public slots:
 private slots:
     void contextMenuFriendList(QPoint);
     void friendDetails();
+    void friendReset();
     void payTo();
     void loadGrandTotal();
     void cancelOrder();

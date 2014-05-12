@@ -40,7 +40,8 @@ SOURCES = ZeroReserveDialog.cpp \
     BtcContract.cpp \
     TmContract.cpp \
     CurrentTxList.cpp \
-    helpers.cpp
+    helpers.cpp \
+    FriendResetDialog.cpp
 
 LIBS += -lsqlite3
 QMAKE_CXXFLAGS += -rdynamic -fPIC
@@ -77,7 +78,8 @@ HEADERS = ZeroReserveDialog.h \
     BtcContract.h \
     TmContract.h \
     CurrentTxList.h \
-    helpers.h
+    helpers.h \
+    FriendResetDialog.h
 
 FORMS = ZeroReserveDialog.ui \
     frienddetailsdialog.ui \
@@ -87,7 +89,8 @@ FORMS = ZeroReserveDialog.ui \
     RemotePaymentRequestDialog.ui \
     NewWallet.ui \
     PeerAddressDialog.ui \
-    CurrentTxList.ui
+    CurrentTxList.ui \
+    FriendResetDialog.ui
 
 TARGET = ZeroReserve
 

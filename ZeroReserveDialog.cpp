@@ -17,6 +17,7 @@
 
 #include "ZeroReserveDialog.h"
 #include "frienddetailsdialog.h"
+#include "FriendResetDialog.h"
 #include "paymentdialog.h"
 #include "OrderBook.h"
 #include "MyOrders.h"
@@ -200,6 +201,9 @@ void ZeroReserveDialog::contextMenuFriendList(QPoint)
     action = contextMnu.addAction(QIcon(IMAGE_FRIENDINFO), tr("Friend Details..."), this, SLOT(friendDetails()));
     action->setEnabled(selectedCount == 1 && idType == FriendSelectionWidget::IDTYPE_SSL);
 
+    action = contextMnu.addAction(QIcon(IMAGE_FRIENDINFO), tr("Friend Reset..."), this, SLOT(friendReset()));
+    action->setEnabled(selectedCount == 1 && idType == FriendSelectionWidget::IDTYPE_SSL);
+
     contextMnu.exec(QCursor::pos());
     m_update = true;
 }
@@ -211,6 +215,17 @@ void ZeroReserveDialog::friendDetails()
     const std::string peername = rsPeers->getPeerName( uid );
 
     FriendDetailsDialog d( uid, this, peername );
+    d.exec();
+}
+
+
+void ZeroReserveDialog::friendReset()
+{
+    FriendSelectionWidget::IdType id = FriendSelectionWidget::IDTYPE_NONE;
+    const std::string uid = ui.friendSelectionWidget->selectedId( id );
+    const std::string peername = rsPeers->getPeerName( uid );
+
+    FriendResetDialog d( uid, this, peername );
     d.exec();
 }
 

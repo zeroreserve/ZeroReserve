@@ -380,7 +380,7 @@ void ZrDB::updatePeerCredit( const Credit & peer_in, const std::string & column,
     runQuery( update.str() );
 }
 
-void ZrDB::runQuery(const std::string & sql )
+void ZrDB::runQuery( const std::string & sql )
 {
     char *zErrMsg = 0;
     int rc = sqlite3_exec(m_db, sql.c_str(), noop_callback, this, &zErrMsg);
@@ -401,6 +401,17 @@ void ZrDB::createPeerRecord( const Credit & peer_in )
     runQuery( insert.str() );
 }
 
+void ZrDB::deletePeerRecord( const std::string & uid, const Currency::CurrencySymbols & sym )
+{
+    std::cerr << "Zero Reserve: Deleting peer credit " << uid << std::endl;
+    RsStackMutex peerMutex( m_peer_mutex );
+    std::ostringstream sql;
+    sql << "delete from peers where id = '" << uid << "'";
+    if( Currency::INVALID != sym ){
+        sql << " and currency = '" << Currency::currencySymbols[ sym ] << "'";
+    }
+    runQuery( sql.str() );
+}
 
 
 
