@@ -44,6 +44,12 @@ public:
         return boost::rational_cast<double>( *this );
     }
 
+    static ZR_Number fromDouble( double d )
+    {
+        QString s = QString::number( d, 'g', 8 /* one Satoshi */ );
+        return fromDecimalString( s );
+    }
+
     static ZR_Number fromFractionString( const std::string & s_num )
     {
         boost::rational< int64_t > num;
