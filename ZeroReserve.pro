@@ -99,7 +99,9 @@ contains(ZR_BITCOIN, ZR_LIBBITCOIN) {
     HEADERS += ZrLibBitcoin.h
     SOURCES += ZrLibBitcoin.cpp
     QMAKE_CXXFLAGS += -std=c++03
-    QMAKE_LFLAGS = -Wl,-enable-stdcall-fixup $(QMAKE_LFLAGS)
+    win32 {
+        QMAKE_LFLAGS = -Wl,-enable-stdcall-fixup $(QMAKE_LFLAGS)
+    }
     LIBS += -lbitcoin -lleveldb -lcurl -lboost_thread -lboost_system -lboost_regex -lboost_filesystem
     DEFINES += LEVELDB_ENABLED
 }
@@ -113,7 +115,9 @@ contains(ZR_BITCOIN, ZR_SATOSHI) {
     HEADERS += ZrSatoshiBitcoin.h
     SOURCES += ZrSatoshiBitcoin.cpp
     QMAKE_CXXFLAGS += -std=c++03
-    QMAKE_LFLAGS = -Wl,-enable-stdcall-fixup $(QMAKE_LFLAGS)
+    win32 {
+        QMAKE_LFLAGS = -Wl,-enable-stdcall-fixup $(QMAKE_LFLAGS)
+    }
     LIBS    += -L$(HOME)/lib -lnmcrpc -lcurl -ljsoncpp
     INCLUDEPATH += $(HOME)/lib
 }

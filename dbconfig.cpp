@@ -30,7 +30,7 @@ DBConfig::DBConfig( QWidget *parent, Qt::WFlags flags ) :
 }
 
 
-bool DBConfig::save(QString &errmsg)
+bool DBConfig::save(QString &)
 {
     return true;
 }

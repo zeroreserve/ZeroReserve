@@ -101,7 +101,7 @@ ZR::RetVal TmLocalCoordinator::processItem( RsZeroReserveItem * baseItem )
     return ZR::ZR_SUCCESS;
 }
 
-ZR::RetVal TmLocalCoordinator::abortTx( RsZeroReserveTxItem * item )
+ZR::RetVal TmLocalCoordinator::abortTx( RsZeroReserveTxItem *  )
 {
     std::cerr << "Zero Reserve: TX Manger:Error happened. Aborting." << std::endl;
     return ZR::ZR_FAILURE;

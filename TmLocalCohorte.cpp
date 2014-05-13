@@ -114,7 +114,7 @@ ZR::RetVal TmLocalCohorte::processItem( RsZeroReserveItem * baseItem )
     return ZR::ZR_SUCCESS;
 }
 
-ZR::RetVal TmLocalCohorte::abortTx( RsZeroReserveTxItem * item )
+ZR::RetVal TmLocalCohorte::abortTx( RsZeroReserveTxItem * )
 {
      std::cerr << "Zero Reserve: TX Manger:Error happened. Aborting." << std::endl;
      RsZeroReserveTxItem * reply = new RsZeroReserveTxItem( ABORT );
