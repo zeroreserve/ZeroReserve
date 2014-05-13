@@ -156,7 +156,8 @@ ZR::RetVal ZrSatoshiBitcoin::mkRawTx( const ZR::ZR_Number & btcAmount, ZR::Bitco
         std::string txId = res[0u][ "txid" ].asString();
         unsigned int vout = res[0u][ "vout" ].asUInt();
 
-        const ZR::ZR_Number addrBalance = ZR::ZR_Number::fromDecimalString( res[0u][ "amount" ].asString() );
+        const double d_addrBalance = res[0u][ "amount" ].asDouble();
+        const ZR::ZR_Number addrBalance = ZR::ZR_Number::fromDouble( d_addrBalance );
         const ZR::ZR_Number change = addrBalance - btcAmount;
         if( change < 0 )return ZR::ZR_FAILURE;
 
