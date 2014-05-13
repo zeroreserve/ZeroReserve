@@ -42,7 +42,7 @@ PaymentDialog::PaymentDialog( const std::string & payee, QWidget *parent ) :
         index++;
     }
     connect( ui->buttonBox, SIGNAL(accepted()), this, SLOT( payTo() ) );
-    connect( ui->currencySelector, SIGNAL(currentIndexChanged(QString)), this, SLOT(loadAvailableFunds( QString ) ) );
+    connect( ui->currencySelector, SIGNAL(currentIndexChanged(QString)), this, SLOT( loadAvailableFunds() ) );
     loadAvailableFunds();
 }
 
@@ -59,13 +59,7 @@ void PaymentDialog::payTo()
     if( ! tm->init() ) delete tm;
 }
 
-void PaymentDialog::loadAvailableFunds(QString arg)
-{
-    ui->lcdAvailableFunds->display( availableFunds().toDouble() );
-}
-
-
-ZR::ZR_Number PaymentDialog::availableFunds()
+void PaymentDialog::loadAvailableFunds()
 {
     Currency::CurrencySymbols sym = Currency::getCurrencyByName( ui->currencySelector->currentText().toStdString() );
     Credit peerCredit( m_payee, Currency::currencySymbols[ sym ] );
@@ -76,5 +70,6 @@ ZR::ZR_Number PaymentDialog::availableFunds()
         QMessageBox::critical(0, "Error reading credit", e.what() );
     }
 
-    return  peerCredit.getMyAvailable();
+    ZR::ZR_Number availableFunds = peerCredit.getMyAvailable();
+    ui->lcdAvailableFunds->display( availableFunds.toDouble() );
 }
