@@ -286,7 +286,13 @@ void ZeroReserveDialog::doOrder( OrderBook * book, OrderBook::Order::OrderType t
     order->setOrderId();
     order->m_btcAddr = ( type == OrderBook::Order::ASK )? ZR::Bitcoin::Instance()->mkOrderAddress( amount ) : "";
 
-    book->processMyOrder( order );
+    if( order->m_btcAddr.empty() ){
+        g_ZeroReservePlugin->placeMsg( "Cannot place order" );
+        delete order;
+    }
+    else{
+        book->processMyOrder( order );
+    }
 }
 
 
