@@ -221,7 +221,7 @@ ZR::BitcoinAddress ZrSatoshiBitcoin::mkOrderAddress( const ZR::ZR_Number & amoun
         g_ZeroReservePlugin->placeMsg( std::string( "Exception caught at " ) + __func__ + ": " + e.what() + " Cannot make an order address. Insufficient funds? If you have enough, try restarting the Satoshi Client." );
         std::cerr << "Zero Reserve: " << __func__ << ": Exception caught: " << e.what() << std::endl;
         print_stacktrace();
-        return "";
+        return std::string();
     }
     return addr;
 }

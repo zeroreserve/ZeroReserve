@@ -272,7 +272,7 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
         }
 
         if( ZR::Bitcoin::Instance()->mkRawTx( btcAmount, m_myOrder->m_btcAddr, destinationBtcAddr, m_txHex, outTxId ) != ZR::ZR_SUCCESS ){
-            return ZR::ZR_FAILURE;
+            return abortTx( item );
         }
 
         std::cerr << "Zero Reserve: Order execution; TX: " << m_txHex << std::endl;
