@@ -51,8 +51,6 @@ void BtcContract::pollContracts()
                     ZrDB::Instance()->rollbackTx();
                 }
             }
-            if( contract->m_party == RECEIVER )
-                contract->deallocateFunds( contract->getFiatAmount() );
             delete contract;
             it = contracts.erase( it );
         }
@@ -101,12 +99,12 @@ BtcContract::BtcContract( const ZR::ZR_Number & btcAmount, const ZR::ZR_Number &
 {
     if( creationtime == 0 ){
         m_creationtime = QDateTime::currentMSecsSinceEpoch();  // newly created contract gets a current timestamp
-        if( party == RECEIVER ){
+        if( party == RECEIVER ){  // the payment receiver needs to make sure account is not overdrawn
             ZR::ZR_Number fiatAmount = btcAmount * price;
             Credit c( counterParty, currencySym );
             c.loadPeer();
-            if( c.getMyAvailable() <= fee ) throw std::runtime_error( "Insufficient funds" );
-            if( c.getMyAvailable() < fiatAmount + fee ){
+            if( c.getPeerAvailable() <= fee ) throw std::runtime_error( "Insufficient funds" );
+            if( c.getPeerAvailable() < fiatAmount + fee ){
                 fiatAmount = c.getPeerAvailable() - fee;
                 m_btcAmount = fiatAmount / price;
             }
@@ -162,12 +160,22 @@ void BtcContract::persist()
 void BtcContract::execute()
 {
     std::cerr << "Zero Reserve: Contract: Settling for ID: " << m_btcTxId << std::endl;
+    ZR::ZR_Number fiatAmount = m_btcAmount * m_price;
     if( m_party == SENDER ){
-        PaymentSpender p( m_counterParty, m_btcAmount * m_price, m_currencySym, Payment::PAYMENT );
+        PaymentSpender p( m_counterParty, fiatAmount, m_currencySym, Payment::PAYMENT );
+        if( p.init() == ZR::ZR_FAILURE ){
+            g_ZeroReservePlugin->placeMsg( std::string( "Cannot execute payment of " ) + fiatAmount.toDecimalStdString() + " to " + m_counterParty );
+            return;
+        }
         p.commit();
     }
     else {
-        PaymentReceiver p( m_counterParty, m_btcAmount * m_price, m_currencySym, Payment::PAYMENT );
+        deallocateFunds( getFiatAmount() );
+        PaymentReceiver p( m_counterParty, fiatAmount, m_currencySym, Payment::PAYMENT );
+        if( p.init() == ZR::ZR_FAILURE ){
+            g_ZeroReservePlugin->placeMsg( std::string( "Cannot execute payment of " ) + fiatAmount.toDecimalStdString() + " to " + m_counterParty );
+            return;
+        }
         p.commit();
     }
 }

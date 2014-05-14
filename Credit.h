@@ -36,7 +36,7 @@ public:
     void loadPeer();
     void publish();
     void updateOurCredit();
-    void allocate( const ZR::ZR_Number & amount);
+    ZR::RetVal allocate( const ZR::ZR_Number & amount);
     void deallocate( const ZR::ZR_Number & amount);
 
     static void getCreditList( CreditList & outList, const std::string & id );

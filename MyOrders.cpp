@@ -138,8 +138,11 @@ ZR::RetVal MyOrders::match( Order * myOrder )
     for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){
         Order * other = *askIt;
         if( other->m_isMyOrder ) continue; // don't fill own orders
+        if( myOrder->m_matched.find( other->m_order_id ) != myOrder->m_matched.end() ) continue; // matched that already
         if( myOrder->m_price < other->m_price ) break;    // no need to try and find matches beyond
         std::cerr << "Zero Reserve: Match at ask price " << other->m_price.toStdString() << std::endl;
+
+        myOrder->m_matched.insert( other->m_order_id );
 
         if( amount > other->m_amount ){
             buy( other, myOrder, other->m_amount );

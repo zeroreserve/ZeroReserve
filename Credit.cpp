@@ -43,10 +43,15 @@ Credit::Credit( const std::string & id, const std::string & currencySym ) :
 }
 
 
-void Credit::allocate( const ZR::ZR_Number & amount)
+ZR::RetVal Credit::allocate( const ZR::ZR_Number & amount)
 {
+    if( amount > getPeerAvailable() ){
+        return ZR::ZR_FAILURE;
+    }
+
     m_allocated += amount;
     ZrDB::Instance()->updatePeerCredit( *this, "allocation", m_allocated );
+    return ZR::ZR_SUCCESS;
 }
 
 

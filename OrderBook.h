@@ -26,6 +26,7 @@
 #include <QAbstractItemModel>
 #include <QDateTime>
 #include <QList>
+#include <set>
 
 
 
@@ -75,6 +76,7 @@ public:
         ZR::BitcoinAddress m_btcAddr;  // address where those Bitcoins are on
         bool m_locked;                   // ongoing transaction on buyer side locks this order from matching
         bool m_ignored;                  // this order failed a tx and is no longer shown or matched
+        std::set< ID > m_matched;            // already matched counterparty orders
 
         bool operator == (const Order & other);
         bool operator < ( const Order & other) const;

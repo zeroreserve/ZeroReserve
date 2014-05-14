@@ -128,11 +128,12 @@ private:
     ZR::RetVal doQuery( RSZRRemoteTxItem * item );
     ZR::RetVal doCommit( RSZRRemoteTxItem * item );
     ZR::RetVal doVote( RSZRRemoteTxItem * item );
-    ZR::RetVal forwardItem( RSZRRemoteTxItem * item );
+    ZR::RetVal forwardItem( RSZRRemoteTxItem * item , const std::string & payload );
     void mkTunnel( RSZRRemoteTxItem * item );
 
     // request an abort
     ZR::RetVal abortTx( RSZRRemoteTxItem *item );
+    ZR::RetVal voteNo( RSZRRemoteTxItem * item );
 
     BtcContract * m_payer;
     BtcContract * m_payee;
