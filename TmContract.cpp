@@ -460,7 +460,7 @@ ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
     m_payer->setBtcAddress( destinationBtcAddr );
 
     const std::string payload = m_payee->getFiatAmount().toStdString() + ':' + currencySym + ':' +
-                                destinationBtcAddr + ':' + btcAmount.toStdString() + ':' + fee.toStdString();
+                                destinationBtcAddr + ':' + m_payee->getBtcAmount().toStdString() + ':' + fee.toStdString();
 
     forwardItem( item, payload );
     return ZR::ZR_SUCCESS;
