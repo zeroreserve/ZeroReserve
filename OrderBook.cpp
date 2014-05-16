@@ -68,8 +68,9 @@ QVariant OrderBook::data( const QModelIndex& index, int role ) const
 {
     RsStackMutex orderMutex( m_order_mutex );
 
+    Order * order = m_filteredOrders[index.row()];
+
     if (role == Qt::DisplayRole && index.row() < m_filteredOrders.size()){
-        Order * order = m_filteredOrders[index.row()];
         switch(index.column()){
             case 0:
                 return QVariant( order->m_amount.toDouble() );
@@ -78,8 +79,13 @@ QVariant OrderBook::data( const QModelIndex& index, int role ) const
             default:
                 return QVariant();
         }
-
     }
+
+    if( role == Qt::BackgroundRole ){
+        if( order->m_isMyOrder )return Qt::blue;
+        if( order->m_ignored )return Qt::red;
+    }
+
     return QVariant();
 }
 
