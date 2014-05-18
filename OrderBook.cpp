@@ -68,9 +68,12 @@ QVariant OrderBook::data( const QModelIndex& index, int role ) const
 {
     RsStackMutex orderMutex( m_order_mutex );
 
+    if( index.row() >= m_filteredOrders.size() )
+        return QVariant();
+
     Order * order = m_filteredOrders[index.row()];
 
-    if (role == Qt::DisplayRole && index.row() < m_filteredOrders.size()){
+    if ( role == Qt::DisplayRole ){
         switch(index.column()){
             case 0:
                 return QVariant( order->m_amount.toDouble() );
