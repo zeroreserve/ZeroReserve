@@ -85,7 +85,7 @@ QVariant OrderBook::data( const QModelIndex& index, int role ) const
     }
 
     if( role == Qt::BackgroundRole ){
-        if( order->m_isMyOrder )return Qt::blue;
+        if( order->m_isMyOrder )return Qt::magenta;
         if( order->m_ignored )return Qt::red;
     }
 
@@ -123,7 +123,7 @@ void OrderBook::filterOrders( OrderList & filteredOrders, const Currency::Curren
     filteredOrders.clear();
     for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
         Order * order = *it;
-        if( order->m_currency == currencySym && !order->m_ignored )
+        if( order->m_currency == currencySym )
             filteredOrders.append( *it );
     }
     qSort( filteredOrders.begin(), filteredOrders.end(), compareOrder );

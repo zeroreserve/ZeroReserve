@@ -41,7 +41,7 @@ class OrderBook : public QAbstractItemModel
 public:
     /**
       A single order
-      TODO: some attributes only apply for my orders, some only for others. Subclass MyOrder / OtherOrder
+      TODO: some attributes only apply to my orders, some only for others. Subclass MyOrder / OtherOrder
       */
     class Order
     {
