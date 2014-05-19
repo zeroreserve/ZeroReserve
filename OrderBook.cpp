@@ -175,14 +175,20 @@ ZR::RetVal OrderBook::processOrder( Order* order )
     }
 
     if( Order::PARTLY_FILLED == order->m_purpose ){
+        Order * _o = NULL;
         {
             RsStackMutex orderMutex( m_order_mutex );
             for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
-                if( *order == *(*it) ){
+                _o = *it;
+                if( *order == *_o ){
                     if( order->m_amount == (*it)->m_amount )
                         return ZR::ZR_FINISH; // we have this update already - do nothing
                 }
+                break;
             }
+        }
+        if( _o ){  // keep the ignore flag. TODO: Should we really do this or should we give this order another chance for matching?
+            order->m_ignored = _o->m_ignored;
         }
         remove( order->m_order_id );  // remove so it gets reinserted with the updates values below.
         addOrder( order );

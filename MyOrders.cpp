@@ -130,13 +130,14 @@ void MyOrders::match()
 
 ZR::RetVal MyOrders::match( Order * myOrder )
 {
-    if( myOrder->m_locked || myOrder->m_ignored ) return ZR::ZR_FAILURE;
+    if( myOrder->m_locked ) return ZR::ZR_FINISH;
 
     OrderList asks;
     m_asks->filterOrders( asks, myOrder->m_currency );
     ZR::ZR_Number amount = myOrder->m_amount;
     for( OrderIterator askIt = asks.begin(); askIt != asks.end(); askIt++ ){
         Order * other = *askIt;
+        if( other->m_ignored ) continue;   // trying to execute this order did not go well in the past. Don't try again.
         if( other->m_isMyOrder ) continue; // don't fill own orders
         if( myOrder->m_matched.find( other->m_order_id ) != myOrder->m_matched.end() ) continue; // matched that already
         if( myOrder->m_price < other->m_price ) break;    // no need to try and find matches beyond

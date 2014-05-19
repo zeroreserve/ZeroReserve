@@ -121,8 +121,13 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
     if( btcAmount > m_payer->getBtcAmount() ) // seller can't just increase amount I am buying
         return abortTx( item );
 
+    if( btcAmount < m_payer->getBtcAmount() ){
+        m_payer->setBtcAmount( btcAmount );
+        m_otherOrder->m_ignored = true;  // as we currently have no alternative routes to seller, ignore from matching for now
+                                         // TODO: remove this as more sophisticated routing is implemented
+    }
+
     m_payer->setBtcTxId( btcTxId );
-    m_payer->setBtcAmount( btcAmount );
 
     p3ZeroReserveRS * p3zr = static_cast< p3ZeroReserveRS* >( g_ZeroReservePlugin->rs_pqi_service() );
     RSZRRemoteTxItem * resendItem = new RSZRRemoteTxItem( m_otherOrder->m_order_id, COMMIT, Router::SERVER, m_myOrder->m_order_id );
@@ -179,7 +184,7 @@ void TmContractCoordinator::rollback()
     std::cerr << "Zero Reserve: Rolling back " << m_TxId << std::endl;
     if( m_payer )
         BtcContract::rmContract( m_payer );
-    m_myOrder->m_ignored = true;
+    m_otherOrder->m_ignored = true;
     MyOrders::Instance()->getAsks()->remove( m_otherOrder->m_order_id );
 }
 
