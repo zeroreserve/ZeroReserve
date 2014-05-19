@@ -100,6 +100,12 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(59, 59, 59);</string>
+   </property>
+   <property name="digitCount">
+    <number>8</number>
+   </property>
   </widget>
   <widget class="QLabel" name="label_4">
    <property name="geometry">
@@ -146,6 +152,12 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(59, 59, 59);</string>
+   </property>
+   <property name="digitCount">
+    <number>8</number>
+   </property>
   </widget>
   <widget class="QLabel" name="label_6">
    <property name="geometry">
@@ -176,6 +188,12 @@
    </property>
    <property name="toolTip">
     <string>Allocated funds for an activated contract</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(59, 59, 59);</string>
+   </property>
+   <property name="digitCount">
+    <number>8</number>
    </property>
   </widget>
   <widget class="QLabel" name="label_7">

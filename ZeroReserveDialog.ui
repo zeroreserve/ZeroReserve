@@ -70,7 +70,7 @@
    <item>
     <widget class="QTabWidget" name="ZeroReserveTabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="BitcoinTab">
       <attribute name="title">
@@ -447,6 +447,9 @@
            <property name="styleSheet">
             <string notr="true">background-color: rgb(59, 59, 59);</string>
            </property>
+           <property name="numDigits">
+            <number>8</number>
+           </property>
           </widget>
          </item>
          <item>
@@ -466,6 +469,9 @@
            </property>
            <property name="styleSheet">
             <string notr="true">background-color: rgb(59, 59, 59);</string>
+           </property>
+           <property name="numDigits">
+            <number>8</number>
            </property>
           </widget>
          </item>
@@ -487,6 +493,9 @@
            <property name="styleSheet">
             <string notr="true">background-color: rgb(59, 59, 59);</string>
            </property>
+           <property name="numDigits">
+            <number>8</number>
+           </property>
           </widget>
          </item>
          <item>
@@ -507,6 +516,9 @@
            <property name="styleSheet">
             <string notr="true">background-color: rgb(59, 59, 59);</string>
            </property>
+           <property name="numDigits">
+            <number>8</number>
+           </property>
           </widget>
          </item>
          <item>
@@ -526,6 +538,9 @@
            </property>
            <property name="styleSheet">
             <string notr="true">background-color: rgb(59, 59, 59);</string>
+           </property>
+           <property name="numDigits">
+            <number>8</number>
            </property>
           </widget>
          </item>
