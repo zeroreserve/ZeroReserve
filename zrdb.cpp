@@ -348,9 +348,9 @@ ZrDB::GrandTotal & ZrDB::loadGrandTotal( const std::string & currency )
 
 void ZrDB::addToGrandTotal( char ** cols )
 {
-    grandTotal.our_credit += atof( cols[0] );
-    grandTotal.credit     += atof( cols[1] );
-    ZR::ZR_Number peerbalance = atof ( cols[2] );
+    grandTotal.our_credit += ZR::ZR_Number::fromDecimalString( std::string( cols[0] ) );
+    grandTotal.credit     += ZR::ZR_Number::fromDecimalString( std::string( cols[1] ) );
+    ZR::ZR_Number peerbalance = ZR::ZR_Number::fromDecimalString( std::string( cols[2] ) );
     grandTotal.balance    += peerbalance;
     if( peerbalance > 0 ){
         grandTotal.outstanding += peerbalance;
