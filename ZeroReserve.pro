@@ -44,7 +44,10 @@ SOURCES = ZeroReserveDialog.cpp \
     FriendResetDialog.cpp
 
 LIBS += -lsqlite3
-QMAKE_CXXFLAGS += -rdynamic -fPIC
+
+!win32 {
+    QMAKE_CXXFLAGS += -rdynamic -fPIC
+}
 
 win32 {
     INCLUDEPATH += ../../../libsqlite ../../../boost
