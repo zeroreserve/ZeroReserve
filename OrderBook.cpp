@@ -185,12 +185,11 @@ ZR::RetVal OrderBook::processOrder( Order* order )
                         return ZR::ZR_FINISH; // we have this update already - do nothing
                     }
                     order->m_ignored = _o->m_ignored;
-                    remove( order->m_order_id );  // remove so it gets reinserted with the updates values below.
                     break;
                 }
             }
         }
-
+        remove( order->m_order_id );  // remove so it gets reinserted with the updates values below.
         addOrder( order );
         return ZR::ZR_SUCCESS;
     }
