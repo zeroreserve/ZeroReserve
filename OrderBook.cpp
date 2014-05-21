@@ -181,16 +181,16 @@ ZR::RetVal OrderBook::processOrder( Order* order )
             for(OrderIterator it = m_orders.begin(); it != m_orders.end(); it++){
                 _o = *it;
                 if( *order == *_o ){
-                    if( order->m_amount == (*it)->m_amount )
+                    if( order->m_amount == _o->m_amount ){
                         return ZR::ZR_FINISH; // we have this update already - do nothing
+                    }
+                    order->m_ignored = _o->m_ignored;
+                    remove( order->m_order_id );  // remove so it gets reinserted with the updates values below.
+                    break;
                 }
-                break;
             }
         }
-        if( _o ){  // keep the ignore flag. TODO: Should we really do this or should we give this order another chance for matching?
-            order->m_ignored = _o->m_ignored;
-        }
-        remove( order->m_order_id );  // remove so it gets reinserted with the updates values below.
+
         addOrder( order );
         return ZR::ZR_SUCCESS;
     }
