@@ -190,7 +190,7 @@ ZR::RetVal OrderBook::processOrder( Order* order )
             }
         }
         remove( order->m_order_id );  // remove so it gets reinserted with the updates values below.
-        addOrder( order );
+        addOrder( order );            // add even if we don't have it yet
         return ZR::ZR_SUCCESS;
     }
 
