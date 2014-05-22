@@ -70,7 +70,7 @@
    <item>
     <widget class="QTabWidget" name="ZeroReserveTabs">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="BitcoinTab">
       <attribute name="title">
@@ -130,7 +130,7 @@
             </sizepolicy>
            </property>
            <property name="toolTip">
-            <string>Shows all sell orders. Blue background indicates our own orders, red background means this order is ignored from matching.</string>
+            <string>Shows all sell orders. Magenta background indicates our own orders, red background means this order is ignored from matching.</string>
            </property>
           </widget>
          </item>
@@ -317,7 +317,7 @@
               </sizepolicy>
              </property>
              <property name="toolTip">
-              <string>Shows all buy orders. Blue background indicates our own orders, red background means this order is ignored from matching.</string>
+              <string>Shows all buy orders. Magenta background indicates our own orders, red background means this order is ignored from matching.</string>
              </property>
             </widget>
            </item>
