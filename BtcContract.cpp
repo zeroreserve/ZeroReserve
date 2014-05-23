@@ -41,16 +41,6 @@ void BtcContract::pollContracts()
     for( ContractIterator it = contracts.begin(); it != contracts.end(); ){
         BtcContract * contract = *it;
         if( contract->poll() ){
-            if( !contract->m_btcTxId.empty() ){
-                try{
-                    ZrDB::Instance()->rmBtcContract( contract->m_btcTxId, contract->m_party );
-                    ZrDB::Instance()->commitTx();
-                }
-                catch( std::exception e ){
-                    g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Can't remove contract " + contract->m_btcTxId );
-                    ZrDB::Instance()->rollbackTx();
-                }
-            }
             delete contract;
             it = contracts.erase( it );
         }
@@ -125,6 +115,19 @@ BtcContract::~BtcContract()
 
 bool BtcContract::poll()
 {
+    // is it timed out?
+    if(  QDateTime::currentMSecsSinceEpoch() - m_creationtime > contract_timeout ){
+        if( !m_btcTxId.empty() ){
+            try{
+                ZrDB::Instance()->rmBtcContract( m_btcTxId, m_party );
+            }
+            catch( std::exception e ){
+                g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Can't remove contract " + m_btcTxId );
+            }
+        }
+        return true;
+    }
+
     if( !m_activated ) return false; // not yet active
 
     // is the condition for settlement met?
@@ -134,11 +137,18 @@ bool BtcContract::poll()
         // TODO: Check BTC Address and amount
         ZrDB::Instance()->beginTx();
         execute();
+        if( !m_btcTxId.empty() ){
+            try{
+                ZrDB::Instance()->rmBtcContract( m_btcTxId, m_party );
+                ZrDB::Instance()->commitTx();
+            }
+            catch( std::exception e ){
+                g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Can't remove contract " + m_btcTxId );
+                ZrDB::Instance()->rollbackTx();
+            }
+        }
         return true;
     }
-
-    // is it timed out?
-    if(  QDateTime::currentMSecsSinceEpoch() - m_creationtime > contract_timeout )return true;
 
     return false;
 }
