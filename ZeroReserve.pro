@@ -112,8 +112,9 @@ contains(ZR_BITCOIN, ZR_DUMMYBITCOIN) {
 }
 
 contains(ZR_BITCOIN, ZR_SATOSHI) {
-    HEADERS += ZrSatoshiBitcoin.h
-    SOURCES += ZrSatoshiBitcoin.cpp
+    CONFIG += satoshi
+    HEADERS += satoshi/ZrSatoshiBitcoin.h
+    SOURCES += satoshi/ZrSatoshiBitcoin.cpp
     QMAKE_CXXFLAGS += -std=c++03
     win32 {
         QMAKE_LFLAGS = -Wl,-enable-stdcall-fixup $(QMAKE_LFLAGS)
