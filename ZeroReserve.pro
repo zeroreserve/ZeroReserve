@@ -113,13 +113,26 @@ contains(ZR_BITCOIN, ZR_DUMMYBITCOIN) {
 
 contains(ZR_BITCOIN, ZR_SATOSHI) {
     CONFIG += satoshi
-    HEADERS += satoshi/ZrSatoshiBitcoin.h
-    SOURCES += satoshi/ZrSatoshiBitcoin.cpp
-    QMAKE_CXXFLAGS += -std=c++03
+
+    HEADERS += satoshi/ZrSatoshiBitcoin.h \
+               satoshi/JsonRpc.hpp \
+               satoshi/NamecoinInterface.hpp \
+               satoshi/NameRegistration.hpp \
+               satoshi/RpcSettings.hpp \
+               satoshi/JsonRpc.tpp \
+               satoshi/NamecoinInterface.tpp
+
+    SOURCES += satoshi/ZrSatoshiBitcoin.cpp \
+               satoshi/JsonRpc.cpp \
+               satoshi/NamecoinInterface.cpp \
+               satoshi/NameRegistration.cpp \
+               satoshi/RpcSettings.cpp
+
+    QMAKE_CXXFLAGS += -std=c++11
     win32 {
         QMAKE_LFLAGS = -Wl,-enable-stdcall-fixup $(QMAKE_LFLAGS)
     }
-    LIBS    += -L$(HOME)/lib -lnmcrpc -lcurl -ljsoncpp
+    LIBS    += -L$(HOME)/lib -lcurl -ljsoncpp
     INCLUDEPATH += $(HOME)/lib
 }
 
