@@ -132,7 +132,7 @@ contains(ZR_BITCOIN, ZR_SATOSHI) {
     win32 {
         QMAKE_LFLAGS = -Wl,-enable-stdcall-fixup $(QMAKE_LFLAGS)
     }
-    LIBS    += -L$(HOME)/lib -lcurl -ljsoncpp
-    INCLUDEPATH += $(HOME)/lib
+    LIBS    += -lcurl -ljsoncpp
+    INCLUDEPATH += /usr/include/jsoncpp
 }
 
