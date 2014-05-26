@@ -60,16 +60,19 @@ public:
 
     static ZR_Number fromDecimalString( const std::string & s_num )
     {
-        const char delim = ( s_num.find( ',' ) != std::string::npos ) ? ',' : '.';
-        std::istringstream iss( s_num );
+        std::string s_num_trimmed = s_num.substr( s_num.find_first_not_of( " " ) );
+        bool is_negative = ( s_num_trimmed[ 0 ] == '-' );
+
+        const char delim = ( s_num_trimmed.find( ',' ) != std::string::npos ) ? ',' : '.';
+        std::istringstream iss( s_num_trimmed );
         std::string sIntPart;
         std::string sFracPart;
         std::getline(iss, sIntPart, delim);
         std::getline(iss, sFracPart, delim);
-        int factor = (int)pow(10, sFracPart.length() );
-        int intPart = strtol( sIntPart.c_str(), NULL, 10 );
-        int fracPart = strtol( sFracPart.c_str(), NULL, 10 );
-        if( intPart < 0 ) fracPart = -fracPart;
+        int64_t factor = (int64_t)pow(10, sFracPart.length() );
+        int64_t intPart = strtoll( sIntPart.c_str(), NULL, 10 );
+        int64_t fracPart = strtoll( sFracPart.c_str(), NULL, 10 );
+        if( is_negative ) fracPart = -fracPart;
         ZR_Number zrnum( intPart * factor + fracPart, factor );
         return zrnum;
     }
