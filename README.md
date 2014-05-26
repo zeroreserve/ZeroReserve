@@ -17,6 +17,9 @@ On most Linux Distros, sqlite, curl and jsoncpp is included. On Debian 7, simply
 
 To build, checkout the sources to the plugins directory of Retroshare and build with:
 ```
+$ cd retroshare-code/plugins
+$ git clone git://github.com/zeroreserve/ZeroReserve.git
+$ cd ZeroReserve
 $ qmake && make clean && make
 ```
 
