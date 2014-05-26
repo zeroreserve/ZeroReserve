@@ -3,20 +3,16 @@ ZeroReserve
 
 Friend 2 Friend Payment and Bitcoin exchange
 
-Prerequisite for building is a successful RetroShare build and sqlite3 and libnmcrpc
-RetroShare is available from http://retroshare.sourceforge.net/
-sqlite3 is probably part of your Linux distribution. If you are on Windows,
-get it from http://www.sqlite.org/
+Prerequisite for building is
+* a successful RetroShare build. http://retroshare.sourceforge.net/
+* sqlite3 http://www.sqlite.org/
+* jsoncpp version 0.6rc or higher: svn co http://svn.code.sf.net/p/jsoncpp/code/trunk/jsoncpp
+* libcurl http://curl.haxx.se/
 
-Get libnmcrpc directly from git:
-```
-$ git clone git://gitorious.org/libnmcrpc/libnmcrpc.git
-```
+On most Linux Distros, sqlite, curl and jsoncpp is included. On Debian 7, simply do
 
-Then configure with :
 ```
-$ autogen.sh
-$ ./configure
+# apt-get install libjsoncpp-dev libsqlite3-dev libcurl4-openssl-dev
 ```
 
 To build, checkout the sources to the plugins directory of Retroshare and build with:
@@ -34,10 +30,12 @@ Running ZeroReserve requires a running Satoshi Client first:
 ```
 $ ./bitcoind
 or
-$ ./bitcoin-qt -server     # that shows the GUI
+$ ./bitcoin-qt -server     # that shows the GUI *and* permits json-rpc conncetions
 
 ```
-This is an example bitcoin.conf with all entries required:
+On first startup, the Satoshi client creates the directory structure for the blockchain in
+$HOME/.bitcoin on Unix and %APPDATA%\Bitcoin on Windows. Create a suitable bitcoin.conf in
+this directory. This is an example bitcoin.conf with all entries required:
 ```
 testnet=1
 rpcuser=anu
