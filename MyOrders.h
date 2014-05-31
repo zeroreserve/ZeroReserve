@@ -21,6 +21,7 @@
 
 #include "OrderBook.h"
 #include "Payment.h"
+#include "ZeroReservePlugin.h"
 
 #include <map>
 
@@ -32,10 +33,14 @@
 class MyOrders : public OrderBook
 {
     Q_OBJECT
-    MyOrders();
+
+    MyOrders(){}
+
+    friend class ZeroReservePlugin;
+    MyOrders(OrderBook *bids, OrderBook *asks);
 
 public:
-    MyOrders(OrderBook *bids, OrderBook *asks);
+    ZR::RetVal init();
     virtual int columnCount(const QModelIndex&) const;
     virtual QVariant data(const QModelIndex&, int role = Qt::DisplayRole) const;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;

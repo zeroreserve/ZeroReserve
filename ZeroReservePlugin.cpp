@@ -19,6 +19,7 @@
 #include "ZeroReservePlugin.h"
 #include "ZeroReserveDialog.h"
 #include "OrderBook.h"
+#include "MyOrders.h"
 #include "p3ZeroReserverRS.h"
 #include "zrdb.h"
 #include "dbconfig.h"
@@ -36,9 +37,9 @@ RsMutex ZeroReservePlugin::widget_creation_mutex("widget_creation_mutex");
 
 
 extern "C" {
-	void *RETROSHARE_PLUGIN_provide()
+    void * RETROSHARE_PLUGIN_provide()
 	{
-        g_ZeroReservePlugin = new ZeroReservePlugin() ;
+        g_ZeroReservePlugin = new ZeroReservePlugin();
         return (void*) g_ZeroReservePlugin;
 	}
 	// This symbol contains the svn revision number grabbed from the executable. 
@@ -76,7 +77,10 @@ ZeroReservePlugin::ZeroReservePlugin() :
 
         m_asks = new OrderBook();
         m_bids = new OrderBook();
+        new MyOrders( m_bids, m_asks );
 }
+
+
 
 void ZeroReservePlugin::setInterfaces(RsPlugInInterfaces &interfaces)
 {

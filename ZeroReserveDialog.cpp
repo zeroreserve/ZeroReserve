@@ -49,6 +49,10 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     m_update = true;
 
     Payment::txLogView = ui.paymentHistoryList;
+    MyOrders * myOrders = MyOrders::Instance();
+    if( myOrders->init() == ZR::ZR_FAILURE ){
+        QMessageBox::critical( this, "Zero Reserve", "Could not load my Orders. Suggest exiting RS and fix the problem" );
+    }
 
     int index = 0;
     while(Currency::currencyNames[ index ]){
@@ -71,8 +75,6 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     ui.ask_amount->setValidator( new QDoubleValidator(0) );
     ui.bid_price->setValidator( new QDoubleValidator(0) );
     ui.bid_amount->setValidator( new QDoubleValidator(0) );
-
-    MyOrders * myOrders = new MyOrders( bids, asks );
 
     connect( ui.friendSelectionWidget, SIGNAL( customContextMenuRequested(QPoint) ), this, SLOT(contextMenuFriendList(QPoint) ) );
     connect( ui.friendSelectionWidget, SIGNAL( doubleClicked(int,QString) ), this, SLOT( friendDetails() ) );

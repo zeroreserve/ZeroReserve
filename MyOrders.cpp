@@ -31,14 +31,10 @@ MyOrders * MyOrders::me = NULL;
 
 MyOrders * MyOrders::Instance()
 {
-    while(!me);
     return me;
 }
 
-MyOrders::MyOrders()
-{
-    me = this;
-}
+
 
 MyOrders::MyOrders( OrderBook * bids, OrderBook * asks ) :
     m_bids( bids ),
@@ -46,7 +42,11 @@ MyOrders::MyOrders( OrderBook * bids, OrderBook * asks ) :
 {
     m_bids->setMyOrders( this );
     m_asks->setMyOrders( this );
+    me = this;
+}
 
+ZR::RetVal MyOrders::init()
+{
     try{
         OrderList myorders;
         ZrDB::Instance()->loadOrders( &myorders );
@@ -63,9 +63,9 @@ MyOrders::MyOrders( OrderBook * bids, OrderBook * asks ) :
     }
     catch( std::runtime_error & e ){
         g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() );
+        return ZR::ZR_FAILURE;
     }
-
-    me = this;
+    return ZR::ZR_SUCCESS;
 }
 
 int MyOrders::columnCount(const QModelIndex&) const
