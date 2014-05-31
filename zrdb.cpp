@@ -94,6 +94,7 @@ static int orders_callback(void * db, int argc, char ** argv, char ** )
         order->m_currency = Currency::getCurrencyBySymbol( argv[4] );
         order->m_timeStamp = atoll( argv[5] );
         order->m_purpose = OrderBook::Order::Purpose( atoi( argv[6] ) );
+        order->m_isMyOrder = true;
 
         zrdb->addToOrderList( order );
     }
