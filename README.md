@@ -8,11 +8,12 @@ Prerequisite for building is
 * sqlite3 http://www.sqlite.org/
 * jsoncpp version 0.6rc or higher: svn co http://svn.code.sf.net/p/jsoncpp/code/trunk/jsoncpp
 * libcurl http://curl.haxx.se/
+* Boost http://www.boost.org
 
-On most Linux Distros, sqlite, curl and jsoncpp is included. On Debian 7, simply do
+On most Linux Distros, Boost, sqlite, curl and jsoncpp are included. On Debian 7, simply do
 
 ```
-# apt-get install libjsoncpp-dev libsqlite3-dev libcurl4-openssl-dev
+# apt-get install libjsoncpp-dev libsqlite3-dev libcurl4-openssl-dev libboost-all-dev
 ```
 
 To build, checkout the sources to the plugins directory of Retroshare and build with:
