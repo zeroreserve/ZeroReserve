@@ -29,7 +29,7 @@ To install on Windows, drop the resulting DLL into the
 To install on Linux or MacOS, drop the resulting shared object into
 ~/.retroshare/extensions
 
-Running ZeroReserve requires a running Satoshi Client first:
+Running ZeroReserve requires a running [Satoshi Client](https://bitcoin.org/en/download) first:
 ```
 $ ./bitcoind
 or
