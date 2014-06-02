@@ -34,7 +34,7 @@ ZrSatoshiBitcoin::ZrSatoshiBitcoin()
         m_settings.readConfig( home + "/.bitcoin/bitcoin.conf" );
 #endif
     }
-    catch( std::exception e ){
+    catch( std::runtime_error e ){
         g_ZeroReservePlugin->placeMsg( std::string( "Exception caught at " ) + __func__ + ": " + e.what() );
         print_stacktrace();
     }

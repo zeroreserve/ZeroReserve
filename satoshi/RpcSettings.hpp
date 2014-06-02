@@ -53,7 +53,7 @@ public:
    * and leaves the authentication data blank.
    */
   inline RpcSettings ()
-    : host("localhost"), port(8336), username(""), password("")
+    : host("localhost"), port( 0 ), username(""), password("")
   {
     // Nothing else to do.
   }
@@ -83,7 +83,7 @@ public:
    * ones are found there.
    * @param filename The input file's name.
    */
-  void readConfig (const std::string& filename);
+  void readConfig(const std::string& filename);
 
   /**
    * Try to read the default namecoin.conf config file and update settings.

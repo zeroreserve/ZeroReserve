@@ -21,10 +21,18 @@
 /* Source code for RpcSettings.hpp.  */
 
 #include "RpcSettings.hpp"
+#include "JsonRpc.hpp"
+
+
 
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+
+
+const static int defaultTestnetPort = 18332;
+const static int defaultPort = 8332;
 
 namespace nmcrpc
 {
@@ -34,35 +42,58 @@ namespace nmcrpc
  * ones are found there.
  * @param filename The input file's name.
  */
-void
-RpcSettings::readConfig (const std::string& filename)
+
+void RpcSettings::readConfig (const std::string& filename)
 {
-  std::ifstream in(filename.c_str ());
+    port = 0;
+    std::ifstream in(filename.c_str ());
+    if( !in.is_open() ){
+        std::string e = std::string( "Cannot open file ") + filename;
+        throw JsonRpc::Exception ( e );
+    }
 
-  /* We're going to ignore all errors, since this is just a "best try"
-     approach to configuration guessing anyway.  */
+    while (in){
+        std::string line;
+        std::getline (in, line);
 
-  while (in)
-    {
-      std::string line;
-      std::getline (in, line);
+        // strip whitespaces
+        std::string::iterator end_pos = std::remove( line.begin(), line.end(), ' ' );
+        line.erase(end_pos, line.end());
 
-      const std::string::size_type equalPos = line.find ('=');
-      if (equalPos != std::string::npos)
+        if( line.empty() || line[0] == '#' ) // ignore comments and empty lines
+            continue;
+
+        const std::string::size_type equalPos = line.find ('=');
+        if (equalPos != std::string::npos)
         {
-          const std::string before(line, 0, equalPos);
-          const std::string after(line, equalPos + 1);
+            const std::string before(line, 0, equalPos);
+            const std::string after(line, equalPos + 1);
 
-          if (before == "rpcport")
+            if (before == "rpcport")
             {
-              std::istringstream numIn(after);
-              numIn >> port;
+                std::istringstream numIn(after);
+                numIn >> port;
             }
-          else if (before == "rpcuser")
-            username = after;
-          else if (before == "rpcpassword")
-            password = after;
+            else if (before == "rpcuser")
+                username = after;
+            else if (before == "rpcpassword")
+                password = after;
+            else if ( before == "testnet" ){
+                if( after == "0" ){
+                    if( port == 0 ){ // do not override if already set before
+                        port = defaultPort;
+                    }
+                }
+                else{
+                    if( port == 0 ){ // do not override if already set before
+                        port = defaultTestnetPort;
+                    }
+                }
+            }
         }
+    }
+    if( port == 0 ){
+        port = defaultPort;
     }
 }
 
