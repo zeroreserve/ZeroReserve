@@ -242,12 +242,16 @@ void ZeroReserveDialog::payTo()
 
 void ZeroReserveDialog::addBid()
 {
+    if( ui.bid_price->text() == "" ||  ui.bid_amount->text() == "" )return;
+
     OrderBook * bids = static_cast<OrderBook*>(ui.bidsTableView->model());
     doOrder( bids, OrderBook::Order::BID, ZR::ZR_Number::fromDecimalString( ui.bid_price->text() ), ZR::ZR_Number::fromDecimalString( ui.bid_amount->text() ) );
 }
 
 void ZeroReserveDialog::addAsk()
 {
+    if( ui.ask_price->text() == "" ||  ui.ask_amount->text() == "" )return;
+
     OrderBook * asks = static_cast<OrderBook*>(ui.asksTableView->model());
     doOrder( asks, OrderBook::Order::ASK, ZR::ZR_Number::fromDecimalString( ui.ask_price->text() ), ZR::ZR_Number::fromDecimalString( ui.ask_amount->text() ) );
 }
