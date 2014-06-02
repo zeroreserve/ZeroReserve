@@ -60,7 +60,7 @@ int OrderBook::rowCount(const QModelIndex&) const
 
 int OrderBook::columnCount(const QModelIndex&) const
 {
-    return 2;
+    return 3;
 }
 
 
@@ -73,11 +73,15 @@ QVariant OrderBook::data( const QModelIndex& index, int role ) const
 
     Order * order = m_filteredOrders[index.row()];
 
+    ZR::ZR_Number orderValue;
     if ( role == Qt::DisplayRole ){
         switch(index.column()){
             case 0:
                 return QVariant( order->m_amount.toDouble() );
             case 1:
+                orderValue = order->m_amount * order->m_price;
+                return QVariant( orderValue.toDouble() );
+            case 2:
                 return QVariant( order->m_price.toDouble() );
             default:
                 return QVariant();
@@ -102,6 +106,8 @@ QVariant OrderBook::headerData(int section, Qt::Orientation orientation, int rol
             case 0:
                 return QString("Volume");
             case 1:
+                return QString("Value");
+            case 2:
                 return QString("Price");
             }
         }
