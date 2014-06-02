@@ -82,7 +82,7 @@ public:
    * Construct it, which will not yet intialise the handle.
    */
   inline CurlPost ()
-    : handle(nullptr), headers(nullptr), data("")
+    : handle( NULL ), headers( NULL ), data("")
   {
     // Nothing else to do.
   }

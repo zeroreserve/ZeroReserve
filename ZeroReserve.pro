@@ -116,19 +116,13 @@ contains(ZR_BITCOIN, ZR_SATOSHI) {
 
     HEADERS += satoshi/ZrSatoshiBitcoin.h \
                satoshi/JsonRpc.hpp \
-               satoshi/NamecoinInterface.hpp \
-               satoshi/NameRegistration.hpp \
                satoshi/RpcSettings.hpp \
-               satoshi/JsonRpc.tpp \
-               satoshi/NamecoinInterface.tpp
+               satoshi/JsonRpc.tpp
 
     SOURCES += satoshi/ZrSatoshiBitcoin.cpp \
                satoshi/JsonRpc.cpp \
-               satoshi/NamecoinInterface.cpp \
-               satoshi/NameRegistration.cpp \
                satoshi/RpcSettings.cpp
 
-    QMAKE_CXXFLAGS += -std=c++11
     win32 {
         QMAKE_LFLAGS = -Wl,-enable-stdcall-fixup $(QMAKE_LFLAGS)
     }
