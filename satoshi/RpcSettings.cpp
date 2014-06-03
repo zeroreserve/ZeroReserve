@@ -16,9 +16,11 @@
  *
  *  See the distributed file COPYING for additional permissions in addition
  *  to those of the GNU Affero General Public License.
+ *
+ *  As a special exception, permission is granted to use this file under the
+ *  terms of the LGPL version 3 in the context of the Zero Reserve project.
  */
 
-/* Source code for RpcSettings.hpp.  */
 
 #include "RpcSettings.hpp"
 #include "JsonRpc.hpp"
