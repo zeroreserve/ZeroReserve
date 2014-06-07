@@ -3,7 +3,8 @@ ZeroReserve
 
 Friend 2 Friend Payment and Bitcoin exchange
 
-[For Windows, there is a precompiled ZeroReserve / Retroshare bundle](https://mega.co.nz/#!MVIykABI!fFkRbtdOQDfrIKc0Kke2yfFpS6T17z7q6YxelQ6BJMc). You can install that and proceed with the [Setup](https://github.com/zeroreserve/ZeroReserve/wiki/Getting-started-with-Zero-Reserve), ignoring everything below.
+[For Windows, there is a precompiled ZeroReserve / Retroshare bundle](https://mega.co.nz/#!MVIykABI!fFkRbtdOQDfrIKc0Kke2yfFpS6T17z7q6YxelQ6BJMc). You can install that and the Satoshi client as described below. Then proceed with the [Setup](https://github.com/zeroreserve/ZeroReserve/wiki/Getting-started-with-Zero-Reserve).
+
 
 Prerequisite for building is
 * a successful RetroShare build. http://retroshare.sourceforge.net/
