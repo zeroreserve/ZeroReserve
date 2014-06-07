@@ -47,7 +47,7 @@ rpcpassword=mysupersecretpassword
 rpcport=18332
 ```
 
-[There is a precompiled ZeroReserve / Retroshare bundle](https://mega.co.nz/#!MVIykABI!fFkRbtdOQDfrIKc0Kke2yfFpS6T17z7q6YxelQ6BJMc)
+[For Windows, there is a precompiled ZeroReserve / Retroshare bundle](https://mega.co.nz/#!MVIykABI!fFkRbtdOQDfrIKc0Kke2yfFpS6T17z7q6YxelQ6BJMc)
 
 
 This is experimental software. Use at your own risk. At this stage, leave TestNet
