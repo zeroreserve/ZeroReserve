@@ -12,13 +12,13 @@ Prerequisite for building is
 * libcurl http://curl.haxx.se/
 * Boost http://www.boost.org
 
+First, you need to build Retroshare. [Use these build instructions](http://retroshare.sourceforge.net/wiki/index.php/UnixCompile). Note: there is no need to build retroshare-nogui.
+
 On most Linux Distros, Boost, sqlite, curl and jsoncpp are included. On Debian 7, simply do
 
 ```
 # apt-get install libjsoncpp-dev libsqlite3-dev libcurl4-openssl-dev libboost-all-dev
 ```
-
-First, you need to build Retroshare. [Use these build instructions](http://retroshare.sourceforge.net/wiki/index.php/UnixCompile). Note: there is no need to build retroshare-nogui.
 
 To build Zero Reserve, checkout the sources to the plugins directory of Retroshare and build with:
 ```
