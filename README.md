@@ -3,6 +3,8 @@ ZeroReserve
 
 Friend 2 Friend Payment and Bitcoin exchange
 
+[For Windows, there is a precompiled ZeroReserve / Retroshare bundle](https://mega.co.nz/#!MVIykABI!fFkRbtdOQDfrIKc0Kke2yfFpS6T17z7q6YxelQ6BJMc)
+
 Prerequisite for building is
 * a successful RetroShare build. http://retroshare.sourceforge.net/
 * sqlite3 http://www.sqlite.org/
@@ -47,7 +49,6 @@ rpcpassword=mysupersecretpassword
 rpcport=18332
 ```
 
-[For Windows, there is a precompiled ZeroReserve / Retroshare bundle](https://mega.co.nz/#!MVIykABI!fFkRbtdOQDfrIKc0Kke2yfFpS6T17z7q6YxelQ6BJMc)
 
 
 This is experimental software. Use at your own risk. At this stage, leave TestNet
