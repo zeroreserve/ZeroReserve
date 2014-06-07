@@ -18,7 +18,9 @@ On most Linux Distros, Boost, sqlite, curl and jsoncpp are included. On Debian 7
 # apt-get install libjsoncpp-dev libsqlite3-dev libcurl4-openssl-dev libboost-all-dev
 ```
 
-To build, checkout the sources to the plugins directory of Retroshare and build with:
+First, you need to build Retroshare. [Use these build instructions](http://retroshare.sourceforge.net/wiki/index.php/UnixCompile). Note: there is no need to build retroshare-nogui.
+
+To build Zero Reserve, checkout the sources to the plugins directory of Retroshare and build with:
 ```
 $ cd retroshare-code/plugins
 $ git clone git://github.com/zeroreserve/ZeroReserve.git
