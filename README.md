@@ -7,10 +7,10 @@ Friend 2 Friend Payment and Bitcoin exchange
 
 Prerequisite for building is
 * a successful RetroShare build. http://retroshare.sourceforge.net/
-* sqlite3 http://www.sqlite.org/
-* jsoncpp version 0.6rc or higher: svn co http://svn.code.sf.net/p/jsoncpp/code/trunk/jsoncpp
-* libcurl http://curl.haxx.se/
-* Boost http://www.boost.org
+* sqlite3 http://www.sqlite.org/ (use package from your distro, see below)
+* jsoncpp version 0.6rc or higher: svn co http://svn.code.sf.net/p/jsoncpp/code/trunk/jsoncpp (included in Debian)
+* libcurl http://curl.haxx.se/ (use package from your distro, see below)
+* Boost http://www.boost.org (use package from your distro, see below)
 
 First, you need to build Retroshare. [Use these build instructions](http://retroshare.sourceforge.net/wiki/index.php/UnixCompile). Note: there is no need to build retroshare-nogui.
 
