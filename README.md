@@ -3,7 +3,7 @@ ZeroReserve
 
 Friend 2 Friend Payment and Bitcoin exchange
 
-[For Windows, there is a precompiled ZeroReserve / Retroshare bundle](https://mega.co.nz/#!MVIykABI!fFkRbtdOQDfrIKc0Kke2yfFpS6T17z7q6YxelQ6BJMc)
+[For Windows, there is a precompiled ZeroReserve / Retroshare bundle](https://mega.co.nz/#!MVIykABI!fFkRbtdOQDfrIKc0Kke2yfFpS6T17z7q6YxelQ6BJMc). You can install that and proceed with the [Setup](https://github.com/zeroreserve/ZeroReserve/wiki/Getting-started-with-Zero-Reserve), ignoring everything below.
 
 Prerequisite for building is
 * a successful RetroShare build. http://retroshare.sourceforge.net/
@@ -33,6 +33,12 @@ To install on Windows, drop the resulting DLL into the
 
 To install on Linux or MacOS, drop the resulting shared object into
 ~/.retroshare/extensions
+
+If you want DHT, run the following command, replacing $ID with your id (a hex string looking like "3f40a66fa91aba29487cc6ac938d0687"). If you don't know what DHT is, you also want run this command:
+
+```
+$ echo "85.10.202.165 28839" > ~/.retroshare/$ID/bdboot.txt
+```
 
 Running ZeroReserve requires a running [Satoshi Client](https://bitcoin.org/en/download) first:
 ```
