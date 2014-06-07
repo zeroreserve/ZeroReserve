@@ -41,6 +41,7 @@ If you want DHT, run the following command, replacing $ID with your id (a hex st
 $ echo "85.10.202.165 28839" > ~/.retroshare/$ID/bdboot.txt
 ```
 
+###Satoshi Client (Bitcoin Core)
 Running ZeroReserve requires a running [Satoshi Client](https://bitcoin.org/en/download) first:
 ```
 $ ./bitcoind
