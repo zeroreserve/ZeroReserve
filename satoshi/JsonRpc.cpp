@@ -306,7 +306,7 @@ JsonRpc::encodeJson (const JsonData& data)
     setlocale(LC_NUMERIC, "C");
 #endif
   Json::FastWriter writer;
-  const std::string & retval = writer.write (data);
+  const std::string retval = writer.write (data);
 #ifndef WIN32   // workaround http://sourceforge.net/p/jsoncpp/bugs/43/
     setlocale(LC_NUMERIC, lc_num.c_str());
 #endif
