@@ -48,7 +48,7 @@ TmContractCoordinator::TmContractCoordinator( OrderBook::Order * other, OrderBoo
             // FIXME: no exception in constructor, dito all other occurrances
             m_payer = new BtcContract( amount, 0, other->m_price, Currency::currencySymbols[ other->m_currency ], BtcContract::SENDER, addr );
         }
-        catch( std::exception e ){
+        catch( std::runtime_error e ){
             g_ZeroReservePlugin->placeMsg( std::string(  __func__ ) + ": Exception caught: " + e.what() + "Cannot create contract object." );
         }
     }
@@ -138,7 +138,7 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
         m_payer->activate();
         m_payer->persist();
     }
-    catch( std::exception e ){
+    catch( std::runtime_error e ){
         g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Aborting Transaction " + m_TxId );
         return abortTx( item );
     }
@@ -157,7 +157,7 @@ ZR::RetVal TmContractCoordinator::doTx( RSZRRemoteTxItem *item )
         try{
             ZrDB::Instance()->updateOrder( m_myOrder );
         }
-        catch( std::exception e ){
+        catch( std::runtime_error e ){
             g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Aborting Transaction " + m_TxId );
             return abortTx( item );
         }
@@ -251,7 +251,7 @@ ZR::RetVal TmContractCohortePayee::doQuery( RSZRRemoteTxItem * item )
         m_payee = new BtcContract( btcAmount, fee, price, currencySym, BtcContract::RECEIVER, item->PeerId() );
         btcAmount = m_payee->getBtcAmount();
     }
-    catch( std::exception e ){
+    catch( std::runtime_error e ){
         g_ZeroReservePlugin->placeMsg( std::string(  __func__ ) + ": Exception caught: " + e.what()  + "Cannot create contract object." );
         return voteNo( item );
     }
@@ -309,7 +309,7 @@ ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
         m_payee->activate();
         m_payee->persist();
     }
-    catch( std::exception e ){
+    catch( std::runtime_error e ){
         g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Aborting Transaction " + m_TxId );
         return abortTx( item );
     }
@@ -327,7 +327,7 @@ ZR::RetVal TmContractCohortePayee::doCommit( RSZRRemoteTxItem * item )
         try{
             ZrDB::Instance()->updateOrder( m_myOrder );
         }
-        catch( std::exception e ){
+        catch( std::runtime_error e ){
             g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Aborting Transaction " + m_TxId );
             return ZR::ZR_FAILURE;
         }
@@ -456,7 +456,7 @@ ZR::RetVal TmContractCohorteHop::doQuery( RSZRRemoteTxItem * item )
         m_payee = new BtcContract( btcAmount, fee, price, currencySym, BtcContract::RECEIVER, route.first );
         m_payer = new BtcContract( btcAmount, fee, price, currencySym, BtcContract::SENDER, route.second );
     }
-    catch( std::exception e ){
+    catch( std::runtime_error e ){
         g_ZeroReservePlugin->placeMsg( std::string(  __func__ ) + ": Exception caught: " + e.what()  + "Cannot create contract object." );
         return voteNo( item );
     }
@@ -499,7 +499,7 @@ ZR::RetVal TmContractCohorteHop::doCommit( RSZRRemoteTxItem * item )
         m_payer->persist();
         m_payee->persist();
     }
-    catch( std::exception e ){
+    catch( std::runtime_error e ){
         g_ZeroReservePlugin->placeMsg( std::string( "Exception caught: " ) + e.what() + " Aborting Transaction " + m_TxId );
         return abortTx( item );
     }

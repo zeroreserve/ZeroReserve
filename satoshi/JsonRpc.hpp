@@ -68,11 +68,6 @@ private:
   /** The next ID to use for JSON-RPC queries.  */
   unsigned nextId;
 
-  /**
-   * Allow to disable call logging in a "one shot" manner.  This can be
-   * used to prevent passwords from being logged.
-   */
-  bool dontLogNextCall;
 
   // Disable copying.
 #ifndef CXX_11
@@ -93,13 +88,6 @@ private:
    */
   std::string queryHttp (const std::string& query, unsigned& responseCode);
 
-  /**
-   * If logging of RPC calls is enabled (environment variable
-   * LIBNMCRPC_LOGFILE_RPCCALLS), write the given string to the
-   * log file.
-   * @param str String to log.
-   */
-  void logRpcCall (const std::string& str);
 
 public:
 
@@ -108,7 +96,7 @@ public:
    * @param s Settings to use for the connection.  They are copied.
    */
   explicit inline JsonRpc (const RpcSettings& s)
-    : settings(s), nextId(0), dontLogNextCall(false)
+    : settings(s), nextId(0)
   {
     // Nothing more to be done.
   }
@@ -143,15 +131,7 @@ public:
    */
   static std::string encodeJson (const JsonData& data);
 
-  /**
-   * Disable logging for the next call.  This can be used to prevent passwords
-   * from being logged.
-   */
-  inline void
-  disableLoggingOneShot ()
-  {
-    dontLogNextCall = true;
-  }
+
 
   /**
    * Perform a JSON-RPC query with arbitrary parameter list.
