@@ -316,48 +316,57 @@ JsonRpc::encodeJson (const JsonData& data)
 JsonRpc::JsonData
 JsonRpc::executeRpcArray (const std::string& method, const JsonData& params)
 {
-  JsonData query(Json::objectValue);
-  const int id = nextId++;
+    JsonData query(Json::objectValue);
+    const int id = nextId++;
 
-  query["id"] = id;
-  query["method"] = method;
-  query["params"] = params;
-  const std::string queryStr = encodeJson (query);
+    query["id"] = id;
+    query["method"] = method;
+    query["params"] = params;
 
-  std::cerr << "ZeroReserve: RPC Query: " << method;
-  for (Json::Value::const_iterator i = params.begin ();
-       i != params.end (); ++i)
-      std::cerr << " " << encodeJson (*i);
-  std::cerr << std::endl;
+#ifndef WIN32   // workaround http://sourceforge.net/p/jsoncpp/bugs/43/
+    std::string lc_num = setlocale(LC_NUMERIC, NULL);
+    setlocale(LC_NUMERIC, "C");
+#endif
+    const std::string queryStr = encodeJson (query);
 
-  unsigned respCode;
-  const std::string responseStr = queryHttp (queryStr, respCode);
+    std::cerr << "ZeroReserve: RPC Query: " << method;
+    for (Json::Value::const_iterator i = params.begin ();
+         i != params.end (); ++i)
+        std::cerr << " " << encodeJson (*i);
+    std::cerr << std::endl;
 
-  std::cerr << "ZeroReserve: RPC Response: " << responseStr << std::endl;
+#ifndef WIN32   // workaround http://sourceforge.net/p/jsoncpp/bugs/43/
+    setlocale(LC_NUMERIC, lc_num.c_str());
+#endif
 
-  switch (respCode)
+    unsigned respCode;
+    const std::string responseStr = queryHttp (queryStr, respCode);
+
+    std::cerr << "ZeroReserve: RPC Response: " << responseStr << std::endl;
+
+    switch (respCode)
     {
     case 200:
     case 404:
     case 500:
-      break;
+        break;
 
     case 401:
-      throw HttpError ("Login credentials not accepted.", respCode);
+        throw HttpError ("Login credentials not accepted.", respCode);
 
     default:
-      throw HttpError ("Invalid HTTP status code returned.", respCode);
+        throw HttpError ("Invalid HTTP status code returned.", respCode);
     }
 
-  const JsonData response = decodeJson (responseStr);
-  if (response["id"].asInt () != id)
-    throw Exception ("IDs don't match for JSON-RPC response.");
+    const JsonData response = decodeJson (responseStr);
+    if (response["id"].asInt () != id)
+        throw Exception ("IDs don't match for JSON-RPC response.");
 
-  const JsonData& result = response["result"];
-  const JsonData& error = response["error"];
-  if (!error.isNull ())
-    throw RpcError (error);
-  return result;
+    const JsonData& result = response["result"];
+    const JsonData& error = response["error"];
+    if (!error.isNull ())
+        throw RpcError (error);
+    return result;
 }
 
 } // namespace nmcrpc
