@@ -301,8 +301,16 @@ JsonRpc::readJson (std::istream& in)
 std::string
 JsonRpc::encodeJson (const JsonData& data)
 {
+#ifndef WIN32   // workaround http://sourceforge.net/p/jsoncpp/bugs/43/
+    std::string lc_num = setlocale(LC_NUMERIC, NULL);
+    setlocale(LC_NUMERIC, "C");
+#endif
   Json::FastWriter writer;
-  return writer.write (data);
+  const std::string & retval = writer.write (data);
+#ifndef WIN32   // workaround http://sourceforge.net/p/jsoncpp/bugs/43/
+    setlocale(LC_NUMERIC, lc_num.c_str());
+#endif
+    return retval;
 }
 
 /**
@@ -322,11 +330,6 @@ JsonRpc::executeRpcArray (const std::string& method, const JsonData& params)
     query["id"] = id;
     query["method"] = method;
     query["params"] = params;
-
-#ifndef WIN32   // workaround http://sourceforge.net/p/jsoncpp/bugs/43/
-    std::string lc_num = setlocale(LC_NUMERIC, NULL);
-    setlocale(LC_NUMERIC, "C");
-#endif
     const std::string queryStr = encodeJson (query);
 
     std::cerr << "ZeroReserve: RPC Query: " << method;
@@ -334,10 +337,6 @@ JsonRpc::executeRpcArray (const std::string& method, const JsonData& params)
          i != params.end (); ++i)
         std::cerr << " " << encodeJson (*i);
     std::cerr << std::endl;
-
-#ifndef WIN32   // workaround http://sourceforge.net/p/jsoncpp/bugs/43/
-    setlocale(LC_NUMERIC, lc_num.c_str());
-#endif
 
     unsigned respCode;
     const std::string responseStr = queryHttp (queryStr, respCode);
