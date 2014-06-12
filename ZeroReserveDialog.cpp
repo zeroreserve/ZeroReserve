@@ -113,7 +113,6 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
 
     ZR::Bitcoin::BtcInfo btcInfo;
     if( ZR::ZR_SUCCESS == ZR::Bitcoin::Instance()->getinfo( btcInfo ) ){
-        QString testNet;
         if( btcInfo.testnet ){
 #ifdef ZR_TESTNET
             std::cerr << "Zero Reserve: Connected to Bitcoin Client version " <<  btcInfo.version  << " TESTNET" << std::endl;
@@ -132,7 +131,7 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
         }
     }
     else {
-        QMessageBox::critical( this, "Bitcoin Connection", "Zero Reserve cannot connect to Bitcoin Client" );
+        std::cerr << "Zero Reserve:  cannot connect to Bitcoin Client" << std::endl;
     }
 
 
@@ -141,12 +140,28 @@ ZeroReserveDialog::ZeroReserveDialog(OrderBook * bids, OrderBook * asks, QWidget
     timer->start( 1000 );
 }
 
+void ZeroReserveDialog::setWalletStatus()
+{
+    ZR::Bitcoin::BtcInfo btcInfo;
+    if( ZR::ZR_SUCCESS == ZR::Bitcoin::Instance()->getinfo( btcInfo ) ){
+        ui.ConnectionStatus->setStyleSheet( "QLabel { background-color : green; }" );
+        ui.NetworkConnections->setText( QString::number( btcInfo.connections ) );
+        ui.BTCBalance->setText( btcInfo.balance.toDecimalQString() );
+    }
+    else{
+        ui.ConnectionStatus->setStyleSheet( "QLabel { background-color : red; }" );
+        ui.NetworkConnections->setText( "N/A" );
+        ui.BTCBalance->setText( "N/A" );
+    }
+}
+
 
 void ZeroReserveDialog::janitor()
 {
     updateFriendList();
     g_ZeroReservePlugin->displayMsg();
     ui.paymentHistoryList->setCurrentRow( 0 ); // make the view emit currentItemChanged
+    setWalletStatus();
 }
 
 void ZeroReserveDialog::loadTxLog()

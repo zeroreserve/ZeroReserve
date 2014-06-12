@@ -95,6 +95,7 @@ public:
         unsigned int version;
         bool testnet;
         ZR::ZR_Number balance;
+        unsigned int connections;
     } BtcInfo;
 
 
